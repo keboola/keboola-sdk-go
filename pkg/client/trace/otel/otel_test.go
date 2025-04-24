@@ -605,7 +605,6 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
 				attribute.String("http.user_agent", "keboola-sdk-go"),
-				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
