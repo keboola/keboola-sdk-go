@@ -135,7 +135,7 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err := api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{token1, token2}, ignoreMasterTokens(*allTokens))
+	assert.Equal(t, []*Token{removeTokenField(token1), removeTokenField(token2)}, ignoreMasterTokens(*allTokens))
 
 	// Delete token1
 	_, err = api.DeleteTokenRequest(token1.ID).Send(ctx)
@@ -144,7 +144,7 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err = api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{token2}, ignoreMasterTokens(*allTokens))
+	assert.Equal(t, []*Token{removeTokenField(token2)}, ignoreMasterTokens(*allTokens))
 
 	// Delete token2
 	_, err = api.DeleteTokenRequest(token2.ID).Send(ctx)
@@ -224,6 +224,12 @@ func TestToken_JSON(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, token, decoded)
+}
+
+func removeTokenField(in *Token) *Token {
+	t := *in
+	t.Token = ""
+	return &t
 }
 
 func ignoreMasterTokens(in []*Token) (out []*Token) {
