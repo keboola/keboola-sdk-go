@@ -226,22 +226,33 @@ func main() {
 ## Development
 
 Clone the repository and run the dev container:
-```sh
+```shell
 docker-compose run --rm -u "$UID:$GID" --service-ports dev bash
 ```
 
 Run lint and tests in the container:
-```sh
+```shell
 task lint
 task tests
 ```
+*Note: See "Test projects" section before running tests*
 
 Run the HTTP server with documentation:
-```sh
+```shell
 task godoc
 ```
 
 Open `http://localhost:6060/pkg/github.com/keboola/keboola-sdk-go/pkg/` in your browser.
+
+### Test projects
+
+To successfully run all tests you will need test projects.
+
+1. Create a `projects.json` file
+   ```shell
+   cp ./build/ci/projects.json projects.json
+   ```
+2. Replace token strings for each of the projects
 
 ## License
 
