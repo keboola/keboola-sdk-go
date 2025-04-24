@@ -1,4 +1,54 @@
-# Keboola Go Client
+# Keboola SDK for Go
+
+The Keboola SDK for Go programming language provides developers with easy access to the Keboola platform and related services from
+their code.
+
+## Getting started
+
+1. You will need a Keboola account and project - to get one, sign up [here](https://www.keboola.com/). Once you
+have a project, get a Storage API token for that project. With this token, you can use all Keboola APIs that require a
+Storage API token.
+2. Install SDK dependencies:
+    ```shell
+    go get github.com/keboola/keboola-sdk-go
+    ```
+3. Write your code
+
+### Create configuration
+
+Configuration is a basic Keboola concept - it's a definition of work to be done by a component. In this example, we will
+create a simple Python transformation that will print `Hello World` text.
+
+TBD (storage api + encryption api)
+
+`keboola.python-transformation-v2`:
+
+```json
+{
+  "parameters": {
+    "blocks": [
+      {
+        "name": "Block",
+        "codes": [
+          {
+            "name": "Code",
+            "script": [
+              "print(\"Hello World\");"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Run a job
+
+TBD (job queue api)
+
+Just print job ID, after it is created.
+
 
 ## Packages
 
@@ -26,29 +76,6 @@ The `keboola` package provides the `keboola.API` implementation, it covers:
 
 Not all API requests are covered, API requests are extended as needed.
 
-## Quick Start
-
-```go
-ctx := context.TODO()
-
-// Create API instance
-api, err := keboola.NewAPI(
-  ctx, 
-  "https://connection.keboola.com", 
-  keboola.WithTracerProvider(tracerProvider), 
-  keboola.WithMeterProvider(meterProvider),
-)
-if err != nil {
-  return err
-}
-
-// Send a request
-config, err := api.CreateConfigRequest(&keboola.ConfigWithRows{/*...*/}).Send(ctx)
-if err != nil {
-  return err
-}
-```
-
 ## Direct HTTP Requests
 
 The `request` package provides a flexible way to make direct HTTP requests using the `NewHTTPRequest` function with any implementation of the `Sender` interface. This approach offers several advantages:
@@ -69,8 +96,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 // APIError represents an API error response
@@ -198,23 +225,23 @@ func main() {
 
 ## Development
 
-Clone the repository and run dev container:
+Clone the repository and run the dev container:
 ```sh
 docker-compose run --rm -u "$UID:$GID" --service-ports dev bash
 ```
 
-Run lint and tests in container:
+Run lint and tests in the container:
 ```sh
 task lint
 task tests
 ```
 
-Run HTTP server with documentation:
+Run the HTTP server with documentation:
 ```sh
 task godoc
 ```
 
-Open `http://localhost:6060/pkg/github.com/keboola/go-client/pkg/` in browser.
+Open `http://localhost:6060/pkg/github.com/keboola/keboola-sdk-go/pkg/` in your browser.
 
 ## License
 
