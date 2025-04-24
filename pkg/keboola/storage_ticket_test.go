@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/keboola/go-client/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 func TestGenerateNewId(t *testing.T) {

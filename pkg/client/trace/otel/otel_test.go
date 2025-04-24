@@ -25,9 +25,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/client/trace/otel"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 const (
@@ -490,7 +490,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", "1.1"),
 				attribute.String("http.url", "https://connection.keboola.com/..../redirect1?foo=....&secret2=...."),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/..../redirect1"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -526,7 +526,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/redirect2"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/redirect2"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -565,7 +565,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -604,7 +604,8 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -638,7 +639,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -678,7 +679,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -713,7 +714,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -753,7 +754,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -781,7 +782,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -811,7 +812,7 @@ func getExpectedSpans() tracetest.SpanStubs {
 				attribute.String("http.flavor", ""), // missing because the mocked transport is used
 				attribute.String("http.url", "https://connection.keboola.com/index"),
 				attribute.String("net.peer.name", "connection.keboola.com"),
-				attribute.String("http.user_agent", "keboola-go-client"),
+				attribute.String("http.user_agent", "keboola-sdk-go"),
 				attribute.String("http.url_details.scheme", "https"),
 				attribute.String("http.url_details.path", "/index"),
 				attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -852,7 +853,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", "1.1"),
 		attribute.String("http.url", "https://connection.keboola.com/..../redirect1?foo=....&secret2=...."),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/..../redirect1"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -866,7 +867,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/redirect2"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/redirect2"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -880,7 +881,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/index"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/index"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -893,7 +894,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/index"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/index"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -907,7 +908,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/index"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/index"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -921,7 +922,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/index"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/index"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -934,7 +935,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", "1.1"),
 		attribute.String("http.url", "https://connection.keboola.com/..../redirect1?foo=....&secret2=...."),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/..../redirect1"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -946,7 +947,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/redirect2"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/redirect2"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),
@@ -958,7 +959,7 @@ func getExpectedMetrics() []metricdata.Metrics {
 		attribute.String("http.flavor", ""), // missing because the mocked transport is used
 		attribute.String("http.url", "https://connection.keboola.com/index"),
 		attribute.String("net.peer.name", "connection.keboola.com"),
-		attribute.String("http.user_agent", "keboola-go-client"),
+		attribute.String("http.user_agent", "keboola-sdk-go"),
 		attribute.String("http.url_details.scheme", "https"),
 		attribute.String("http.url_details.path", "/index"),
 		attribute.String("http.url_details.host", "connection.keboola.com"),

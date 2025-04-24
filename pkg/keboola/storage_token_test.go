@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/keboola/go-client/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 func TestVerifyToken(t *testing.T) {

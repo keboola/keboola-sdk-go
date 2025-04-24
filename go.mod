@@ -1,4 +1,4 @@
-module github.com/keboola/go-client
+module github.com/keboola/keboola-sdk-go
 
 go 1.24.1
 

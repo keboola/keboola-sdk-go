@@ -5,7 +5,7 @@ import (
 
 	"github.com/jarcoal/httpmock"
 
-	"github.com/keboola/go-client/pkg/client/trace"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace"
 )
 
 var testTransport = DefaultTransport() //nolint:gochecknoglobals

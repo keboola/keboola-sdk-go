@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 // Factory creates ClientTrace hooks for a request.

@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/keboola/go-client/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -129,7 +129,7 @@ func TestTableApiCalls(t *testing.T) {
 	resMetadata, err := api.
 		CreateOrUpdateTableMetadata(
 			tableKey,
-			"go-client-test",
+			"keboola-sdk-go-test",
 			[]TableMetadataRequest{
 				{Key: "tableMetadata1", Value: "value1"},
 				{Key: "tableMetadata2", Value: "value2"},
@@ -149,17 +149,17 @@ func TestTableApiCalls(t *testing.T) {
 	removeDynamicValuesFromColumnsMetadata(resMetadata.ColumnMetadata)
 	assert.Equal(t, &TableMetadataResponse{
 		Metadata: TableMetadata{
-			{Key: "tableMetadata1", Value: "value1", Provider: "go-client-test"},
-			{Key: "tableMetadata2", Value: "value2", Provider: "go-client-test"},
+			{Key: "tableMetadata1", Value: "value1", Provider: "keboola-sdk-go-test"},
+			{Key: "tableMetadata2", Value: "value2", Provider: "keboola-sdk-go-test"},
 		},
 		ColumnMetadata: ColumnsMetadata{
 			"first": {
-				{Key: "columnMetadata1", Value: "value3", Provider: "go-client-test"},
-				{Key: "columnMetadata2", Value: "value4", Provider: "go-client-test"},
+				{Key: "columnMetadata1", Value: "value3", Provider: "keboola-sdk-go-test"},
+				{Key: "columnMetadata2", Value: "value4", Provider: "keboola-sdk-go-test"},
 			},
 			"second": {
-				{Key: "columnMetadata3", Value: "value5", Provider: "go-client-test"},
-				{Key: "columnMetadata4", Value: "value6", Provider: "go-client-test"},
+				{Key: "columnMetadata3", Value: "value5", Provider: "keboola-sdk-go-test"},
+				{Key: "columnMetadata4", Value: "value6", Provider: "keboola-sdk-go-test"},
 			},
 		},
 	}, resMetadata)
@@ -185,17 +185,17 @@ func TestTableApiCalls(t *testing.T) {
 			URI:         "https://" + project.StorageAPIHost() + "/v2/storage/buckets/" + tableKey.BucketKey().BucketID.String(),
 		},
 		Metadata: TableMetadata{
-			{Key: "tableMetadata1", Value: "value1", Provider: "go-client-test"},
-			{Key: "tableMetadata2", Value: "value2", Provider: "go-client-test"},
+			{Key: "tableMetadata1", Value: "value1", Provider: "keboola-sdk-go-test"},
+			{Key: "tableMetadata2", Value: "value2", Provider: "keboola-sdk-go-test"},
 		},
 		ColumnMetadata: ColumnsMetadata{
 			"first": {
-				{Key: "columnMetadata1", Value: "value3", Provider: "go-client-test"},
-				{Key: "columnMetadata2", Value: "value4", Provider: "go-client-test"},
+				{Key: "columnMetadata1", Value: "value3", Provider: "keboola-sdk-go-test"},
+				{Key: "columnMetadata2", Value: "value4", Provider: "keboola-sdk-go-test"},
 			},
 			"second": {
-				{Key: "columnMetadata3", Value: "value5", Provider: "go-client-test"},
-				{Key: "columnMetadata4", Value: "value6", Provider: "go-client-test"},
+				{Key: "columnMetadata3", Value: "value5", Provider: "keboola-sdk-go-test"},
+				{Key: "columnMetadata4", Value: "value6", Provider: "keboola-sdk-go-test"},
 			},
 		},
 	}, respGet2)
@@ -204,7 +204,7 @@ func TestTableApiCalls(t *testing.T) {
 	err = api.
 		CreateOrUpdateTableMetadata(
 			respGet2.TableKey,
-			"go-client-test",
+			"keboola-sdk-go-test",
 			[]TableMetadataRequest{
 				{Key: "tableMetadata1", Value: "value1-updated"},
 				{Key: "tableMetadata3", Value: "value3"},
@@ -223,10 +223,10 @@ func TestTableApiCalls(t *testing.T) {
 	removeDynamicValueFromTable(respGet3)
 	// check table metadata
 	assert.Equal(t, TableMetadata{
-		{Key: "tableMetadata1", Value: "value1-updated", Provider: "go-client-test"},
-		{Key: "tableMetadata2", Value: "value2", Provider: "go-client-test"},
-		{Key: "tableMetadata3", Value: "value3", Provider: "go-client-test"},
-		{Key: "tableMetadata4", Value: "value4", Provider: "go-client-test"},
+		{Key: "tableMetadata1", Value: "value1-updated", Provider: "keboola-sdk-go-test"},
+		{Key: "tableMetadata2", Value: "value2", Provider: "keboola-sdk-go-test"},
+		{Key: "tableMetadata3", Value: "value3", Provider: "keboola-sdk-go-test"},
+		{Key: "tableMetadata4", Value: "value4", Provider: "keboola-sdk-go-test"},
 	}, respGet3.Metadata)
 
 	// Delete table

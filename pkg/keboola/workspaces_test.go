@@ -8,7 +8,7 @@ import (
 	"github.com/keboola/go-utils/pkg/testproject"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/go-client/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 func TestWorkspacesCreateAndDeletePython(t *testing.T) {
