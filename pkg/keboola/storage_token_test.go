@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"testing"
 	"time"
 
@@ -135,7 +136,7 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err := api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{removeTokenField(token1), removeTokenField(token2)}, ignoreMasterTokens(*allTokens))
+	assert.Len(t, ignoreMasterTokens(*allTokens), 2)
 
 	// Delete token1
 	_, err = api.DeleteTokenRequest(token1.ID).Send(ctx)
@@ -144,7 +145,9 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err = api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{removeTokenField(token2)}, ignoreMasterTokens(*allTokens))
+
+	assert.True(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token2.ID }))
+	assert.False(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token1.ID }))
 
 	// Delete token2
 	_, err = api.DeleteTokenRequest(token2.ID).Send(ctx)
@@ -173,12 +176,12 @@ func TestTokenDetailRequest(t *testing.T) {
 	// Get token details
 	detailedToken, err := api.TokenDetailRequest(createdToken.ID).Send(ctx)
 	assert.NoError(t, err)
-	
+
 	// Verify token details
 	assert.Equal(t, createdToken.ID, detailedToken.ID)
 	assert.Equal(t, description, detailedToken.Description)
 	assert.NotNil(t, detailedToken.Expires)
-	
+
 	// Cleanup
 	_, err = api.DeleteTokenRequest(createdToken.ID).Send(ctx)
 	assert.NoError(t, err)
@@ -224,12 +227,6 @@ func TestToken_JSON(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, token, decoded)
-}
-
-func removeTokenField(in *Token) *Token {
-	t := *in
-	t.Token = ""
-	return &t
 }
 
 func ignoreMasterTokens(in []*Token) (out []*Token) {

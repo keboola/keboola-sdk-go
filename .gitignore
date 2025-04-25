@@ -2,3 +2,4 @@
 vendor
 .env
 /projects.json
+.vscode
