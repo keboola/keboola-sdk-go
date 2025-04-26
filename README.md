@@ -19,36 +19,111 @@ Storage API token.
 Configuration is a basic Keboola concept - it's a definition of work to be done by a component. In this example, we will
 create a simple Python transformation that will print `Hello World` text.
 
-TBD (storage api + encryption api)
+```go
+func main() {
+	// Create context
+	ctx := context.Background()
 
-`keboola.python-transformation-v2`:
+	// Connect to Keboola API with our token
+	// This is like logging into the Keboola website
+	api, err := keboola.NewAuthorizedAPI(
+		ctx,
+		"<https://connection...>",   // The Keboola server address
+		"<Storage API token>", // Replace with your token
+	)
+	// Check if we connected successfully
+	if err != nil {
+		log.Fatalf("Could not connect to Keboola: %v", err)
+	}
 
-```json
-{
-  "parameters": {
-    "blocks": [
-      {
-        "name": "Block",
-        "codes": [
-          {
-            "name": "Code",
-            "script": [
-              "print(\"Hello World\");"
-            ]
-          }
-        ]
-      }
-    ]
-  }
+	// Get the default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not get default branch: %v", err)
+	}
+	fmt.Printf("We'll use branch ID: %d\n", branch.ID)
+
+	// Define our Python transformation configuration
+	pythonConfig := `{
+		"parameters": {
+			"blocks": [
+				{
+					"name": "Block",
+					"codes": [
+						{
+							"name": "Code",
+							"script": ["print(\"Hello World\")"] 
+						}
+					]
+				}
+			]
+		}
+	}`
+
+	// Keboola requires configurations to be encrypted before storing them
+	encryptedData, err := api.EncryptRequest(
+		<project ID>, // Your project ID
+		"keboola.python-transformation-v2",
+		map[string]string{"configuration": pythonConfig},
+	).Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not encrypt the configuration: %v", err)
+	}
+	fmt.Println("Successfully encrypted our configuration")
+
+	// Convert the encrypted JSON to an OrderedMap
+	// Keboola uses a special map type that keeps keys in order
+	// First, get the encrypted configuration string
+	encryptedConfigStr := (*encryptedData)["configuration"]
+
+	// Convert the JSON string to a Go map
+	var configMap map[string]any
+	if err := json.Unmarshal([]byte(encryptedConfigStr), &configMap); err != nil {
+		log.Fatalf("Could not parse the JSON: %v", err)
+	}
+
+	// Convert the Go map to an OrderedMap
+	configContent := orderedmap.New()
+	for key, value := range configMap {
+		configContent.Set(key, value)
+	}
+
+	// Build the configuration object with all required fields
+	newConfig := &keboola.ConfigWithRows{
+		Config: &keboola.Config{
+			ConfigKey: keboola.ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "keboola.python-transformation-v2",
+			},
+			Name:        "My First Python Transformation",
+			Description: "A simple transformation that prints Hello World",
+			Content:     configContent,
+		},
+	}
+
+	// Send the request to create the configuration
+	response, err := api.CreateConfigRequest(newConfig, true).Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not create the configuration: %v", err)
+	}
+
+	// Success! Print the ID of our new configuration
+	fmt.Printf("Success! Created configuration with ID: %s\n", response.ID)
 }
 ```
 
 ### Run a job
 
-TBD (job queue api)
-
-Just print job ID, after it is created.
-
+```go
+// Run a job
+	job, err := api.NewCreateJobRequest("keboola.python-transformation-v2").
+		WithConfig(response.ID).
+		Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not run a job: %v", err)
+	}
+	fmt.Printf("Success! Created job with ID: %s\n", job.ID)
+```
 
 ## Packages
 
