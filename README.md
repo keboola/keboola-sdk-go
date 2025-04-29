@@ -16,7 +16,7 @@ Storage API token.
     ```
 3. Write your code
 
-### Create configuration
+### Create and run configuration
 
 Configuration is a basic Keboola concept - it's a definition of work to be done by a component. In this example, we will
 create a simple Python transformation that will print `Hello World` text.
