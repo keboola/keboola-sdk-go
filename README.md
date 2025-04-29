@@ -20,6 +20,17 @@ Configuration is a basic Keboola concept - it's a definition of work to be done 
 create a simple Python transformation that will print `Hello World` text.
 
 ```go
+package your_project
+
+import (
+   "context"
+   "fmt"
+   "log"
+   "encoding/json"
+   "github.com/keboola/keboola-sdk-go/pkg/keboola"
+   "github.com/keboola/go-utils/pkg/orderedmap"
+)
+
 func main() {
 	// Create context
 	ctx := context.Background()
@@ -41,7 +52,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not get default branch: %v", err)
 	}
-	fmt.Printf("We'll use branch ID: %d\n", branch.ID)
 
 	// Define our Python transformation configuration
 	pythonConfig := `{
@@ -69,7 +79,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not encrypt the configuration: %v", err)
 	}
-	fmt.Println("Successfully encrypted our configuration")
 
 	// Convert the encrypted JSON to an OrderedMap
 	// Keboola uses a special map type that keeps keys in order
@@ -95,8 +104,7 @@ func main() {
 				BranchID:    branch.ID,
 				ComponentID: "keboola.python-transformation-v2",
 			},
-			Name:        "My First Python Transformation",
-			Description: "A simple transformation that prints Hello World",
+			Name:        "Hello World",
 			Content:     configContent,
 		},
 	}
@@ -109,13 +117,8 @@ func main() {
 
 	// Success! Print the ID of our new configuration
 	fmt.Printf("Success! Created configuration with ID: %s\n", response.ID)
-}
-```
-
-### Run a job
-
-```go
-// Run a job
+	
+    // Run a job
 	job, err := api.NewCreateJobRequest("keboola.python-transformation-v2").
 		WithConfig(response.ID).
 		Send(ctx)
