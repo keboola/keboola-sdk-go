@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 // ignoreResourceAlreadyExistsError is a workaround for problems with the Storage API.

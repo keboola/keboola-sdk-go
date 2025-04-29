@@ -6,7 +6,7 @@ import (
 	otelMetric "go.opentelemetry.io/otel/metric"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/keboola/go-client/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
 )
 
 type apiConfig struct {

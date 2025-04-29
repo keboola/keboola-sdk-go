@@ -11,9 +11,9 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/keboola/go-client/pkg/client"
-	. "github.com/keboola/go-client/pkg/client/trace"
-	. "github.com/keboola/go-client/pkg/request"
+	. "github.com/keboola/keboola-sdk-go/pkg/client"
+	. "github.com/keboola/keboola-sdk-go/pkg/client/trace"
+	. "github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 type testStruct struct {
@@ -216,7 +216,7 @@ func TestDefaultHeaders(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("GET", "https://example.com", func(request *http.Request) (*http.Response, error) {
 		assert.Equal(t, http.Header{
-			"User-Agent":      []string{"keboola-go-client"},
+			"User-Agent":      []string{"keboola-sdk-go"},
 			"Accept-Encoding": []string{"gzip, br"},
 		}, request.Header)
 		return httpmock.NewStringResponse(200, "test"), nil
@@ -256,7 +256,7 @@ func TestWithHeader(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("GET", `https://example.com`, func(request *http.Request) (*http.Response, error) {
 		assert.Equal(t, http.Header{
-			"User-Agent":      []string{"keboola-go-client"},
+			"User-Agent":      []string{"keboola-sdk-go"},
 			"Accept-Encoding": []string{"gzip, br"},
 			"My-Header":       []string{"my-value"},
 		}, request.Header)
@@ -277,7 +277,7 @@ func TestWithHeaders(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("GET", `https://example.com`, func(request *http.Request) (*http.Response, error) {
 		assert.Equal(t, http.Header{
-			"User-Agent":      []string{"keboola-go-client"},
+			"User-Agent":      []string{"keboola-sdk-go"},
 			"Accept-Encoding": []string{"gzip, br"},
 			"Key1":            []string{"value1"},
 			"Key2":            []string{"value2"},

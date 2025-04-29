@@ -60,7 +60,7 @@ linters:
         - G601
     wrapcheck:
       ignore-package-globs:
-        - github.com/keboola/go-client/*
+        - github.com/keboola/keboola-sdk-go/*
   exclusions:
     generated: lax
     presets:

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"testing"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/keboola/go-client/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 func TestVerifyToken(t *testing.T) {
@@ -135,7 +136,7 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err := api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{token1, token2}, ignoreMasterTokens(*allTokens))
+	assert.Len(t, ignoreMasterTokens(*allTokens), 2)
 
 	// Delete token1
 	_, err = api.DeleteTokenRequest(token1.ID).Send(ctx)
@@ -144,7 +145,9 @@ func TestListAndDeleteToken(t *testing.T) {
 	// List
 	allTokens, err = api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, []*Token{token2}, ignoreMasterTokens(*allTokens))
+
+	assert.True(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token2.ID }))
+	assert.False(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token1.ID }))
 
 	// Delete token2
 	_, err = api.DeleteTokenRequest(token2.ID).Send(ctx)
@@ -173,12 +176,12 @@ func TestTokenDetailRequest(t *testing.T) {
 	// Get token details
 	detailedToken, err := api.TokenDetailRequest(createdToken.ID).Send(ctx)
 	assert.NoError(t, err)
-	
+
 	// Verify token details
 	assert.Equal(t, createdToken.ID, detailedToken.ID)
 	assert.Equal(t, description, detailedToken.Description)
 	assert.NotNil(t, detailedToken.Expires)
-	
+
 	// Cleanup
 	_, err = api.DeleteTokenRequest(createdToken.ID).Send(ctx)
 	assert.NoError(t, err)

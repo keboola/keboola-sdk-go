@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/client/trace/otel"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 type ServiceType string
@@ -28,7 +28,7 @@ const (
 	// Deprecated: Syrup and old queue should no longer be used.
 	// See https://changelog.keboola.com/2021-11-10-what-is-new-queue/ for information on how to migrate your project.
 	SyrupAPI              = ServiceType("syrup")
-	appName               = "go-client-keboola-api"
+	appName               = "keboola-sdk-go-keboola-api"
 	storageAPITokenHeader = "X-StorageApi-Token" //nolint: gosec // it is not a token value
 )
 

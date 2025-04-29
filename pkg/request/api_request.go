@@ -14,7 +14,7 @@ import (
 
 const (
 	APIRequestSpanName   = "keboola.go.api.client.request"
-	appName              = "go-client-api-request"
+	appName              = "keboola-sdk-go-api-request"
 	attrResourceName     = attribute.Key("resource.name")
 	attrRequestDefinedIn = attribute.Key("api.request_defined_in")
 	attrRequestsCount    = attribute.Key("api.requests_count")

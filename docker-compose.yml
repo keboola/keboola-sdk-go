@@ -1,7 +1,7 @@
 version: '3'
 services:
   dev:
-    image: keboolabot/go-client-dev
+    image: keboolabot/keboola-sdk-go-dev
     build: .
     ports:
       - "6060:6060" #godoc

@@ -11,9 +11,9 @@ import (
 	"github.com/keboola/go-utils/pkg/wildcards"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/client/trace"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 func TestDumpTracer(t *testing.T) {
@@ -42,7 +42,7 @@ func TestDumpTracer(t *testing.T) {
 >>>>>> HTTP DUMP
 GET / HTTP/1.1
 Host: example.com
-User-Agent: keboola-go-client
+User-Agent: keboola-sdk-go
 Accept-Encoding: gzip, br
 ------
 HTTP/0.0 423 Locked
@@ -54,7 +54,7 @@ Content-Length: 0
 >>>>>> HTTP DUMP
 GET / HTTP/1.1
 Host: example.com
-User-Agent: keboola-go-client
+User-Agent: keboola-sdk-go
 Accept-Encoding: gzip, br
 ------
 HTTP/0.0 429 Too Many Requests
@@ -66,7 +66,7 @@ Content-Length: 0
 >>>>>> HTTP DUMP
 GET / HTTP/1.1
 Host: example.com
-User-Agent: keboola-go-client
+User-Agent: keboola-sdk-go
 Accept-Encoding: gzip, br
 ------
 HTTP/0.0 200 OK

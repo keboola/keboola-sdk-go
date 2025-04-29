@@ -1,7 +1,7 @@
 package keboola
 
 import (
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 // Index of Storage API.

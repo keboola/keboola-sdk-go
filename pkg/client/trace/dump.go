@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keboola/go-client/pkg/client/decode"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client/decode"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 const dumpTraceMaxLength = 2000

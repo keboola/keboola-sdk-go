@@ -22,16 +22,16 @@ import (
 	otelMetric "go.opentelemetry.io/otel/metric"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/keboola/go-client/pkg/client/counter"
-	"github.com/keboola/go-client/pkg/client/decode"
-	"github.com/keboola/go-client/pkg/client/trace"
-	"github.com/keboola/go-client/pkg/client/trace/otel"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client/counter"
+	"github.com/keboola/keboola-sdk-go/pkg/client/decode"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace"
+	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 const (
 	RetryAttemptContextKey = ContextKey("retryAttempt")
-	traceAppName           = "github.com/keboola/go-client"
+	traceAppName           = "github.com/keboola/keboola-sdk-go"
 )
 
 type ContextKey string
@@ -50,7 +50,7 @@ type Client struct {
 // New creates new HTTP Client.
 func New() Client {
 	c := Client{transport: DefaultTransport(), header: make(http.Header), retry: DefaultRetry()}
-	c.header.Set("User-Agent", "keboola-go-client")
+	c.header.Set("User-Agent", "keboola-sdk-go")
 	c.header.Set("Accept-Encoding", "gzip, br")
 	return c
 }

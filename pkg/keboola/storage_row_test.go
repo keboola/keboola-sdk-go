@@ -9,7 +9,7 @@ import (
 	"github.com/keboola/go-utils/pkg/wildcards"
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/keboola/go-client/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
 )
 
 func TestConfigRowApiCalls(t *testing.T) {

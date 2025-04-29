@@ -1,4 +1,132 @@
-# Keboola Go Client
+# Keboola SDK for Go
+
+The Keboola SDK for Go programming language provides developers with easy access to the Keboola platform and related services from
+their code.
+
+## Getting started
+
+1. You will need a Keboola account and project - to get one, sign up [here](https://www.keboola.com/). Once you
+have a project, get a Storage API token for that project. With this token, you can use all Keboola APIs that require a
+Storage API token.
+2. Install SDK dependencies:
+    ```shell
+    go get github.com/keboola/keboola-sdk-go
+    ```
+3. Write your code
+
+### Create configuration
+
+Configuration is a basic Keboola concept - it's a definition of work to be done by a component. In this example, we will
+create a simple Python transformation that will print `Hello World` text.
+
+```go
+package your_project
+
+import (
+   "context"
+   "fmt"
+   "log"
+   "encoding/json"
+   "github.com/keboola/keboola-sdk-go/pkg/keboola"
+   "github.com/keboola/go-utils/pkg/orderedmap"
+)
+
+func main() {
+	// Create context
+	ctx := context.Background()
+
+	// Connect to Keboola API with our token
+	// This is like logging into the Keboola website
+	api, err := keboola.NewAuthorizedAPI(
+		ctx,
+		"<https://connection...>",   // The Keboola server address
+		"<Storage API token>", // Replace with your token
+	)
+	// Check if we connected successfully
+	if err != nil {
+		log.Fatalf("Could not connect to Keboola: %v", err)
+	}
+
+	// Get the default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not get default branch: %v", err)
+	}
+
+	// Define our Python transformation configuration
+	pythonConfig := `{
+		"parameters": {
+			"blocks": [
+				{
+					"name": "Block",
+					"codes": [
+						{
+							"name": "Code",
+							"script": ["print(\"Hello World\")"] 
+						}
+					]
+				}
+			]
+		}
+	}`
+
+	// Keboola requires configurations to be encrypted before storing them
+	encryptedData, err := api.EncryptRequest(
+		<project ID>, // Your project ID
+		"keboola.python-transformation-v2",
+		map[string]string{"configuration": pythonConfig},
+	).Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not encrypt the configuration: %v", err)
+	}
+
+	// Convert the encrypted JSON to an OrderedMap
+	// Keboola uses a special map type that keeps keys in order
+	// First, get the encrypted configuration string
+	encryptedConfigStr := (*encryptedData)["configuration"]
+
+	// Convert the JSON string to a Go map
+	var configMap map[string]any
+	if err := json.Unmarshal([]byte(encryptedConfigStr), &configMap); err != nil {
+		log.Fatalf("Could not parse the JSON: %v", err)
+	}
+
+	// Convert the Go map to an OrderedMap
+	configContent := orderedmap.New()
+	for key, value := range configMap {
+		configContent.Set(key, value)
+	}
+
+	// Build the configuration object with all required fields
+	newConfig := &keboola.ConfigWithRows{
+		Config: &keboola.Config{
+			ConfigKey: keboola.ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "keboola.python-transformation-v2",
+			},
+			Name:        "Hello World",
+			Content:     configContent,
+		},
+	}
+
+	// Send the request to create the configuration
+	response, err := api.CreateConfigRequest(newConfig, true).Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not create the configuration: %v", err)
+	}
+
+	// Success! Print the ID of our new configuration
+	fmt.Printf("Success! Created configuration with ID: %s\n", response.ID)
+	
+    // Run a job
+	job, err := api.NewCreateJobRequest("keboola.python-transformation-v2").
+		WithConfig(response.ID).
+		Send(ctx)
+	if err != nil {
+		log.Fatalf("Could not run a job: %v", err)
+	}
+	fmt.Printf("Success! Created job with ID: %s\n", job.ID)
+```
 
 ## Packages
 
@@ -26,29 +154,6 @@ The `keboola` package provides the `keboola.API` implementation, it covers:
 
 Not all API requests are covered, API requests are extended as needed.
 
-## Quick Start
-
-```go
-ctx := context.TODO()
-
-// Create API instance
-api, err := keboola.NewAPI(
-  ctx, 
-  "https://connection.keboola.com", 
-  keboola.WithTracerProvider(tracerProvider), 
-  keboola.WithMeterProvider(meterProvider),
-)
-if err != nil {
-  return err
-}
-
-// Send a request
-config, err := api.CreateConfigRequest(&keboola.ConfigWithRows{/*...*/}).Send(ctx)
-if err != nil {
-  return err
-}
-```
-
 ## Direct HTTP Requests
 
 The `request` package provides a flexible way to make direct HTTP requests using the `NewHTTPRequest` function with any implementation of the `Sender` interface. This approach offers several advantages:
@@ -69,8 +174,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/keboola/go-client/pkg/client"
-	"github.com/keboola/go-client/pkg/request"
+	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/pkg/request"
 )
 
 // APIError represents an API error response
@@ -198,23 +303,34 @@ func main() {
 
 ## Development
 
-Clone the repository and run dev container:
-```sh
+Clone the repository and run the dev container:
+```shell
 docker-compose run --rm -u "$UID:$GID" --service-ports dev bash
 ```
 
-Run lint and tests in container:
-```sh
+Run lint and tests in the container:
+```shell
 task lint
 task tests
 ```
+*Note: See "Test projects" section before running tests*
 
-Run HTTP server with documentation:
-```sh
+Run the HTTP server with documentation:
+```shell
 task godoc
 ```
 
-Open `http://localhost:6060/pkg/github.com/keboola/go-client/pkg/` in browser.
+Open `http://localhost:6060/pkg/github.com/keboola/keboola-sdk-go/pkg/` in your browser.
+
+### Test projects
+
+To successfully run all tests you will need test projects.
+
+1. Create a `projects.json` file
+   ```shell
+   cp ./build/ci/projects.json projects.json
+   ```
+2. Replace token strings for each of the projects
 
 ## License
 
