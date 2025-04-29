@@ -1,5 +1,7 @@
 # Keboola SDK for Go
 
+[![Build and test Go](https://github.com/keboola/keboola-sdk-go/actions/workflows/push.yml/badge.svg)](https://github.com/keboola/keboola-sdk-go/actions/workflows/push.yml)
+
 The Keboola SDK for Go programming language provides developers with easy access to the Keboola platform and related services from
 their code.
 
@@ -14,7 +16,7 @@ Storage API token.
     ```
 3. Write your code
 
-### Create configuration
+### Create and run configuration
 
 Configuration is a basic Keboola concept - it's a definition of work to be done by a component. In this example, we will
 create a simple Python transformation that will print `Hello World` text.
@@ -117,8 +119,8 @@ func main() {
 
 	// Success! Print the ID of our new configuration
 	fmt.Printf("Success! Created configuration with ID: %s\n", response.ID)
-	
-    // Run a job
+ 
+	// Run a job
 	job, err := api.NewCreateJobRequest("keboola.python-transformation-v2").
 		WithConfig(response.ID).
 		Send(ctx)
