@@ -7,6 +7,13 @@
         "backend": "snowflake"
     },
     {
+        "host": "connection.keboola.com",
+        "project": 10382,
+        "token": "$TEST_KBC_PROJECT_AWS_US_10382_TOKEN",
+        "stagingStorage": "s3",
+        "backend": "snowflake"
+    },
+    {
         "host": "connection.north-europe.azure.keboola.com",
         "project": 24246,
         "token": "$TEST_KBC_PROJECT_AZURE_NE_24246_TOKEN",
@@ -17,6 +24,13 @@
         "host": "connection.us-east4.gcp.keboola.com",
         "project": 820,
         "token": "$TEST_KBC_PROJECT_GCP_US_820_TOKEN",
+        "stagingStorage": "gcs",
+        "backend": "bigquery"
+    },
+    {
+        "host": "connection.us-east4.gcp.keboola.com",
+        "project": 826,
+        "token": "$TEST_KBC_PROJECT_GCP_US_826_TOKEN",
         "stagingStorage": "gcs",
         "backend": "bigquery"
     }
