@@ -7,7 +7,7 @@ import (
 	jsonLib "encoding/json"
 	"fmt"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // CreateTableRequest creates an empty table with given columns.

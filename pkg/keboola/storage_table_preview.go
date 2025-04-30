@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 type TablePreview struct {

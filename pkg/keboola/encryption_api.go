@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // EncryptRequest - https://keboolaencryption.docs.apiary.io/#reference/encrypt/encryption/encrypt-data

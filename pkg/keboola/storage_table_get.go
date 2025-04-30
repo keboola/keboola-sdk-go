@@ -1,6 +1,6 @@
 package keboola
 
-import "github.com/keboola/keboola-sdk-go/pkg/request"
+import "github.com/keboola/keboola-sdk-go/v2/pkg/request"
 
 // GetTableRequest https://keboola.docs.apiary.io/#reference/tables/manage-tables/table-detail
 func (a *AuthorizedAPI) GetTableRequest(k TableKey) request.APIRequest[*Table] {

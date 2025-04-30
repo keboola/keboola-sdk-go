@@ -8,7 +8,7 @@ import (
 	"github.com/keboola/go-utils/pkg/orderedmap"
 	"github.com/relvacode/iso8601"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // ConfigID represents an ID of a configuration in Storage API.

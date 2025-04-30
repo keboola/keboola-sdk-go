@@ -3,8 +3,8 @@ package keboola
 import (
 	jsonLib "encoding/json"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // EventID represents an ID of an event in Storage API.

@@ -9,9 +9,9 @@ import (
 	"github.com/relvacode/iso8601"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola/storage_file_upload/testdata"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {

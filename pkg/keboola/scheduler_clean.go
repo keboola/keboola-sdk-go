@@ -3,7 +3,7 @@ package keboola
 import (
 	"context"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // CleanAllSchedulesRequest cleans all schedules in whole project.

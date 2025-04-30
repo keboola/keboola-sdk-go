@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
 func ExampleNewAuthorizedAPI() {

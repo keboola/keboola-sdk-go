@@ -25,9 +25,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
-	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 const (

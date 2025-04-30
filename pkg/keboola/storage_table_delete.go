@@ -1,6 +1,6 @@
 package keboola
 
-import "github.com/keboola/keboola-sdk-go/pkg/request"
+import "github.com/keboola/keboola-sdk-go/v2/pkg/request"
 
 // DeleteTableRequest https://keboola.docs.apiary.io/#reference/tables/manage-tables/drop-table
 func (a *AuthorizedAPI) DeleteTableRequest(k TableKey, opts ...DeleteOption) request.APIRequest[request.NoResult] {

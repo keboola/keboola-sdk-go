@@ -9,7 +9,7 @@ import (
 
 	"github.com/relvacode/iso8601"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 const (

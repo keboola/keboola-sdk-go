@@ -22,16 +22,16 @@ import (
 	otelMetric "go.opentelemetry.io/otel/metric"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client/counter"
-	"github.com/keboola/keboola-sdk-go/pkg/client/decode"
-	"github.com/keboola/keboola-sdk-go/pkg/client/trace"
-	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/counter"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/decode"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 const (
 	RetryAttemptContextKey = ContextKey("retryAttempt")
-	traceAppName           = "github.com/keboola/keboola-sdk-go"
+	traceAppName           = "github.com/keboola/keboola-sdk-go/v2"
 )
 
 type ContextKey string

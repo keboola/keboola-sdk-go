@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
-	"github.com/keboola/keboola-sdk-go/pkg/client/trace/otel"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace/otel"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 type ServiceType string
