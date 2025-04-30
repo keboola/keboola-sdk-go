@@ -3,7 +3,7 @@ package keboola
 import (
 	jsonLib "encoding/json"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 type TableMetadata []MetadataDetail

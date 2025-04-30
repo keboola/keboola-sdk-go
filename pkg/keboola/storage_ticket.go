@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // Ticket https://keboola.docs.apiary.io/#reference/tickets/generate-unique-id/generate-new-id

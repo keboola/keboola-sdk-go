@@ -8,9 +8,9 @@ import (
 	"github.com/keboola/go-utils/pkg/testproject"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 func TestSchedulerApiCalls(t *testing.T) {

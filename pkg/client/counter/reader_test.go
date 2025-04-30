@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client/counter"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/counter"
 )
 
 func TestNewMeasuredReadCloser(t *testing.T) {

@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gocloud.dev/blob"
 
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
 )
 
 type UploadTestCase struct {

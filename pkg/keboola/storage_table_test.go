@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/keboola/keboola-sdk-go/pkg/keboola"
+	. "github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))

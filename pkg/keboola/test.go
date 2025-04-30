@@ -7,7 +7,7 @@ import (
 
 	"github.com/keboola/go-utils/pkg/testproject"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 )
 
 func APIClientForRandomProject(t *testing.T, ctx context.Context, opts ...testproject.Option) (*testproject.Project, *AuthorizedAPI) {

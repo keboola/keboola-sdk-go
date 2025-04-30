@@ -5,7 +5,7 @@ import (
 
 	"github.com/keboola/go-utils/pkg/orderedmap"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // RowID is id of configuration row.

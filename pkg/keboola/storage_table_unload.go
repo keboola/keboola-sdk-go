@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 const (

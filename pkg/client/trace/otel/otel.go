@@ -43,12 +43,12 @@ import (
 	otelTrace "go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client/trace"
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 const (
-	traceAppName     = "github.com/keboola/keboola-sdk-go"
+	traceAppName     = "github.com/keboola/keboola-sdk-go/v2"
 	attrResourceName = attribute.Key("resource.name")
 	// Low-level tracing, for each redirect and retry.
 	httpSpanPrefix             = "http."

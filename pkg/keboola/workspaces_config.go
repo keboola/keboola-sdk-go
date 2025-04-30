@@ -3,7 +3,7 @@ package keboola
 import (
 	"fmt"
 
-	"github.com/keboola/keboola-sdk-go/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 func GetWorkspaceID(c *Config) (WorkspaceID, error) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
 func TestIsTransformationWithBlocks(t *testing.T) {

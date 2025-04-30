@@ -9,8 +9,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/keboola/keboola-sdk-go/pkg/client"
-	"github.com/keboola/keboola-sdk-go/pkg/keboola"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
 func TestNewAPI_WithoutIndex(t *testing.T) {
