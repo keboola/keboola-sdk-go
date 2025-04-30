@@ -21,6 +21,13 @@
         "backend": "snowflake"
     },
     {
+        "host": "connection.north-europe.azure.keboola.com",
+        "project": 24336,
+        "token": "$TEST_KBC_PROJECT_AZURE_NE_24336_TOKEN",
+        "stagingStorage": "abs",
+        "backend": "snowflake"
+    },
+    {
         "host": "connection.us-east4.gcp.keboola.com",
         "project": 820,
         "token": "$TEST_KBC_PROJECT_GCP_US_820_TOKEN",
