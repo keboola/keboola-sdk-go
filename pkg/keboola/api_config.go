@@ -19,7 +19,9 @@ type apiConfig struct {
 type APIOption func(c *apiConfig)
 
 func newAPIConfig(opts []APIOption) apiConfig {
-	cfg := apiConfig{}
+	cfg := apiConfig{
+		onSuccessTimeout: time.Minute,
+	}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
