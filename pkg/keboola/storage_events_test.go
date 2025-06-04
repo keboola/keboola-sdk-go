@@ -22,6 +22,7 @@ func TestSendEvent(t *testing.T) {
 		Params:      map[string]any{"command": "bar1"},
 		Results:     map[string]any{"projectId": 123, "error": "err"},
 		Duration:    client.DurationSeconds(123456 * time.Millisecond),
+		RunID:       "123",
 	}).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, event.ID)

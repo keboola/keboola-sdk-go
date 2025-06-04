@@ -16,13 +16,14 @@ func (v EventID) String() string {
 
 // Event https://keboola.docs.apiary.io/#reference/events/events/create-event
 type Event struct {
-	ID          EventID                `json:"id" readonly:"true"`
+	ID          EventID                `json:"uuid" readonly:"true"`
 	ComponentID ComponentID            `json:"component"`
 	Message     string                 `json:"message"`
 	Type        string                 `json:"type"`
 	Duration    client.DurationSeconds `json:"duration"`
 	Params      JSONString             `json:"params"`
 	Results     JSONString             `json:"results"`
+	RunID       string                 `json:"runId"`
 }
 
 // CreateEventRequest https://keboola.docs.apiary.io/#reference/events/events/create-event
