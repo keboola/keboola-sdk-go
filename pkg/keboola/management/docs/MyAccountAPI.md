@@ -39,7 +39,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -107,7 +107,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -175,7 +175,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -243,7 +243,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -311,7 +311,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -377,7 +377,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -445,7 +445,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -506,7 +506,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -567,7 +567,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -628,7 +628,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -689,7 +689,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -750,7 +750,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -820,7 +820,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -890,7 +890,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -960,7 +960,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/pkg/keboola/management"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
