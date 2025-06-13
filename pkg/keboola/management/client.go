@@ -272,6 +272,48 @@ func parameterToJson(obj interface{}) (string, error) {
 	return string(jsonBuf), err
 }
 
+// redactSensitiveData removes sensitive information from HTTP request/response dumps.
+// This function protects against leaking authentication tokens, API keys, and other
+// sensitive data in debug logs while preserving the structure for debugging purposes.
+func redactSensitiveData(dump []byte) []byte {
+	content := string(dump)
+	
+	// Headers that commonly contain sensitive data
+	sensitiveHeaders := []string{
+		"Authorization",
+		"X-StorageApi-Token", 
+		"X-KBC-ManageApiToken",
+		"X-Api-Key",
+		"Cookie",
+		"Set-Cookie",
+		"Proxy-Authorization",
+		"WWW-Authenticate",
+		"Authentication-Info",
+	}
+	
+	// Redact sensitive headers (case-insensitive)
+	for _, header := range sensitiveHeaders {
+		// Match header: value pattern (handles both request and response format)
+		headerPattern := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(header) + `:\s*[^\r\n]+`)
+		content = headerPattern.ReplaceAllString(content, header + ": [REDACTED]")
+	}
+	
+	// Redact common sensitive JSON fields in request/response bodies
+	jsonSensitiveFields := []string{
+		"token", "password", "secret", "key", "apiKey", "api_key", 
+		"accessToken", "access_token", "refreshToken", "refresh_token",
+		"clientSecret", "client_secret", "privateKey", "private_key",
+	}
+	
+	for _, field := range jsonSensitiveFields {
+		// Match JSON field patterns: "field": "value" or "field":"value"
+		jsonPattern := regexp.MustCompile(`"` + regexp.QuoteMeta(field) + `"\s*:\s*"[^"]*"`)
+		content = jsonPattern.ReplaceAllString(content, `"`+field+`": "[REDACTED]"`)
+	}
+	
+	return []byte(content)
+}
+
 // callAPI do the request.
 func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 	if c.cfg.Debug {
@@ -279,7 +321,7 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 		if err != nil {
 			return nil, err
 		}
-		log.Printf("\n%s\n", string(dump))
+		log.Printf("\n%s\n", string(redactSensitiveData(dump)))
 	}
 
 	resp, err := c.cfg.HTTPClient.Do(request)
@@ -292,7 +334,7 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 		if err != nil {
 			return resp, err
 		}
-		log.Printf("\n%s\n", string(dump))
+		log.Printf("\n%s\n", string(redactSensitiveData(dump)))
 	}
 	return resp, err
 }
