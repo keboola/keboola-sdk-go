@@ -19,7 +19,7 @@ var _ MappedNullable = &CreateStorageToken201Response{}
 
 // CreateStorageToken201Response struct for CreateStorageToken201Response
 type CreateStorageToken201Response struct {
-	Id *float32 `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 	Token *string `json:"token,omitempty"`
 	Created *string `json:"created,omitempty"`
 	Description *string `json:"description,omitempty"`
@@ -54,9 +54,9 @@ func NewCreateStorageToken201ResponseWithDefaults() *CreateStorageToken201Respon
 }
 
 // GetId returns the Id field value if set, zero value otherwise.
-func (o *CreateStorageToken201Response) GetId() float32 {
+func (o *CreateStorageToken201Response) GetId() string {
 	if o == nil || IsNil(o.Id) {
-		var ret float32
+		var ret string
 		return ret
 	}
 	return *o.Id
@@ -64,7 +64,7 @@ func (o *CreateStorageToken201Response) GetId() float32 {
 
 // GetIdOk returns a tuple with the Id field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateStorageToken201Response) GetIdOk() (*float32, bool) {
+func (o *CreateStorageToken201Response) GetIdOk() (*string, bool) {
 	if o == nil || IsNil(o.Id) {
 		return nil, false
 	}
@@ -81,7 +81,7 @@ func (o *CreateStorageToken201Response) HasId() bool {
 }
 
 // SetId gets a reference to the given float32 and assigns it to the Id field.
-func (o *CreateStorageToken201Response) SetId(v float32) {
+func (o *CreateStorageToken201Response) SetId(v string) {
 	o.Id = &v
 }
 
