@@ -35,7 +35,7 @@ type CreateStorageTokenRequest struct {
 	ExpiresIn *float32 `json:"expiresIn,omitempty"`
 	BucketPermissions *CreateStorageTokenRequestBucketPermissions `json:"bucketPermissions,omitempty"`
 	// Grants access for component configurations. Allowed values are [valid component IDs](https://components.keboola.com/components).
-	ComponentAccess *string `json:"componentAccess[],omitempty"`
+	ComponentAccess []string `json:"componentAccess,omitempty"`
 }
 
 type _CreateStorageTokenRequest CreateStorageTokenRequest
@@ -275,17 +275,18 @@ func (o *CreateStorageTokenRequest) SetBucketPermissions(v CreateStorageTokenReq
 }
 
 // GetComponentAccess returns the ComponentAccess field value if set, zero value otherwise.
-func (o *CreateStorageTokenRequest) GetComponentAccess() string {
+func (o *CreateStorageTokenRequest) GetComponentAccess() []string {
 	if o == nil || IsNil(o.ComponentAccess) {
-		var ret string
+		var ret []string
 		return ret
 	}
-	return *o.ComponentAccess
+
+	return o.ComponentAccess
 }
 
 // GetComponentAccessOk returns a tuple with the ComponentAccess field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateStorageTokenRequest) GetComponentAccessOk() (*string, bool) {
+func (o *CreateStorageTokenRequest) GetComponentAccessOk() ([]string, bool) {
 	if o == nil || IsNil(o.ComponentAccess) {
 		return nil, false
 	}
@@ -302,8 +303,8 @@ func (o *CreateStorageTokenRequest) HasComponentAccess() bool {
 }
 
 // SetComponentAccess gets a reference to the given string and assigns it to the ComponentAccess field.
-func (o *CreateStorageTokenRequest) SetComponentAccess(v string) {
-	o.ComponentAccess = &v
+func (o *CreateStorageTokenRequest) SetComponentAccess(v []string) {
+	o.ComponentAccess = v
 }
 
 func (o CreateStorageTokenRequest) MarshalJSON() ([]byte, error) {
@@ -336,7 +337,7 @@ func (o CreateStorageTokenRequest) ToMap() (map[string]interface{}, error) {
 		toSerialize["bucketPermissions"] = o.BucketPermissions
 	}
 	if !IsNil(o.ComponentAccess) {
-		toSerialize["componentAccess[]"] = o.ComponentAccess
+		toSerialize["componentAccess"] = o.ComponentAccess
 	}
 	return toSerialize, nil
 }
