@@ -20,14 +20,21 @@ func TestEncryptRequest(t *testing.T) {
 	assert.NoError(t, err)
 
 	mapToEncrypt := map[string]string{"#keyToEncrypt": "value"}
-	encryptedMapPtr, err := api.EncryptRequest(1234, "keboola.ex-generic-v2", mapToEncrypt).Send(ctx)
+	componentID := keboola.ComponentID("keboola.ex-generic-v2")
+	encryptedMapPtr, err := api.EncryptRequest(
+		1234,
+		&componentID,
+		nil,
+		nil,
+		mapToEncrypt,
+	).Send(ctx)
 	assert.NoError(t, err)
 	encryptedMap := *encryptedMapPtr
 	assert.NotEmpty(t, encryptedMap)
 	assert.True(t, keboola.IsEncrypted(encryptedMap["#keyToEncrypt"]))
 }
 
-func TestError(t *testing.T) {
+func TestEncryptRequestProjectScope(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	project, _ := testproject.GetTestProjectForTest(t)
@@ -36,7 +43,6 @@ func TestError(t *testing.T) {
 	assert.NoError(t, err)
 
 	mapToEncrypt := map[string]string{"#keyToEncrypt": "value"}
-	assert.PanicsWithError(t, "the componentId parameter is required", func() {
-		_, _ = api.EncryptRequest(1234, "", mapToEncrypt).Send(ctx)
-	})
+	_, err = api.EncryptRequest(1234, nil, nil, nil, mapToEncrypt).Send(ctx)
+	assert.NoError(t, err)
 }

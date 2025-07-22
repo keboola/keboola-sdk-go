@@ -27,6 +27,13 @@ func (k BranchKey) ObjectID() any {
 	return k.ID
 }
 
+type BranchType string
+
+const (
+	BranchTypeProduction  BranchType = "default"
+	BranchTypeDevelopment BranchType = "dev"
+)
+
 // Branch https://keboola.docs.apiary.io/#reference/development-branches/branches/list-branches
 type Branch struct {
 	BranchKey
