@@ -23,18 +23,18 @@ type WorkspaceDetails struct {
 	} `json:"connection"`
 }
 
-// WorkspaceCredentials contains authentication credentials for the workspace
+// WorkspaceCredentials contains authentication credentials for the workspace.
 type WorkspaceCredentials struct {
-	Type                    string `json:"type"`
-	ProjectID               string `json:"project_id"`
-	PrivateKeyID            string `json:"private_key_id"`
-	ClientEmail             string `json:"client_email"`
-	ClientID                string `json:"client_id"`
-	AuthURI                 string `json:"auth_uri"`
-	TokenURI                string `json:"token_uri"`
-	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
-	ClientX509CertURL       string `json:"client_x509_cert_url"`
-	PrivateKey              string `json:"private_key"`
+	Type                    string `json:"type"`                        // nolint: tagliatelle
+	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
+	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
+	ClientEmail             string `json:"client_email"`                // nolint: tagliatelle
+	ClientID                string `json:"client_id"`                   // nolint: tagliatelle
+	AuthURI                 string `json:"auth_uri"`                    // nolint: tagliatelle
+	TokenURI                string `json:"token_uri"`                   // nolint: tagliatelle
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"` // nolint: tagliatelle
+	ClientX509CertURL       string `json:"client_x509_cert_url"`        // nolint: tagliatelle
+	PrivateKey              string `json:"private_key"`                 // nolint: tagliatelle
 }
 
 type Workspace struct {
