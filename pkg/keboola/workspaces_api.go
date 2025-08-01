@@ -71,7 +71,6 @@ func (a *AuthorizedAPI) CleanWorkspaceInstances(ctx context.Context) error {
 	m := &sync.Mutex{}
 
 	for _, s := range *instances {
-		s := s
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
