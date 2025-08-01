@@ -62,7 +62,10 @@ func (p params) toMap() map[string]any {
 
 func (a *AuthorizedAPI) CreateWorkspaceJobRequest(configID ConfigID, workspaceType string, opts ...CreateWorkspaceOption) request.APIRequest[request.NoResult] {
 	params := newParams(workspaceType, opts...)
-	req := a.CreateQueueJobConfigDataRequest(WorkspacesComponent, configID, map[string]any{"parameters": params.toMap()}).
+	req := a.NewCreateJobRequest(WorkspacesComponent).
+		WithConfig(configID).
+		WithConfigData(map[string]any{"parameters": params.toMap()}).
+		Build().
 		WithOnSuccess(func(ctx context.Context, result *QueueJob) error {
 			return a.WaitForQueueJob(ctx, result.ID)
 		})
@@ -76,9 +79,10 @@ func (a *AuthorizedAPI) DeleteWorkspaceJobRequest(workspaceID WorkspaceID) reque
 			"id":   workspaceID.String(),
 		},
 	}
-	req := a.CreateQueueJobConfigDataRequest(WorkspacesComponent, "", configData).
-		WithOnSuccess(func(ctx context.Context, result *QueueJob) error {
-			return a.WaitForQueueJob(ctx, result.ID)
-		})
+	req := a.NewCreateJobRequest(WorkspacesComponent).
+		WithConfigData(configData).
+		Build().WithOnSuccess(func(ctx context.Context, result *QueueJob) error {
+		return a.WaitForQueueJob(ctx, result.ID)
+	})
 	return request.NewAPIRequest(request.NoResult{}, req)
 }
