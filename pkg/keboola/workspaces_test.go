@@ -133,6 +133,19 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, workspace)
 
+	// Verify that credentials are populated for BigQuery workspace
+	assert.NotNil(t, workspace.Workspace.Credentials, "BigQuery workspace should have credentials")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.Type, "Credentials type should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.ProjectID, "Credentials project_id should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.PrivateKeyID, "Credentials private_key_id should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientEmail, "Credentials client_email should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientID, "Credentials client_id should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.AuthURI, "Credentials auth_uri should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.TokenURI, "Credentials token_uri should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.AuthProviderX509CertURL, "Credentials auth_provider_x509_cert_url should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientX509CertURL, "Credentials client_x509_cert_url should not be empty")
+	assert.NotEmpty(t, workspace.Workspace.Credentials.PrivateKey, "Credentials private_key should not be empty")
+
 	// List workspaces - try to find the one we just created
 	workspaces, err := api.ListWorkspaces(ctx, branch.ID)
 	assert.NoError(t, err)
