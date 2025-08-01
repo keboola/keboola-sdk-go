@@ -29,7 +29,6 @@ func (a *AuthorizedAPI) CleanProjectRequest() request.APIRequest[*Branch] {
 		WithOnSuccess(func(ctx context.Context, result *[]*Branch) error {
 			wg := request.NewWaitGroup(ctx)
 			for _, branch := range *result {
-				branch := branch
 				// Clean branch
 				if branch.IsDefault {
 					// Default branch cannot be deleted

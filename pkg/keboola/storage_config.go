@@ -236,7 +236,6 @@ func (a *AuthorizedAPI) DeleteConfigsInBranchRequest(branch BranchKey) request.A
 			wg := request.NewWaitGroup(ctx)
 			for _, component := range *result {
 				for _, config := range component.Configs {
-					config := config
 					wg.Send(a.DeleteConfigRequest(config.ConfigKey))
 				}
 			}
