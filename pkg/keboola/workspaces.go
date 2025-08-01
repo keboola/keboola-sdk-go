@@ -8,19 +8,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-type WorkspaceWithConfig struct {
-	Workspace *Workspace
-	Config    *Config
-}
-
-func (v WorkspaceWithConfig) String() string {
-	if WorkspaceSupportsSizes(v.Workspace.Type) {
-		return fmt.Sprintf("ID: %s, Type: %s, Size: %s, Name: %s", v.Workspace.ID, v.Workspace.Type, v.Workspace.Size, v.Config.Name)
-	} else {
-		return fmt.Sprintf("ID: %s, Type: %s, Name: %s", v.Workspace.ID, v.Workspace.Type, v.Config.Name)
-	}
-}
-
 const WorkspacesComponent = "keboola.sandboxes"
 
 const (
@@ -28,6 +15,27 @@ const (
 	WorkspaceSizeMedium = "medium"
 	WorkspaceSizeLarge  = "large"
 )
+const (
+	WorkspaceTypeSnowflake = WorkspaceType("snowflake")
+	WorkspaceTypeBigQuery  = WorkspaceType("bigquery")
+	WorkspaceTypePython    = WorkspaceType("python")
+	WorkspaceTypeR         = WorkspaceType("r")
+)
+
+type WorkspaceType string
+
+type WorkspaceWithConfig struct {
+	Workspace *Workspace
+	Config    *Config
+}
+
+func (v WorkspaceWithConfig) String() string {
+	if WorkspaceSupportsSizes(WorkspaceType(v.Workspace.Type)) {
+		return fmt.Sprintf("ID: %s, Type: %s, Size: %s, Name: %s", v.Workspace.ID, v.Workspace.Type, v.Workspace.Size, v.Config.Name)
+	} else {
+		return fmt.Sprintf("ID: %s, Type: %s, Name: %s", v.Workspace.ID, v.Workspace.Type, v.Config.Name)
+	}
+}
 
 func WorkspaceSizesOrdered() []string {
 	return []string{
@@ -45,29 +53,25 @@ func WorkspaceSizesMap() map[string]bool {
 	}
 }
 
-const (
-	WorkspaceTypeSnowflake = "snowflake"
-	WorkspaceTypePython    = "python"
-	WorkspaceTypeR         = "r"
-)
-
-func WorkspaceTypesOrdered() []string {
-	return []string{
+func WorkspaceTypesOrdered() []WorkspaceType {
+	return []WorkspaceType{
 		WorkspaceTypeSnowflake,
+		WorkspaceTypeBigQuery,
 		WorkspaceTypePython,
 		WorkspaceTypeR,
 	}
 }
 
-func WorkspaceTypesMap() map[string]bool {
-	return map[string]bool{
+func WorkspaceTypesMap() map[WorkspaceType]bool {
+	return map[WorkspaceType]bool{
 		WorkspaceTypeSnowflake: true,
+		WorkspaceTypeBigQuery:  true,
 		WorkspaceTypePython:    true,
 		WorkspaceTypeR:         true,
 	}
 }
 
-func WorkspaceSupportsSizes(typ string) bool {
+func WorkspaceSupportsSizes(typ WorkspaceType) bool {
 	switch typ {
 	case WorkspaceTypePython:
 		return true
@@ -82,7 +86,7 @@ func (a *AuthorizedAPI) CreateWorkspace(
 	ctx context.Context,
 	branchID BranchID,
 	workspaceName string,
-	workspaceType string,
+	workspaceType WorkspaceType,
 	opts ...CreateWorkspaceOption,
 ) (*WorkspaceWithConfig, error) {
 	// Create config
