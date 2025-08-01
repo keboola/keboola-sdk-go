@@ -2,6 +2,7 @@ package keboola_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -78,6 +79,7 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 		"test-snowflake",
 		keboola.WorkspaceTypeSnowflake,
 		keboola.WithExpireAfterHours(1),
+		keboola.WithPublicKey(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, workspace)

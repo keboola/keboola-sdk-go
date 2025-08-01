@@ -32,6 +32,7 @@ jobs:
           TEST_KBC_PROJECTS_LOCK_HOST: ${{ vars.TEST_KBC_PROJECTS_LOCK_HOST }}
           TEST_KBC_PROJECTS_LOCK_PASSWORD: ${{ secrets.TEST_KBC_PROJECTS_LOCK_PASSWORD }}
           TEST_KBC_PROJECTS_FILE: '${{ github.workspace }}/${{ vars.TEST_KBC_PROJECTS_FILE }}'
+          TEST_SNOWFLAKE_PUBLIC_KEY: ${{ secrets.TEST_SNOWFLAKE_PUBLIC_KEY }}
         run: |
           task lint
           task tests

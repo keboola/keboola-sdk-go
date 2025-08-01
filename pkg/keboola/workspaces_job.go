@@ -12,6 +12,8 @@ type params struct {
 	ExpireAfterHours uint64
 	Size             string
 	ImageVersion     string
+	PublicKey        string
+	LoginType        string
 }
 
 type CreateWorkspaceOption func(p *params)
@@ -30,6 +32,13 @@ func WithSize(v string) CreateWorkspaceOption {
 
 func WithImageVersion(v string) CreateWorkspaceOption {
 	return func(p *params) { p.ImageVersion = v }
+}
+
+func WithPublicKey(v string) CreateWorkspaceOption {
+	return func(p *params) {
+		p.PublicKey = v
+		p.LoginType = "snowflake-person-keypair"
+	}
 }
 
 func newParams(type_ string, opts ...CreateWorkspaceOption) params {
