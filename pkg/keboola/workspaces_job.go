@@ -7,7 +7,7 @@ import (
 )
 
 type params struct {
-	Type             string
+	Type             WorkspaceType
 	Shared           bool
 	ExpireAfterHours uint64
 	Size             string
@@ -41,7 +41,7 @@ func WithPublicKey(v string) CreateWorkspaceOption {
 	}
 }
 
-func newParams(type_ string, opts ...CreateWorkspaceOption) params {
+func newParams(type_ WorkspaceType, opts ...CreateWorkspaceOption) params {
 	p := params{
 		Type:             type_,
 		Shared:           false,
@@ -69,7 +69,7 @@ func (p params) toMap() map[string]any {
 	return m
 }
 
-func (a *AuthorizedAPI) CreateWorkspaceJobRequest(configID ConfigID, workspaceType string, opts ...CreateWorkspaceOption) request.APIRequest[request.NoResult] {
+func (a *AuthorizedAPI) CreateWorkspaceJobRequest(configID ConfigID, workspaceType WorkspaceType, opts ...CreateWorkspaceOption) request.APIRequest[request.NoResult] {
 	params := newParams(workspaceType, opts...)
 	req := a.NewCreateJobRequest(WorkspacesComponent).
 		WithConfig(configID).
