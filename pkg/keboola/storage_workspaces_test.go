@@ -38,7 +38,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
-	assert.Equal(t, keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair, *createdWorkspace.StorageWorkspaceDetails.LoginType)
+	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
 	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(createdWorkspace.ID).Send(ctx)
@@ -113,7 +113,7 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendBigQuery, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceLoginTypeDefault, *createdWorkspace.StorageWorkspaceDetails.LoginType)
+	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeDefault), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Verify that credentials are populated for BigQuery workspace
 	assert.NotNil(t, createdWorkspace.StorageWorkspaceDetails.Credentials, "BigQuery workspace should have credentials")
