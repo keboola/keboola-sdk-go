@@ -2,6 +2,7 @@ package keboola
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
@@ -9,6 +10,10 @@ import (
 // newRequest adds Storage API token header.
 func (a *AuthorizedAPI) newRequest(s ServiceType) request.HTTPRequest {
 	// Authorize
+	if strings.Contains(a.token, "Bearer ") {
+		return a.PublicAPI.newRequest(s).AndHeader(jwtTokenHeader, a.token)
+	}
+
 	return a.PublicAPI.newRequest(s).AndHeader(storageAPITokenHeader, a.token)
 }
 

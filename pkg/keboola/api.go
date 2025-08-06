@@ -30,6 +30,7 @@ const (
 	SyrupAPI              = ServiceType("syrup")
 	appName               = "keboola-sdk-go-keboola-api"
 	storageAPITokenHeader = "X-StorageApi-Token" //nolint: gosec // it is not a token value
+	jwtTokenHeader        = "Authorization"
 )
 
 type PublicAPI struct {
@@ -110,7 +111,7 @@ func newClient(host string, cfg apiConfig) client.Client {
 
 	// Enable telemetry
 	if cfg.tracerProvider != nil || cfg.meterProvider != nil {
-		c = c.WithTelemetry(cfg.tracerProvider, cfg.meterProvider, otel.WithRedactedHeaders(storageAPITokenHeader))
+		c = c.WithTelemetry(cfg.tracerProvider, cfg.meterProvider, otel.WithRedactedHeaders(storageAPITokenHeader, jwtTokenHeader))
 	}
 
 	return c
