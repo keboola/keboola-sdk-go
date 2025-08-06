@@ -100,6 +100,8 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 
 	// List workspaces - should be empty initially
 	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	assert.NoError(t, err)
+	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
 	// Create workspace
 	workspace := &keboola.StorageWorkspacePayload{
@@ -111,7 +113,7 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendBigQuery, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceLoginTypeDefault, createdWorkspace.StorageWorkspaceDetails.LoginType)
+	assert.Equal(t, keboola.StorageWorkspaceLoginTypeDefault, *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Verify that credentials are populated for BigQuery workspace
 	assert.NotNil(t, createdWorkspace.StorageWorkspaceDetails.Credentials, "BigQuery workspace should have credentials")
