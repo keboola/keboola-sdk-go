@@ -146,7 +146,7 @@ func (a *PublicAPI) VerifyTokenRequest(token string) request.APIRequest[*Token] 
 			result.Token = token
 			return nil
 		})
-	if strings.Contains(token, "Bearer ") {
+	if strings.HasPrefix(token, "Bearer ") {
 		req.AndHeader(jwtTokenHeader, token)
 	} else {
 		req.AndHeader(storageAPITokenHeader, token)
