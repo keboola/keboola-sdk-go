@@ -2,7 +2,7 @@ package keboola
 
 import (
 	"context"
-	"time"
+	"strconv"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
@@ -27,18 +27,18 @@ const (
 )
 
 type StorageWorkspaceDetails struct {
-	Connection struct {
-		Host        *string                      `json:"host"`
-		Region      *string                      `json:"region"`
-		Database    *string                      `json:"database"`
-		Schema      *string                      `json:"schema"`
-		Warehouse   *string                      `json:"warehouse"`
-		LoginType   *string                      `json:"loginType"`
-		Credentials *SandboxWorkspaceCredentials `json:"credentials"`
-	} `json:"connection"`
+	Backend           StorageWorkspaceBackend      `json:"backend"`
+	Host              *string                      `json:"host"`
+	Region            *string                      `json:"region"`
+	Database          *string                      `json:"database"`
+	Schema            *string                      `json:"schema"`
+	Warehouse         *string                      `json:"warehouse"`
+	LoginType         *string                      `json:"loginType"`
+	SSOLoginAvailable *bool                        `json:"ssoLoginAvailable,omitempty"`
+	Credentials       *StorageWorkspaceCredentials `json:"credentials,omitempty"`
 }
 
-// SandboxWorkspaceCredentials contains authentication credentials for the workspace.
+// StorageWorkspaceCredentials contains authentication credentials for the workspace.
 type StorageWorkspaceCredentials struct {
 	Type                    string `json:"type"`                        // nolint: tagliatelle
 	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
@@ -52,36 +52,41 @@ type StorageWorkspaceCredentials struct {
 	ClientX509CertURL       string `json:"client_x509_cert_url"`        // nolint: tagliatelle
 }
 
+type StorageWorkspacePayload struct {
+	Backend               StorageWorkspaceBackend      `json:"backend"`
+	BackendSize           *StorageWorkspaceBackendSize `json:"backendSize,omitempty" writeoptional:"true"`
+	NetworkPolicy         *string                      `json:"networkPolicy,omitempty" writeoptional:"true"`
+	ReadOnlyStorageAccess bool                         `json:"readOnlyStorageAccess"`
+	LoginType             StorageWorkspaceLoginType    `json:"loginType"`
+	PublicKey             *string                      `json:"publicKey,omitempty" writeoptional:"true"`
+}
+
 type StorageWorkspace struct {
-	ID                    string                      `json:"id" readonly:"true"`
-	Backend               StorageWorkspaceBackend     `json:"backend"`
-	BackendSize           StorageWorkspaceBackendSize `json:"backendSize"`
-	NetworkPolicy         string                      `json:"networkPolicy"`
-	ReadOnlyStorageAccess bool                        `json:"readOnlyStorageAccess"`
-	LoginType             StorageWorkspaceLoginType   `json:"loginType"`
-	PublicKey             string                      `json:"publicKey"`
-	Name                  string                      `json:"name" readonly:"true"`
-	Type                  string                      `json:"type" readonly:"true"`
-	Created               time.Time                   `json:"created" readonly:"true"`
-	Details               StorageWorkspaceDetails     `json:"details" readonly:"true"`
+	ID                      uint64                       `json:"id"`
+	BackendSize             *StorageWorkspaceBackendSize `json:"backendSize"`
+	Name                    string                       `json:"name"`
+	Type                    string                       `json:"type"`
+	Created                 StorageWorkspaceTime         `json:"created"`
+	StorageWorkspaceDetails StorageWorkspaceDetails      `json:"connection"`
 }
 
 // StorageWorkspaceCreateRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
-func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(workspaceID string, storageWorkspace *StorageWorkspace) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
+	result := StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
-		WithResult(storageWorkspace).
+		WithResult(&result).
 		WithPost("workspaces").
-		WithJSONBody(request.StructToMap(storageWorkspace, nil)).
+		WithJSONBody(request.StructToMap(storageWorkspacePayload, nil)).
 		WithOnError(ignoreResourceAlreadyExistsError(func(ctx context.Context) error {
-			if result, err := a.StorageWorkspaceDetailRequest(storageWorkspace.ID).Send(ctx); err == nil {
-				*storageWorkspace = *result
+			if workspaceResult, err := a.StorageWorkspaceDetailRequest(result.ID).Send(ctx); err == nil {
+				result = *workspaceResult
 				return nil
 			} else {
 				return err
 			}
 		}))
-	return request.NewAPIRequest(storageWorkspace, req)
+	return request.NewAPIRequest(&result, req)
 }
 
 // StorageWorkspacesListRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/list-workspaces
@@ -95,23 +100,23 @@ func (a *AuthorizedAPI) StorageWorkspacesListRequest() request.APIRequest[*[]*St
 }
 
 // StorageWorkspaceDetailRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/workspace-detail
-func (a *AuthorizedAPI) StorageWorkspaceDetailRequest(workspaceID string) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceDetailRequest(workspaceID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
 		WithGet("workspaces/{workspaceId}").
-		AndPathParam("workspaceId", workspaceID)
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
 // StorageWorkspaceDeleteRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/delete-workspace
-func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(workspaceID string) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(workspaceID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
 		WithDelete("workspaces/{workspaceId}").
-		AndPathParam("workspaceId", workspaceID)
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }

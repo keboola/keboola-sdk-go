@@ -26,29 +26,28 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
 	// Create workspace
-	workspace := &keboola.StorageWorkspace{
+	workspace := &keboola.StorageWorkspacePayload{
 		Backend:     keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize: keboola.StorageWorkspaceBackendSizeMedium,
+		BackendSize: ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		LoginType:   keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:   os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY"), //nolint: forbidigo
+		PublicKey:   ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}
 
-	createdWorkspace, err := api.StorageWorkspaceCreateRequest("test-snowflake-workspace", workspace).Send(ctx)
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
-	assert.Equal(t, "test-snowflake-workspace", createdWorkspace.ID)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, createdWorkspace.BackendSize)
-	assert.Equal(t, keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair, createdWorkspace.LoginType)
+	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
+	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
+	assert.Equal(t, keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair, *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
 	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
-	assert.Equal(t, createdWorkspace.Backend, retrievedWorkspace.Backend)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
-	assert.Equal(t, createdWorkspace.LoginType, retrievedWorkspace.LoginType)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
@@ -67,7 +66,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty after deletion")
 }
 
-func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
+func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
@@ -81,23 +80,42 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
 	// Create workspace
-	workspace := &keboola.StorageWorkspace{
+	workspace := &keboola.StorageWorkspacePayload{
 		Backend:     keboola.StorageWorkspaceBackendBigQuery,
-		BackendSize: keboola.StorageWorkspaceBackendSizeMedium,
+		BackendSize: ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		LoginType:   keboola.StorageWorkspaceLoginTypeDefault,
 	}
 
-	createdWorkspace, err := api.StorageWorkspaceCreateRequest("test-bigquery-workspace", workspace).Send(ctx)
+	_, err = api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
+	assert.Error(t, err)
+}
+
+func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
+
+	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
+	defer cancelFn()
+
+	// List workspaces - should be empty initially
+	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+
+	// Create workspace
+	workspace := &keboola.StorageWorkspacePayload{
+		Backend:   keboola.StorageWorkspaceBackendBigQuery,
+		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+	}
+
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
-	assert.Equal(t, "test-bigquery-workspace", createdWorkspace.ID)
-	assert.Equal(t, keboola.StorageWorkspaceBackendBigQuery, createdWorkspace.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, createdWorkspace.BackendSize)
-	assert.Equal(t, keboola.StorageWorkspaceLoginTypeDefault, createdWorkspace.LoginType)
+	assert.Equal(t, keboola.StorageWorkspaceBackendBigQuery, createdWorkspace.StorageWorkspaceDetails.Backend)
+	assert.Equal(t, keboola.StorageWorkspaceLoginTypeDefault, createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Verify that credentials are populated for BigQuery workspace
-	assert.NotNil(t, createdWorkspace.Details.Connection.Credentials, "BigQuery workspace should have credentials")
-	credentials := createdWorkspace.Details.Connection.Credentials
+	assert.NotNil(t, createdWorkspace.StorageWorkspaceDetails.Credentials, "BigQuery workspace should have credentials")
+	credentials := createdWorkspace.StorageWorkspaceDetails.Credentials
 	assert.NotEmpty(t, credentials.Type, "Credentials type should not be empty")
 	assert.NotEmpty(t, credentials.ProjectID, "Credentials project_id should not be empty")
 	assert.NotEmpty(t, credentials.PrivateKeyID, "Credentials private_key_id should not be empty")
@@ -114,9 +132,9 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
-	assert.Equal(t, createdWorkspace.Backend, retrievedWorkspace.Backend)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
-	assert.Equal(t, createdWorkspace.LoginType, retrievedWorkspace.LoginType)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)

@@ -23,7 +23,7 @@ func (a *AuthorizedAPI) CleanStorageWorkspaces(ctx context.Context) error {
 
 	for _, workspace := range *workspaces {
 		wg.Add(1)
-		go func(workspaceID string) {
+		go func(workspaceID uint64) {
 			defer wg.Done()
 			if _, deleteErr := a.StorageWorkspaceDeleteRequest(workspaceID).Send(ctx); deleteErr != nil {
 				mu.Lock()
