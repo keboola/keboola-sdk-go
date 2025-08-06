@@ -27,24 +27,24 @@ func TestWorkspacesCreateAndDeletePython(t *testing.T) {
 	defer cancelFn()
 
 	// Create workspace
-	workspace, err := api.CreateWorkspace(
+	workspace, err := api.CreateSandboxWorkspace(
 		ctx,
 		branch.ID,
 		"test",
-		keboola.WorkspaceTypePython,
+		keboola.SandboxWorkspaceTypePython,
 		keboola.WithExpireAfterHours(1),
-		keboola.WithSize(keboola.WorkspaceSizeMedium),
+		keboola.WithSize(keboola.SandboxWorkspaceSizeMedium),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, workspace)
 
 	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListWorkspaces(ctx, branch.ID)
+	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
 	assert.NoError(t, err)
 	foundInstance := false
 	for _, v := range workspaces {
-		if workspace.Workspace.ID == v.Workspace.ID {
-			require.True(t, v.Workspace.Type == string(keboola.WorkspaceTypePython))
+		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
+			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypePython))
 			foundInstance = true
 			break
 		}
@@ -52,11 +52,11 @@ func TestWorkspacesCreateAndDeletePython(t *testing.T) {
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
 
 	// Delete workspace
-	err = api.DeleteWorkspace(
+	err = api.DeleteSandboxWorkspace(
 		ctx,
 		branch.ID,
 		workspace.Config.ID,
-		workspace.Workspace.ID,
+		workspace.SandboxWorkspace.ID,
 	)
 	assert.NoError(t, err)
 }
@@ -75,11 +75,11 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	defer cancelFn()
 
 	// Create workspace
-	workspace, err := api.CreateWorkspace(
+	workspace, err := api.CreateSandboxWorkspace(
 		ctx,
 		branch.ID,
 		"test-snowflake",
-		keboola.WorkspaceTypeSnowflake,
+		keboola.SandboxWorkspaceTypeSnowflake,
 		keboola.WithExpireAfterHours(1),
 		keboola.WithPublicKey(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	)
@@ -87,12 +87,12 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.NotNil(t, workspace)
 
 	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListWorkspaces(ctx, branch.ID)
+	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
 	assert.NoError(t, err)
 	foundInstance := false
 	for _, v := range workspaces {
-		if workspace.Workspace.ID == v.Workspace.ID {
-			require.True(t, v.Workspace.Type == string(keboola.WorkspaceTypeSnowflake))
+		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
+			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypeSnowflake))
 			foundInstance = true
 			break
 		}
@@ -100,11 +100,11 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
 
 	// Delete workspace
-	err = api.DeleteWorkspace(
+	err = api.DeleteSandboxWorkspace(
 		ctx,
 		branch.ID,
 		workspace.Config.ID,
-		workspace.Workspace.ID,
+		workspace.SandboxWorkspace.ID,
 	)
 	assert.NoError(t, err)
 }
@@ -123,36 +123,36 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	defer cancelFn()
 
 	// Create workspace
-	workspace, err := api.CreateWorkspace(
+	workspace, err := api.CreateSandboxWorkspace(
 		ctx,
 		branch.ID,
 		"test-bigquery",
-		keboola.WorkspaceTypeBigQuery,
+		keboola.SandboxWorkspaceTypeBigQuery,
 		keboola.WithExpireAfterHours(1),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, workspace)
 
 	// Verify that credentials are populated for BigQuery workspace
-	assert.NotNil(t, workspace.Workspace.Credentials, "BigQuery workspace should have credentials")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.Type, "Credentials type should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.ProjectID, "Credentials project_id should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.PrivateKeyID, "Credentials private_key_id should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientEmail, "Credentials client_email should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientID, "Credentials client_id should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.AuthURI, "Credentials auth_uri should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.TokenURI, "Credentials token_uri should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.AuthProviderX509CertURL, "Credentials auth_provider_x509_cert_url should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.ClientX509CertURL, "Credentials client_x509_cert_url should not be empty")
-	assert.NotEmpty(t, workspace.Workspace.Credentials.PrivateKey, "Credentials private_key should not be empty")
+	assert.NotNil(t, workspace.SandboxWorkspace.Credentials, "BigQuery workspace should have credentials")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.Type, "Credentials type should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ProjectID, "Credentials project_id should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.PrivateKeyID, "Credentials private_key_id should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientEmail, "Credentials client_email should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientID, "Credentials client_id should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.AuthURI, "Credentials auth_uri should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.TokenURI, "Credentials token_uri should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.AuthProviderX509CertURL, "Credentials auth_provider_x509_cert_url should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientX509CertURL, "Credentials client_x509_cert_url should not be empty")
+	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.PrivateKey, "Credentials private_key should not be empty")
 
 	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListWorkspaces(ctx, branch.ID)
+	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
 	assert.NoError(t, err)
 	foundInstance := false
 	for _, v := range workspaces {
-		if workspace.Workspace.ID == v.Workspace.ID {
-			require.True(t, v.Workspace.Type == string(keboola.WorkspaceTypeBigQuery))
+		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
+			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypeBigQuery))
 			foundInstance = true
 			break
 		}
@@ -160,11 +160,11 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
 
 	// Delete workspace
-	err = api.DeleteWorkspace(
+	err = api.DeleteSandboxWorkspace(
 		ctx,
 		branch.ID,
 		workspace.Config.ID,
-		workspace.Workspace.ID,
+		workspace.SandboxWorkspace.ID,
 	)
 	assert.NoError(t, err)
 }

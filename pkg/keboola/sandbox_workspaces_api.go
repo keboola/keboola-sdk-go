@@ -9,13 +9,13 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
-type WorkspaceID string
+type SandboxWorkspaceID string
 
-func (v WorkspaceID) String() string {
+func (v SandboxWorkspaceID) String() string {
 	return string(v)
 }
 
-type WorkspaceDetails struct {
+type SandboxWorkspaceDetails struct {
 	Connection struct {
 		Database  string `json:"database"`
 		Schema    string `json:"schema"`
@@ -23,8 +23,8 @@ type WorkspaceDetails struct {
 	} `json:"connection"`
 }
 
-// WorkspaceCredentials contains authentication credentials for the workspace.
-type WorkspaceCredentials struct {
+// SandboxWorkspaceCredentials contains authentication credentials for the workspace.
+type SandboxWorkspaceCredentials struct {
 	Type                    string `json:"type"`                        // nolint: tagliatelle
 	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
 	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
@@ -37,32 +37,32 @@ type WorkspaceCredentials struct {
 	PrivateKey              string `json:"private_key"`                 // nolint: tagliatelle
 }
 
-type Workspace struct {
-	ID       WorkspaceID    `json:"id"`
-	Type     string         `json:"type"`
-	Size     string         `json:"size"` // Only exists for container workspaces (Python, R)
-	Active   bool           `json:"active"`
-	Shared   bool           `json:"shared"`
-	User     string         `json:"user"`
-	Host     string         `json:"host"`
-	URL      string         `json:"url"`
-	Password string         `json:"password"`
-	Created  WorkspacesTime `json:"createdTimestamp"`
-	Updated  WorkspacesTime `json:"updatedTimestamp"`
-	Start    WorkspacesTime `json:"startTimestamp"`
+type SandboxWorkspace struct {
+	ID       SandboxWorkspaceID    `json:"id"`
+	Type     string                `json:"type"`
+	Size     string                `json:"size"` // Only exists for container workspaces (Python, R)
+	Active   bool                  `json:"active"`
+	Shared   bool                  `json:"shared"`
+	User     string                `json:"user"`
+	Host     string                `json:"host"`
+	URL      string                `json:"url"`
+	Password string                `json:"password"`
+	Created  SandboxWorkspacesTime `json:"createdTimestamp"`
+	Updated  SandboxWorkspacesTime `json:"updatedTimestamp"`
+	Start    SandboxWorkspacesTime `json:"startTimestamp"`
 
-	// Workspace details - only exists for Snowflake workspaces
-	Details *WorkspaceDetails `json:"workspaceDetails"`
+	// SandboxWorkspace details - only exists for Snowflake workspaces
+	Details *SandboxWorkspaceDetails `json:"workspaceDetails"`
 
-	// Workspace credentials - contains authentication information
+	// SandboxWorkspace credentials - contains authentication information
 	// Only exists for BigQuery workspaces
-	Credentials *WorkspaceCredentials `json:"credentials"`
+	Credentials *SandboxWorkspaceCredentials `json:"credentials"`
 }
 
-// GetWorkspaceInstanceRequest retrieves a workspace by its ID
+// GetSandboxWorkspaceInstanceRequest retrieves a workspace by its ID
 // https://sandboxes.keboola.com/documentation
-func (a *AuthorizedAPI) GetWorkspaceInstanceRequest(workspaceID WorkspaceID) request.APIRequest[*Workspace] {
-	result := &Workspace{}
+func (a *AuthorizedAPI) GetSandboxWorkspaceInstanceRequest(workspaceID SandboxWorkspaceID) request.APIRequest[*SandboxWorkspace] {
+	result := &SandboxWorkspace{}
 	req := a.newRequest(WorkspacesAPI).
 		WithResult(&result).
 		WithGet(WorkspacesAPISandbox).
@@ -70,18 +70,18 @@ func (a *AuthorizedAPI) GetWorkspaceInstanceRequest(workspaceID WorkspaceID) req
 	return request.NewAPIRequest(result, req)
 }
 
-// ListWorkspaceInstancesRequest returns a list of all workspaces
+// ListSandboxWorkspaceInstancesRequest returns a list of all workspaces
 // https://sandboxes.keboola.com/documentation
-func (a *AuthorizedAPI) ListWorkspaceInstancesRequest() request.APIRequest[*[]*Workspace] {
-	result := make([]*Workspace, 0)
+func (a *AuthorizedAPI) ListSandboxWorkspaceInstancesRequest() request.APIRequest[*[]*SandboxWorkspace] {
+	result := make([]*SandboxWorkspace, 0)
 	req := a.newRequest(WorkspacesAPI).
 		WithResult(&result).
 		WithGet(WorkspacesAPISandboxes)
 	return request.NewAPIRequest(&result, req)
 }
 
-func (a *AuthorizedAPI) CleanWorkspaceInstances(ctx context.Context) error {
-	instances, err := a.ListWorkspaceInstancesRequest().Send(ctx)
+func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) error {
+	instances, err := a.ListSandboxWorkspaceInstancesRequest().Send(ctx)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (a *AuthorizedAPI) CleanWorkspaceInstances(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if e := a.DeleteWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
+			if e := a.DeleteSandboxWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
 				m.Lock()
 				defer m.Unlock()
 				err = multierror.Append(err, e)
