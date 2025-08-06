@@ -10,7 +10,7 @@ import (
 // newRequest adds Storage API token header.
 func (a *AuthorizedAPI) newRequest(s ServiceType) request.HTTPRequest {
 	// Authorize
-	if strings.Contains(a.token, "Bearer ") {
+	if strings.HasPrefix(a.token, "Bearer ") {
 		return a.PublicAPI.newRequest(s).AndHeader(jwtTokenHeader, a.token)
 	}
 
