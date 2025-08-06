@@ -9,6 +9,7 @@ import (
 )
 
 func TestStorageWorkspaceTime_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		jsonData string
@@ -47,7 +48,9 @@ func TestStorageWorkspaceTime_UnmarshalJSON(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		// capture range variable
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			var result StorageWorkspaceTime
 			err := json.Unmarshal([]byte(tt.jsonData), &result)
 
@@ -63,6 +66,7 @@ func TestStorageWorkspaceTime_UnmarshalJSON(t *testing.T) {
 }
 
 func TestStorageWorkspaceTime_MarshalJSON(t *testing.T) {
+	t.Parallel()
 	// Create a time with +0200 timezone
 	testTime := time.Date(2025, 8, 6, 14, 12, 37, 0, time.FixedZone("", 2*60*60))
 	storageTime := StorageWorkspaceTime(testTime)
@@ -81,6 +85,7 @@ func TestStorageWorkspaceTime_MarshalJSON(t *testing.T) {
 }
 
 func TestStorageWorkspaceTime_String(t *testing.T) {
+	t.Parallel()
 	testTime := time.Date(2025, 8, 6, 14, 12, 37, 0, time.FixedZone("", 2*60*60))
 	storageTime := StorageWorkspaceTime(testTime)
 
