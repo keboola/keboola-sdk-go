@@ -7,7 +7,7 @@ import (
 )
 
 type params struct {
-	Type             WorkspaceType
+	Type             SandboxWorkspaceType
 	Shared           bool
 	ExpireAfterHours uint64
 	Size             string
@@ -16,32 +16,32 @@ type params struct {
 	LoginType        string
 }
 
-type CreateWorkspaceOption func(p *params)
+type CreateSandboxWorkspaceOption func(p *params)
 
-func WithShared(v bool) CreateWorkspaceOption {
+func WithShared(v bool) CreateSandboxWorkspaceOption {
 	return func(p *params) { p.Shared = v }
 }
 
-func WithExpireAfterHours(v uint64) CreateWorkspaceOption {
+func WithExpireAfterHours(v uint64) CreateSandboxWorkspaceOption {
 	return func(p *params) { p.ExpireAfterHours = v }
 }
 
-func WithSize(v string) CreateWorkspaceOption {
+func WithSize(v string) CreateSandboxWorkspaceOption {
 	return func(p *params) { p.Size = v }
 }
 
-func WithImageVersion(v string) CreateWorkspaceOption {
+func WithImageVersion(v string) CreateSandboxWorkspaceOption {
 	return func(p *params) { p.ImageVersion = v }
 }
 
-func WithPublicKey(v string) CreateWorkspaceOption {
+func WithPublicKey(v string) CreateSandboxWorkspaceOption {
 	return func(p *params) {
 		p.PublicKey = v
 		p.LoginType = "snowflake-person-keypair"
 	}
 }
 
-func newParams(type_ WorkspaceType, opts ...CreateWorkspaceOption) params {
+func newParams(type_ SandboxWorkspaceType, opts ...CreateSandboxWorkspaceOption) params {
 	p := params{
 		Type:             type_,
 		Shared:           false,
@@ -69,9 +69,13 @@ func (p params) toMap() map[string]any {
 	return m
 }
 
-func (a *AuthorizedAPI) CreateWorkspaceJobRequest(configID ConfigID, workspaceType WorkspaceType, opts ...CreateWorkspaceOption) request.APIRequest[request.NoResult] {
+func (a *AuthorizedAPI) CreateSandboxWorkspaceJobRequest(
+	configID ConfigID,
+	workspaceType SandboxWorkspaceType,
+	opts ...CreateSandboxWorkspaceOption,
+) request.APIRequest[request.NoResult] {
 	params := newParams(workspaceType, opts...)
-	req := a.NewCreateJobRequest(WorkspacesComponent).
+	req := a.NewCreateJobRequest(SandboxWorkspacesComponent).
 		WithConfig(configID).
 		WithConfigData(map[string]any{"parameters": params.toMap()}).
 		Build().
@@ -81,14 +85,14 @@ func (a *AuthorizedAPI) CreateWorkspaceJobRequest(configID ConfigID, workspaceTy
 	return request.NewAPIRequest(request.NoResult{}, req)
 }
 
-func (a *AuthorizedAPI) DeleteWorkspaceJobRequest(workspaceID WorkspaceID) request.APIRequest[request.NoResult] {
+func (a *AuthorizedAPI) DeleteSandboxWorkspaceJobRequest(workspaceID SandboxWorkspaceID) request.APIRequest[request.NoResult] {
 	configData := map[string]any{
 		"parameters": map[string]any{
 			"task": "delete",
 			"id":   workspaceID.String(),
 		},
 	}
-	req := a.NewCreateJobRequest(WorkspacesComponent).
+	req := a.NewCreateJobRequest(SandboxWorkspacesComponent).
 		WithConfigData(configData).
 		Build().WithOnSuccess(func(ctx context.Context, result *QueueJob) error {
 		return a.WaitForQueueJob(ctx, result.ID)

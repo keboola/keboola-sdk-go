@@ -5,21 +5,21 @@ import (
 	"time"
 )
 
-// TimeFormat used in Workspaces API.
+// TimeFormat used in SandboxWorkspaces API.
 const TimeFormat = "2006-01-02T15:04:05Z"
 
-// WorkspacesTime is encoded/decoded in TimeFormat used in Workspaces API.
-type WorkspacesTime time.Time
+// SandboxWorkspacesTime is encoded/decoded in TimeFormat used in Workspaces API.
+type SandboxWorkspacesTime time.Time
 
 // UnmarshalJSON implements JSON decoding.
-func (t *WorkspacesTime) UnmarshalJSON(data []byte) (err error) {
+func (t *SandboxWorkspacesTime) UnmarshalJSON(data []byte) (err error) {
 	now, err := time.ParseInLocation(`"`+TimeFormat+`"`, string(data), time.Local)
-	*t = WorkspacesTime(now)
+	*t = SandboxWorkspacesTime(now)
 	return
 }
 
 // MarshalJSON implements JSON encoding.
-func (t WorkspacesTime) MarshalJSON() ([]byte, error) {
+func (t SandboxWorkspacesTime) MarshalJSON() ([]byte, error) {
 	b := make([]byte, 0, len(TimeFormat)+2)
 	b = append(b, '"')
 	b = time.Time(t).AppendFormat(b, TimeFormat)
@@ -27,7 +27,7 @@ func (t WorkspacesTime) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-func (t WorkspacesTime) String() string {
+func (t SandboxWorkspacesTime) String() string {
 	return time.Time(t).Format(TimeFormat)
 }
 

@@ -52,9 +52,14 @@ func TestCleanProject(t *testing.T) {
 	assert.Len(t, *schedules, 0)
 
 	// No sandbox instances
-	instances, err := api.ListWorkspaceInstancesRequest().Send(ctx)
+	instances, err := api.ListSandboxWorkspaceInstancesRequest().Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *instances, 0)
+
+	// No storage workspaces
+	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	assert.NoError(t, err)
+	assert.Len(t, *workspaces, 0, "No storage workspaces should remain after cleanup")
 }
 
 func deps(t *testing.T) (context.Context, context.CancelFunc, *testproject.Project, *keboola.AuthorizedAPI) {
