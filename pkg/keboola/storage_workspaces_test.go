@@ -49,11 +49,8 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
-	/*createCredentials := &keboola.StorageWorkspacePayload{
-		ID: createdWorkspace.ID,
-	}
 	// Create credentials
-	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createCredentials).Send(ctx)
+	/* credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, credentials)
 	assert.Equal(t, createdWorkspace.ID, credentials.ID)
