@@ -49,6 +49,30 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
+	createCredentials := &keboola.StorageWorkspacePayload{
+		ID: createdWorkspace.ID,
+	}
+	// Create credentials
+	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createCredentials).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, credentials)
+	assert.Equal(t, createdWorkspace.ID, credentials.ID)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, credentials.StorageWorkspaceDetails.Backend)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, credentials.StorageWorkspaceDetails.Host)
+
+	// Fetch credentials
+	/*fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, fetchedCredentials)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, fetchedCredentials.Backend)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, fetchedCredentials.Host)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Region, fetchedCredentials.Region)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Database, fetchedCredentials.Database)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Schema, fetchedCredentials.Schema)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Warehouse, fetchedCredentials.Warehouse)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, fetchedCredentials.LoginType)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.SSOLoginAvailable, fetchedCredentials.SSOLoginAvailable)*/
+
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
 	assert.NoError(t, err)
@@ -137,6 +161,29 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
+
+	// Create credentials
+	/*createCredentials := &keboola.StorageWorkspacePayload{
+		ID: createdWorkspace.ID,
+	}
+	createdCredentials, err := api.StorageWorkspaceCreateCredentialsRequest(createCredentials).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, createdCredentials)
+
+	// Fetch credentials
+	fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, createdCredentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, fetchedCredentials)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.Type, fetchedCredentials.Credentials.Type)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.ProjectID, fetchedCredentials.Credentials.ProjectID)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.PrivateKeyID, fetchedCredentials.Credentials.PrivateKeyID)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.ClientEmail, fetchedCredentials.Credentials.ClientEmail)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.ClientID, fetchedCredentials.Credentials.ClientID)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.AuthURI, fetchedCredentials.Credentials.AuthURI)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.TokenURI, fetchedCredentials.Credentials.TokenURI)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.AuthProviderX509CertURL, fetchedCredentials.Credentials.AuthProviderX509CertURL)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.ClientX509CertURL, fetchedCredentials.Credentials.ClientX509CertURL)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.PrivateKey, fetchedCredentials.Credentials.PrivateKey)*/
 
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)

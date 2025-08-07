@@ -40,6 +40,7 @@ type StorageWorkspaceDetails struct {
 
 // StorageWorkspaceCredentials contains authentication credentials for the workspace.
 type StorageWorkspaceCredentials struct {
+	ID                      uint64 `json:"id" writeoptional:"true"`
 	Type                    string `json:"type"`                        // nolint: tagliatelle
 	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
 	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
@@ -53,6 +54,7 @@ type StorageWorkspaceCredentials struct {
 }
 
 type StorageWorkspacePayload struct {
+	ID                    uint64                       `json:"id" writeoptional:"true"`
 	Backend               StorageWorkspaceBackend      `json:"backend"`
 	BackendSize           *StorageWorkspaceBackendSize `json:"backendSize,omitempty" writeoptional:"true"`
 	NetworkPolicy         *string                      `json:"networkPolicy,omitempty" writeoptional:"true"`
@@ -107,6 +109,39 @@ func (a *AuthorizedAPI) StorageWorkspaceDetailRequest(workspaceID uint64) reques
 		WithResult(result).
 		WithGet("workspaces/{workspaceId}").
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
+	return request.NewAPIRequest(result, req)
+}
+
+func (a *AuthorizedAPI) StorageWorkspaceCreateCredentialsRequest(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
+	result := &StorageWorkspace{}
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(result).
+		WithPost("workspaces/{workspaceId}/credentials").
+		WithJSONBody(request.StructToMap(storageWorkspacePayload, nil)).
+		AndPathParam("workspaceId", strconv.FormatUint(storageWorkspacePayload.ID, 10))
+	return request.NewAPIRequest(result, req)
+}
+
+func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspaceDetails] {
+	result := &StorageWorkspaceDetails{}
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(result).
+		WithGet("workspaces/{workspaceId}/credentials/{credentialId}").
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
+		AndPathParam("credentialId", strconv.FormatUint(credentialID, 10))
+	return request.NewAPIRequest(result, req)
+}
+
+func (a *AuthorizedAPI) StorageWorkspaceDeleteCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
+	result := &StorageWorkspace{}
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(result).
+		WithDelete("workspaces/{workspaceId}/credentials/{credentialId}").
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
+		AndPathParam("credentialId", strconv.FormatUint(credentialID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
