@@ -14,7 +14,7 @@ type StorageWorkspaceTime time.Time
 
 // UnmarshalJSON implements JSON decoding for StorageWorkspaceTime.
 func (t *StorageWorkspaceTime) UnmarshalJSON(data []byte) (err error) {
-	now, err := time.ParseInLocation(`"`+StorageWorkspaceTimeFormat+`"`, string(data), time.Local)
+	now, err := time.Parse(`"`+StorageWorkspaceTimeFormat+`"`, string(data))
 	*t = StorageWorkspaceTime(now)
 	return
 }
