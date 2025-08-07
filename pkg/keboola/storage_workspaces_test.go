@@ -50,12 +50,18 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Create credentials
-	/* credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
+	/*credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, credentials)
-	assert.Equal(t, createdWorkspace.ID, credentials.ID)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, credentials.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, credentials.StorageWorkspaceDetails.Host)*/
+	assert.Equal(t, credentials.ID, credentials.ID)
+	assert.Equal(t, credentials.StorageWorkspaceDetails.Backend, credentials.StorageWorkspaceDetails.Backend)
+	assert.Equal(t, credentials.StorageWorkspaceDetails.Host, credentials.StorageWorkspaceDetails.Host)
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.User, "KEBOOLA_WORKSPACE")
+	assert.NotEmpty(t, *credentials.StorageWorkspaceDetails.Account)
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Role, "KEBOOLA_WORKSPACE")
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Database, "KEBOOLA")
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Schema, "WORKSPACE") //nolint: goconst
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Warehouse, "KEBOOLA")*/
 
 	// Fetch credentials
 	/*fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)

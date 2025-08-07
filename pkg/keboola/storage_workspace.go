@@ -36,6 +36,8 @@ type StorageWorkspaceDetails struct {
 	User              *string                      `json:"user"`
 	LoginType         *string                      `json:"loginType"`
 	PrivateKey        *string                      `json:"privateKey"`
+	Account           *string                      `json:"account"`
+	Role              *string                      `json:"role"`
 	SSOLoginAvailable *bool                        `json:"ssoLoginAvailable,omitempty"`
 	Credentials       *StorageWorkspaceCredentials `json:"credentials,omitempty"`
 }
