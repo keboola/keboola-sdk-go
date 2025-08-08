@@ -17,7 +17,9 @@ import (
 func ignoreResourceAlreadyExistsError(getFn func(context.Context) error) func(context.Context, request.HTTPResponse, error) error {
 	return func(ctx context.Context, response request.HTTPResponse, err error) error {
 		rawResponse := response.RawResponse()
-		defer rawResponse.Body.Close()
+		if rawResponse != nil {
+			defer rawResponse.Body.Close()
+		}
 		if isResourceAlreadyExistsError(rawResponse, err) {
 			// Fill result with the GET request
 			return getFn(ctx)
