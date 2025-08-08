@@ -53,25 +53,25 @@ func CleanProject(
 		err = multierror.Append(err, e)
 	}
 
-	if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
-		err = multierror.Append(err, e)
-	}
-
-	// Clean storage workspaces
-	if e := api.CleanStorageWorkspaces(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
-		err = multierror.Append(err, e)
-	}
+	//if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
+	//	m.Lock()
+	//	defer m.Unlock()
+	//	err = multierror.Append(err, e)
+	//}
+	//
+	//// Clean storage workspaces
+	//if e := api.CleanStorageWorkspaces(ctx); e != nil {
+	//	m.Lock()
+	//	defer m.Unlock()
+	//	err = multierror.Append(err, e)
+	//}
 
 	// Clean the rest of the project
-	if e := api.CleanProjectRequest().SendOrErr(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
-		err = multierror.Append(err, e)
-	}
+	//if e := api.CleanProjectRequest().SendOrErr(ctx); e != nil {
+	//	m.Lock()
+	//	defer m.Unlock()
+	//	err = multierror.Append(err, e)
+	//}
 
 	if err != nil {
 		return err
