@@ -123,7 +123,7 @@ func TestConfigApiCalls(t *testing.T) {
 			}),
 		},
 	})
-	resConfig, err = api.UpdateConfigRequest(config, []string{"name", "description", "changeDescription", "configuration"}).Send(ctx)
+	resConfig, err = api.UpdateConfigRequest(config, []string{"name", "description", "changeDescription", "configuration", "rows"}).Send(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, *config.Config, *resConfig.Config)
 
@@ -134,6 +134,38 @@ func TestConfigApiCalls(t *testing.T) {
 	componentsJSON, err := json.MarshalIndent(components, "", "  ")
 	assert.NoError(t, err)
 	wildcards.Assert(t, expectedComponentsConfigTest(), string(componentsJSON), "Unexpected components")
+
+	// Test configuration change without rows - verify rows are preserved
+	configOnly := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey:         config.ConfigKey,
+			Name:              "Test config only update",
+			Description:       "Test description config only",
+			ChangeDescription: "config only update",
+			Content: orderedmap.FromPairs([]orderedmap.Pair{
+				{
+					Key: "config_only",
+					Value: orderedmap.FromPairs([]orderedmap.Pair{
+						{Key: "test", Value: "config_only_value"},
+					}),
+				},
+			}),
+			RowsSortOrder: []string{},
+		},
+	}
+
+	// Update only the configuration (without rows)
+	resConfigOnly, err := api.UpdateConfigRequest(configOnly, []string{"name", "description", "changeDescription", "configuration"}).Send(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, *configOnly.Config, *resConfigOnly.Config)
+
+	// List components and verify rows are still there
+	componentsAfterConfigOnly, err := api.ListConfigsAndRowsFrom(branch.BranchKey).Send(ctx)
+	assert.NotEmpty(t, componentsAfterConfigOnly)
+	assert.NoError(t, err)
+	componentsAfterConfigOnlyJSON, err := json.MarshalIndent(componentsAfterConfigOnly, "", "  ")
+	assert.NoError(t, err)
+	wildcards.Assert(t, expectedComponentsAfterConfigOnlyUpdate(), string(componentsAfterConfigOnlyJSON), "Unexpected components after config-only update")
 
 	// Update metadata
 	metadata := map[string]string{"KBC.KaC.meta1": "value"}
@@ -190,6 +222,77 @@ func expectedComponentsConfigTest() string {
         "configuration": {
           "foo": {
             "bar": "modified"
+          }
+        },
+        "rows": [
+          {
+            "id": "%s",
+            "name": "Row1",
+            "description": "Row1 description",
+            "changeDescription": "Row1 test",
+            "isDisabled": false,
+            "version": 2,
+            "state": null,
+            "configuration": {
+              "row1": "value1"
+            }
+          },
+          {
+            "id": "%s",
+            "name": "Row2",
+            "description": "Row2 description",
+            "changeDescription": "Row2 test",
+            "isDisabled": true,
+            "version": 2,
+            "state": null,
+            "configuration": {
+              "row2": "value2"
+            }
+          },
+          {
+            "id": "%s",
+            "name": "Row3",
+            "description": "Row3 description",
+            "changeDescription": "Row3 test",
+            "isDisabled": false,
+            "version": 1,
+            "state": null,
+            "configuration": {
+              "row3": "value3"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
+`
+}
+
+func expectedComponentsAfterConfigOnlyUpdate() string {
+	return `[
+  {
+    "branchId": %s,
+    "id": "ex-generic-v2",
+    "type": "extractor",
+    "name": "Generic",
+    %A,
+    "configurations": [
+      {
+        "branchId": %s,
+        "componentId": "ex-generic-v2",
+        "id": "%s",
+        "name": "Test config only update",
+        "description": "Test description config only",
+        "changeDescription": "config only update",
+        "isDeleted": false,
+        "created": "%s",
+        "version": 8,
+        "state": null,
+        "isDisabled": false,
+        "configuration": {
+          "config_only": {
+            "test": "config_only_value"
           }
         },
         "rows": [

@@ -209,8 +209,12 @@ func (a *AuthorizedAPI) UpdateConfigRequest(config *ConfigWithRows, changedField
 			tmpConfig.ID = config.ID
 			*config.Config = *tmpConfig.Config
 
-			// Synchronize rows
-			return a.synchronizeConfigRows(ctx, config, changedFields)
+			// Only synchronize rows if 'rows' is included in changedFields
+			// This prevents accidental deletion of existing rows when only config fields are updated
+			if slices.Contains(changedFields, "rows") {
+				return a.synchronizeConfigRows(ctx, config, changedFields)
+			}
+			return nil
 		})
 
 	return request.NewAPIRequest(config, req)
