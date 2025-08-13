@@ -4,6 +4,7 @@ import (
 	"context"
 	jsonLib "encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/relvacode/iso8601"
@@ -141,11 +142,15 @@ func (a *PublicAPI) VerifyTokenRequest(token string) request.APIRequest[*Token] 
 		newRequest(StorageAPI).
 		WithResult(result).
 		WithGet("tokens/verify").
-		AndHeader("X-StorageApi-Token", token).
 		WithOnSuccess(func(_ context.Context, _ request.HTTPResponse) error {
 			result.Token = token
 			return nil
 		})
+	if strings.HasPrefix(token, "Bearer ") {
+		req = req.AndHeader(jwtTokenHeader, token)
+	} else {
+		req = req.AndHeader(storageAPITokenHeader, token)
+	}
 	return request.NewAPIRequest(result, req)
 }
 
@@ -158,7 +163,7 @@ func (a *AuthorizedAPI) TokenDetailRequest(tokenID string) request.APIRequest[*T
 		WithGet("tokens/{tokenId}").
 		AndPathParam("tokenId", tokenID)
 	return request.NewAPIRequest(result, req)
-}	
+}
 
 // CreateTokenRequest https://keboola.docs.apiary.io/#reference/tokens-and-permissions/tokens-collection/create-token
 func (a *AuthorizedAPI) CreateTokenRequest(opts ...CreateTokenOption) request.APIRequest[*Token] {
