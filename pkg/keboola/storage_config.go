@@ -212,6 +212,10 @@ func (a *AuthorizedAPI) UpdateConfigRequest(config *ConfigWithRows, changedField
 			// Only synchronize rows if 'rows' is included in changedFields
 			// This prevents accidental deletion of existing rows when only config fields are updated
 			if slices.Contains(changedFields, "rows") {
+				// Remove "rows" from changedFields after synchronization
+				changedFields = slices.DeleteFunc(changedFields, func(field string) bool {
+					return field == "rows"
+				})
 				return a.synchronizeConfigRows(ctx, config, changedFields)
 			}
 			return nil
