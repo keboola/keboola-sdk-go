@@ -124,6 +124,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	t.Parallel()
+	t.Skip("Skipping BigQuery test until we have a way to create a project with BigQuery backend")
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
 
