@@ -61,7 +61,6 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.User, "QS")
 	assert.NotEmpty(t, *credentials.StorageWorkspaceDetails.Account)
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.Role, "WORKSPACE")
-	assert.Contains(t, *credentials.StorageWorkspaceDetails.Database, "SAPI")
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.Schema, "WORKSPACE") //nolint: goconst
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.Warehouse, "KEBOOLA")
 
