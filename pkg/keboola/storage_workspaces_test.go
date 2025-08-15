@@ -26,11 +26,13 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
 	// Create workspace
+	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend:     keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize: ptr(keboola.StorageWorkspaceBackendSizeMedium),
-		LoginType:   keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:   ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		Backend:       keboola.StorageWorkspaceBackendSnowflake,
+		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		NetworkPolicy: &networkPolicy,
+		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
@@ -50,31 +52,35 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Create credentials
-	/*credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
+	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, credentials)
 	assert.Equal(t, credentials.ID, credentials.ID)
 	assert.Equal(t, credentials.StorageWorkspaceDetails.Backend, credentials.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, credentials.StorageWorkspaceDetails.Host, credentials.StorageWorkspaceDetails.Host)
-	assert.Contains(t, *credentials.StorageWorkspaceDetails.User, "KEBOOLA_WORKSPACE")
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.User, "QS")
 	assert.NotEmpty(t, *credentials.StorageWorkspaceDetails.Account)
-	assert.Contains(t, *credentials.StorageWorkspaceDetails.Role, "KEBOOLA_WORKSPACE")
-	assert.Contains(t, *credentials.StorageWorkspaceDetails.Database, "KEBOOLA")
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Role, "WORKSPACE")
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Database, "SAPI")
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.Schema, "WORKSPACE") //nolint: goconst
-	assert.Contains(t, *credentials.StorageWorkspaceDetails.Warehouse, "KEBOOLA")*/
+	assert.Contains(t, *credentials.StorageWorkspaceDetails.Warehouse, "KEBOOLA")
 
 	// Fetch credentials
-	/*fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, fetchedCredentials)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, fetchedCredentials.Backend)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, fetchedCredentials.Host)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Region, fetchedCredentials.Region)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Database, fetchedCredentials.Database)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Schema, fetchedCredentials.Schema)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Warehouse, fetchedCredentials.Warehouse)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, fetchedCredentials.LoginType)
-	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.SSOLoginAvailable, fetchedCredentials.SSOLoginAvailable)*/
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, fetchedCredentials.StorageWorkspaceDetails.Backend)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, fetchedCredentials.StorageWorkspaceDetails.Host)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Region, fetchedCredentials.StorageWorkspaceDetails.Region)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Database, fetchedCredentials.StorageWorkspaceDetails.Database)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Schema, fetchedCredentials.StorageWorkspaceDetails.Schema)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, fetchedCredentials.StorageWorkspaceDetails.LoginType)
+	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.SSOLoginAvailable, fetchedCredentials.StorageWorkspaceDetails.SSOLoginAvailable)
+
+	// Delete credentials
+	deletedCredentials, err := api.StorageWorkspaceDeleteCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, deletedCredentials)
 
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)

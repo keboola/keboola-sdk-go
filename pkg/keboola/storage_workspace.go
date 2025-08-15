@@ -125,8 +125,8 @@ func (a *AuthorizedAPI) StorageWorkspaceCreateCredentialsRequest(workspaceID uin
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspaceDetails] {
-	result := &StorageWorkspaceDetails{}
+func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
+	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
