@@ -2,6 +2,8 @@ package keboola
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
@@ -75,23 +77,44 @@ type StorageWorkspace struct {
 	StorageWorkspaceDetails StorageWorkspaceDetails      `json:"connection"`
 }
 
-// StorageWorkspaceCreateRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
-func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
-	result := StorageWorkspace{}
+// StorageWorkspaceCreateRequestAsync https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
+// Creates a workspace asynchronously and returns a storage job that can be monitored for completion.
+func (a *AuthorizedAPI) StorageWorkspaceCreateRequestAsync(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageJob] {
+	result := &StorageJob{}
 	req := a.
 		newRequest(StorageAPI).
-		WithResult(&result).
+		WithResult(result).
 		WithPost("workspaces").
 		WithJSONBody(request.StructToMap(storageWorkspacePayload, nil)).
-		WithOnError(ignoreResourceAlreadyExistsError(func(ctx context.Context) error {
-			if workspaceResult, err := a.StorageWorkspaceDetailRequest(result.ID).Send(ctx); err == nil {
-				result = *workspaceResult
-				return nil
-			} else {
+		AndQueryParam("async", "1")
+	return request.NewAPIRequest(result, req)
+}
+
+// StorageWorkspaceCreateRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
+func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
+	result := &StorageWorkspace{}
+	req := a.
+		StorageWorkspaceCreateRequestAsync(storageWorkspacePayload).
+		WithOnSuccess(func(ctx context.Context, job *StorageJob) error {
+			// Wait for storage job
+			waitCtx, waitCancelFn := context.WithTimeout(ctx, a.onSuccessTimeout)
+			defer waitCancelFn()
+			if err := a.WaitForStorageJob(waitCtx, job); err != nil {
 				return err
 			}
-		}))
-	return request.NewAPIRequest(&result, req)
+
+			// Map job results to workspace
+			resultsBytes, err := json.Marshal(job.Results)
+			if err != nil {
+				return fmt.Errorf("cannot convert job.results to JSON: %w", err)
+			}
+			if err := json.Unmarshal(resultsBytes, result); err != nil {
+				return fmt.Errorf("cannot map job.results to workspace: %w", err)
+			}
+			return nil
+		})
+	// Result is workspace, not job.
+	return request.NewAPIRequest(result, req)
 }
 
 // StorageWorkspacesListRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/list-workspaces
@@ -125,8 +148,8 @@ func (a *AuthorizedAPI) StorageWorkspaceCreateCredentialsRequest(workspaceID uin
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspaceDetails] {
-	result := &StorageWorkspaceDetails{}
+func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
+	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
