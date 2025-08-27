@@ -79,22 +79,23 @@ type StorageWorkspace struct {
 
 // StorageWorkspaceCreateRequestAsync https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
 // Creates a workspace asynchronously and returns a storage job that can be monitored for completion.
-func (a *AuthorizedAPI) StorageWorkspaceCreateRequestAsync(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageJob] {
+func (a *AuthorizedAPI) StorageWorkspaceCreateRequestAsync(branchID BranchID, storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageJob] {
 	result := &StorageJob{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithPost("workspaces").
+		WithPost("branch/{branchId}/workspaces").
+		AndPathParam("branchId", branchID.String()).
 		WithJSONBody(request.StructToMap(storageWorkspacePayload, nil)).
 		AndQueryParam("async", "1")
 	return request.NewAPIRequest(result, req)
 }
 
 // StorageWorkspaceCreateRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/create-workspace
-func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(branchID BranchID, storageWorkspacePayload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
-		StorageWorkspaceCreateRequestAsync(storageWorkspacePayload).
+		StorageWorkspaceCreateRequestAsync(branchID, storageWorkspacePayload).
 		WithOnSuccess(func(ctx context.Context, job *StorageJob) error {
 			// Wait for storage job
 			waitCtx, waitCancelFn := context.WithTimeout(ctx, a.onSuccessTimeout)
@@ -118,65 +119,71 @@ func (a *AuthorizedAPI) StorageWorkspaceCreateRequest(storageWorkspacePayload *S
 }
 
 // StorageWorkspacesListRequest https://keboola.docs.apiary.io/#reference/workspaces/workspaces-collection/list-workspaces
-func (a *AuthorizedAPI) StorageWorkspacesListRequest() request.APIRequest[*[]*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspacesListRequest(branchID BranchID) request.APIRequest[*[]*StorageWorkspace] {
 	result := make([]*StorageWorkspace, 0)
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(&result).
-		WithGet("workspaces")
+		WithGet("branch/{branchId}/workspaces").
+		AndPathParam("branchId", branchID.String())
 	return request.NewAPIRequest(&result, req)
 }
 
 // StorageWorkspaceDetailRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/workspace-detail
-func (a *AuthorizedAPI) StorageWorkspaceDetailRequest(workspaceID uint64) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceDetailRequest(branchID BranchID, workspaceID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithGet("workspaces/{workspaceId}").
+		WithGet("branch/{branchId}/workspaces/{workspaceId}").
+		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) StorageWorkspaceCreateCredentialsRequest(workspaceID uint64) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceCreateCredentialsRequest(branchID BranchID, workspaceID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithPost("workspaces/{workspaceId}/credentials").
+		WithPost("branch/{branchId}/workspaces/{workspaceId}/credentials").
+		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceFetchCredentialsRequest(branchID BranchID, workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithGet("workspaces/{workspaceId}/credentials/{credentialId}").
+		WithGet("branch/{branchId}/workspaces/{workspaceId}/credentials/{credentialId}").
+		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
 		AndPathParam("credentialId", strconv.FormatUint(credentialID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) StorageWorkspaceDeleteCredentialsRequest(workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceDeleteCredentialsRequest(branchID BranchID, workspaceID uint64, credentialID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithDelete("workspaces/{workspaceId}/credentials/{credentialId}").
+		WithDelete("branch/{branchId}/workspaces/{workspaceId}/credentials/{credentialId}").
+		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
 		AndPathParam("credentialId", strconv.FormatUint(credentialID, 10))
 	return request.NewAPIRequest(result, req)
 }
 
 // StorageWorkspaceDeleteRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/delete-workspace
-func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(workspaceID uint64) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(branchID BranchID, workspaceID uint64) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
-		WithDelete("workspaces/{workspaceId}").
+		WithDelete("branch/{branchId}/workspaces/{workspaceId}").
+		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }

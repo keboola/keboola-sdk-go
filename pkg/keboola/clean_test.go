@@ -7,6 +7,7 @@ import (
 
 	"github.com/keboola/go-utils/pkg/testproject"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
@@ -17,6 +18,10 @@ func TestCleanProject(t *testing.T) {
 
 	ctx, cancelFn, project, api := deps(t)
 	defer cancelFn()
+
+	// Get default branch
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
 
 	// Clean project
 	if err := keboola.CleanProject(ctx, api); err != nil {
@@ -57,7 +62,7 @@ func TestCleanProject(t *testing.T) {
 	assert.Len(t, *instances, 0)
 
 	// No storage workspaces
-	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "No storage workspaces should remain after cleanup")
 }
