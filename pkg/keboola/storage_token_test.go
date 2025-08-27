@@ -26,6 +26,8 @@ func TestVerifyToken(t *testing.T) {
 	assert.Equal(t, project.ID(), token.ProjectID())
 	assert.NotEmpty(t, token.ProjectName())
 	assert.NotEmpty(t, token.Owner.Features)
+	assert.NotNil(t, token.Organization)
+	assert.Greater(t, token.Organization.ID, 0)
 	if token.IsMaster {
 		assert.NotNil(t, token.Admin)
 		assert.NotEmpty(t, token.Description)
@@ -79,6 +81,7 @@ func TestCreateToken_AllPerms(t *testing.T) {
 
 	assert.Equal(t, description, token.Description)
 	assert.True(t, token.CanManageBuckets && token.CanPurgeTrash && token.CanReadAllFileUploads)
+	assert.Nil(t, token.Organization)
 	assert.Empty(t, token.ComponentAccess)
 }
 
@@ -120,6 +123,7 @@ func TestCreateToken_SomePerms(t *testing.T) {
 		[]string{"keboola.ex-aws-s3"},
 		token.ComponentAccess,
 	)
+	assert.Nil(t, token.Organization)
 }
 
 func TestListAndDeleteToken(t *testing.T) {
@@ -130,13 +134,18 @@ func TestListAndDeleteToken(t *testing.T) {
 	// Create tokens
 	token1, err := api.CreateTokenRequest(WithDescription("token1"), WithExpiresIn(5*time.Minute)).Send(ctx)
 	assert.NoError(t, err)
+	assert.Nil(t, token1.Organization)
 	token2, err := api.CreateTokenRequest(WithDescription("token2"), WithExpiresIn(5*time.Minute)).Send(ctx)
 	assert.NoError(t, err)
+	assert.Nil(t, token2.Organization)
 
 	// List
 	allTokens, err := api.ListTokensRequest().Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, ignoreMasterTokens(*allTokens), 2)
+	for _, tk := range ignoreMasterTokens(*allTokens) {
+		assert.Nil(t, tk.Organization)
+	}
 
 	// Delete token1
 	_, err = api.DeleteTokenRequest(token1.ID).Send(ctx)
@@ -148,6 +157,9 @@ func TestListAndDeleteToken(t *testing.T) {
 
 	assert.True(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token2.ID }))
 	assert.False(t, slices.ContainsFunc(*allTokens, func(t *Token) bool { return t.ID == token1.ID }))
+	for _, tk := range ignoreMasterTokens(*allTokens) {
+		assert.Nil(t, tk.Organization)
+	}
 
 	// Delete token2
 	_, err = api.DeleteTokenRequest(token2.ID).Send(ctx)
@@ -181,6 +193,8 @@ func TestTokenDetailRequest(t *testing.T) {
 	assert.Equal(t, createdToken.ID, detailedToken.ID)
 	assert.Equal(t, description, detailedToken.Description)
 	assert.NotNil(t, detailedToken.Expires)
+	assert.NotNil(t, detailedToken.Organization)
+	assert.Greater(t, detailedToken.Organization.ID, 0)
 
 	// Cleanup
 	_, err = api.DeleteTokenRequest(createdToken.ID).Send(ctx)
@@ -205,15 +219,18 @@ func TestRefreshToken(t *testing.T) {
 
 	assert.Equal(t, created.Description, refreshed.Description)
 	assert.NotEqual(t, refreshed.Created, refreshed.Refreshed)
+	assert.Nil(t, created.Organization)
+	assert.Nil(t, refreshed.Organization)
 }
 
 func TestToken_JSON(t *testing.T) {
 	t.Parallel()
 
 	token := &Token{
-		Token:       "secret",
-		ID:          "1234",
-		Description: "description",
+		Token:        "secret",
+		ID:           "1234",
+		Description:  "description",
+		Organization: &TokenOrganization{ID: 123},
 		BucketPermissions: BucketPermissions{
 			MustParseBucketID("in.c-bucket"): BucketPermissionRead,
 		},
@@ -250,4 +267,6 @@ func TestVerifyToken_BackendProjectSnowflake(t *testing.T) {
 	assert.Equal(t, token.Owner.DefaultBackend, "snowflake")
 	assert.False(t, token.Owner.HasRedshift)
 	assert.False(t, token.Owner.HasBigquery)
+	assert.NotNil(t, token.Organization)
+	assert.Greater(t, token.Organization.ID, 0)
 }
