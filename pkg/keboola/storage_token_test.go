@@ -27,7 +27,7 @@ func TestVerifyToken(t *testing.T) {
 	assert.NotEmpty(t, token.ProjectName())
 	assert.NotEmpty(t, token.Owner.Features)
 	assert.NotNil(t, token.Organization)
-	assert.Greater(t, token.Organization.ID, 0)
+	assert.NotEmpty(t, token.Organization.ID)
 	if token.IsMaster {
 		assert.NotNil(t, token.Admin)
 		assert.NotEmpty(t, token.Description)
@@ -194,7 +194,7 @@ func TestTokenDetailRequest(t *testing.T) {
 	assert.Equal(t, description, detailedToken.Description)
 	assert.NotNil(t, detailedToken.Expires)
 	assert.NotNil(t, detailedToken.Organization)
-	assert.Greater(t, detailedToken.Organization.ID, 0)
+	assert.NotEmpty(t, detailedToken.Organization.ID)
 
 	// Cleanup
 	_, err = api.DeleteTokenRequest(createdToken.ID).Send(ctx)
@@ -230,7 +230,7 @@ func TestToken_JSON(t *testing.T) {
 		Token:        "secret",
 		ID:           "1234",
 		Description:  "description",
-		Organization: &TokenOrganization{ID: 123},
+		Organization: &TokenOrganization{ID: "123"},
 		BucketPermissions: BucketPermissions{
 			MustParseBucketID("in.c-bucket"): BucketPermissionRead,
 		},
@@ -268,5 +268,5 @@ func TestVerifyToken_BackendProjectSnowflake(t *testing.T) {
 	assert.False(t, token.Owner.HasRedshift)
 	assert.False(t, token.Owner.HasBigquery)
 	assert.NotNil(t, token.Organization)
-	assert.Greater(t, token.Organization.ID, 0)
+	assert.NotEmpty(t, token.Organization.ID)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	jsonLib "encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -72,32 +71,7 @@ type TokenOwner struct {
 }
 
 type TokenOrganization struct {
-	ID int `json:"id"`
-}
-
-// UnmarshalJSON accepts organization id as number or quoted string.
-func (o *TokenOrganization) UnmarshalJSON(data []byte) error {
-	type aux struct {
-		ID jsonLib.RawMessage `json:"id"`
-	}
-	var a aux
-	if err := jsonLib.Unmarshal(data, &a); err != nil {
-		return fmt.Errorf("cannot decode organization: %w", err)
-	}
-	var idInt int
-	if err := jsonLib.Unmarshal(a.ID, &idInt); err != nil {
-		var idStr string
-		if err2 := jsonLib.Unmarshal(a.ID, &idStr); err2 != nil {
-			return fmt.Errorf("cannot decode organization id: %w", err)
-		}
-		parsed, err3 := strconv.Atoi(idStr)
-		if err3 != nil {
-			return fmt.Errorf("cannot decode organization id: %w", err3)
-		}
-		idInt = parsed
-	}
-	o.ID = idInt
-	return nil
+	ID string `json:"id"`
 }
 
 type CreatorToken struct {
