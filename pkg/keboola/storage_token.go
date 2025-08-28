@@ -19,24 +19,26 @@ const (
 
 // Token https://keboola.docs.apiary.io/#reference/tokens-and-permissions/token-verification/token-verification
 type Token struct {
-	Token                 string            `json:"token"` // set manually from request
-	ID                    string            `json:"id"`
-	Description           string            `json:"description"`
-	IsMaster              bool              `json:"isMasterToken"`
-	CanManageBuckets      bool              `json:"canManageBuckets"`
-	CanManageTokens       bool              `json:"canManageTokens"`
-	CanReadAllFileUploads bool              `json:"canReadAllFileUploads"`
-	CanPurgeTrash         bool              `json:"canPurgeTrash"`
-	Created               iso8601.Time      `json:"created"`
-	Refreshed             iso8601.Time      `json:"refreshed"`
-	Expires               *iso8601.Time     `json:"expires"`
-	IsExpired             bool              `json:"isExpired"`
-	IsDisabled            bool              `json:"isDisabled"`
-	Owner                 TokenOwner        `json:"owner"`
-	Admin                 *TokenAdmin       `json:"admin,omitempty"`
-	Creator               *CreatorToken     `json:"creatorToken,omitempty"`
-	BucketPermissions     BucketPermissions `json:"bucketPermissions,omitempty"`
-	ComponentAccess       []string          `json:"componentAccess,omitempty"`
+	Token                 string        `json:"token"` // set manually from request
+	ID                    string        `json:"id"`
+	Description           string        `json:"description"`
+	IsMaster              bool          `json:"isMasterToken"`
+	CanManageBuckets      bool          `json:"canManageBuckets"`
+	CanManageTokens       bool          `json:"canManageTokens"`
+	CanReadAllFileUploads bool          `json:"canReadAllFileUploads"`
+	CanPurgeTrash         bool          `json:"canPurgeTrash"`
+	Created               iso8601.Time  `json:"created"`
+	Refreshed             iso8601.Time  `json:"refreshed"`
+	Expires               *iso8601.Time `json:"expires"`
+	IsExpired             bool          `json:"isExpired"`
+	IsDisabled            bool          `json:"isDisabled"`
+	Owner                 TokenOwner    `json:"owner"`
+	// Organization is present in token verify and token detail responses; omitted in create, list and refresh responses.
+	Organization      *TokenOrganization `json:"organization,omitempty"`
+	Admin             *TokenAdmin        `json:"admin,omitempty"`
+	Creator           *CreatorToken      `json:"creatorToken,omitempty"`
+	BucketPermissions BucketPermissions  `json:"bucketPermissions,omitempty"`
+	ComponentAccess   []string           `json:"componentAccess,omitempty"`
 }
 
 type BucketPermissions map[BucketID]BucketPermission
@@ -66,6 +68,10 @@ type TokenOwner struct {
 	HasBigquery         bool     `json:"hasBigquery"`
 	DefaultBackend      string   `json:"defaultBackend"`
 	FileStorageProvider string   `json:"fileStorageProvider"`
+}
+
+type TokenOrganization struct {
+	ID string `json:"id"`
 }
 
 type CreatorToken struct {
