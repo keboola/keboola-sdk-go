@@ -10,8 +10,14 @@ import (
 // CleanStorageWorkspaces deletes all storage workspaces in the project.
 // This method lists all workspaces and deletes them one by one.
 func (a *AuthorizedAPI) CleanStorageWorkspaces(ctx context.Context) error {
+	// Get default branch
+	defBranch, err := a.GetDefaultBranchRequest().Send(ctx)
+	if err != nil {
+		return err
+	}
+
 	// List all storage workspaces
-	workspaces, err := a.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err := a.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	if err != nil {
 		return err
 	}
@@ -25,7 +31,7 @@ func (a *AuthorizedAPI) CleanStorageWorkspaces(ctx context.Context) error {
 		wg.Add(1)
 		go func(workspaceID uint64) {
 			defer wg.Done()
-			if _, deleteErr := a.StorageWorkspaceDeleteRequest(workspaceID).Send(ctx); deleteErr != nil {
+			if _, deleteErr := a.StorageWorkspaceDeleteRequest(defBranch.ID, workspaceID).Send(ctx); deleteErr != nil {
 				mu.Lock()
 				result = multierror.Append(result, deleteErr)
 				mu.Unlock()

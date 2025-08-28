@@ -8,6 +8,7 @@ import (
 
 	"github.com/keboola/go-utils/pkg/testproject"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
@@ -20,8 +21,12 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
+	// Get default branch
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
 	// List workspaces - should be empty initially
-	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
@@ -35,7 +40,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}
 
-	createdWorkspace, err := api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
@@ -43,7 +48,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
-	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(createdWorkspace.ID).Send(ctx)
+	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
@@ -52,7 +57,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Create credentials
-	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(createdWorkspace.ID).Send(ctx)
+	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, credentials)
 	assert.Equal(t, credentials.ID, credentials.ID)
@@ -65,7 +70,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Contains(t, *credentials.StorageWorkspaceDetails.Warehouse, "KEBOOLA")
 
 	// Fetch credentials
-	fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(defBranch.ID, createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, fetchedCredentials)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, fetchedCredentials.StorageWorkspaceDetails.Backend)
@@ -77,23 +82,23 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.SSOLoginAvailable, fetchedCredentials.StorageWorkspaceDetails.SSOLoginAvailable)
 
 	// Delete credentials
-	deletedCredentials, err := api.StorageWorkspaceDeleteCredentialsRequest(createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
+	deletedCredentials, err := api.StorageWorkspaceDeleteCredentialsRequest(defBranch.ID, createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, deletedCredentials)
 
 	// List workspaces - should contain the created workspace
-	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 1, "Workspace list should contain one workspace")
 	assert.Equal(t, createdWorkspace.ID, (*workspaces)[0].ID)
 
 	// Delete workspace
-	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(createdWorkspace.ID).Send(ctx)
+	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, deletedWorkspace)
 
 	// List workspaces - should be empty again
-	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty after deletion")
 }
@@ -103,11 +108,15 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
 
+	// Get default branch
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
 	// List workspaces - should be empty initially
-	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
@@ -118,7 +127,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 		LoginType:   keboola.StorageWorkspaceLoginTypeDefault,
 	}
 
-	_, err = api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
+	_, err = api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	assert.Error(t, err)
 }
 
@@ -131,8 +140,12 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
+	// Get default branch
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
 	// List workspaces - should be empty initially
-	workspaces, err := api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
@@ -142,7 +155,7 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
 	}
 
-	createdWorkspace, err := api.StorageWorkspaceCreateRequest(workspace).Send(ctx)
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendBigQuery, createdWorkspace.StorageWorkspaceDetails.Backend)
@@ -163,7 +176,7 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NotEmpty(t, credentials.PrivateKey, "Credentials private_key should not be empty")
 
 	// Get workspace details
-	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(createdWorkspace.ID).Send(ctx)
+	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
@@ -195,18 +208,18 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Credentials.PrivateKey, fetchedCredentials.Credentials.PrivateKey)*/
 
 	// List workspaces - should contain the created workspace
-	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 1, "Workspace list should contain one workspace")
 	assert.Equal(t, createdWorkspace.ID, (*workspaces)[0].ID)
 
 	// Delete workspace
-	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(createdWorkspace.ID).Send(ctx)
+	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, deletedWorkspace)
 
 	// List workspaces - should be empty again
-	workspaces, err = api.StorageWorkspacesListRequest().Send(ctx)
+	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty after deletion")
 }
