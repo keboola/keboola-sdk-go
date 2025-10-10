@@ -169,9 +169,7 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 	m := &sync.Mutex{}
 	var err error
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		data, e := a.ListSandboxWorkspaceConfigRequest(branchID).Send(ctx)
 		if e != nil {
 			m.Lock()
@@ -180,11 +178,9 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 			return
 		}
 		configs = *data
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		data, e := a.ListSandboxWorkspaceInstancesRequest().Send(ctx)
 		if e != nil {
 			m.Lock()
@@ -197,7 +193,7 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 			m[workspace.ID.String()] = workspace
 		}
 		instances = m
-	}()
+	})
 
 	wg.Wait()
 	if err != nil {

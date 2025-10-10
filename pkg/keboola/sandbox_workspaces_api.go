@@ -90,15 +90,13 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	m := &sync.Mutex{}
 
 	for _, s := range *instances {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if e := a.DeleteSandboxWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
 				m.Lock()
 				defer m.Unlock()
 				err = multierror.Append(err, e)
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
