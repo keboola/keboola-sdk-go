@@ -51,10 +51,7 @@ func (g *WaitGroup) Wait() error {
 
 // Send a concurrent request.
 func (g *WaitGroup) Send(request Sendable) {
-	g.wg.Add(1)
-	go func() {
-		defer g.wg.Done()
-
+	g.wg.Go(func() {
 		// Limit number of concurrent requests
 		if err := g.sem.Acquire(g.ctx, 1); err != nil {
 			// Ctx is done, return
@@ -67,5 +64,5 @@ func (g *WaitGroup) Send(request Sendable) {
 			defer g.lock.Unlock()
 			g.err = multierror.Append(g.err, err)
 		}
-	}()
+	})
 }
