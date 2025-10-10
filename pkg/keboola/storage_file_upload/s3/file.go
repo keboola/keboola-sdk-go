@@ -10,13 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/relvacode/iso8601"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
 )
 
-const Provider = "aws"
+const (
+	Provider = "aws"
+	// MinUploadPartSize is AWS's minimum part size for multipart uploads (5MB).
+	MinUploadPartSize = 5 * 1024 * 1024
+)
 
 type Path struct {
 	Key    string `json:"key"`
@@ -77,8 +80,8 @@ func NewUploadWriter(ctx context.Context, params *UploadParams, region string, s
 			return nil
 		},
 		// Smaller buffer size for better progress reporting
-		// 5MB is AWS's minimum part size, see https://github.com/aws/aws-sdk-go/blob/8cf662a972fa7fba8f2c1ec57648cf840e2bb401/service/s3/s3manager/upload.go#L26-L30
-		BufferSize: int(s3manager.MinUploadPartSize),
+		// 5MB is AWS's minimum part size for multipart uploads
+		BufferSize: MinUploadPartSize,
 	}
 
 	bw, err := b.NewWriter(ctx, sliceKey(params.Key, slice), opts)
