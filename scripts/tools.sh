@@ -10,7 +10,7 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "$SCRIPT_DIR"
 
 # Version to install
-GOLANGCI_LINT_VERSION="v2.0.2"
+GOLANGCI_LINT_VERSION="v2.5.0"
 
 # golangci-lint
 if ! command -v golangci-lint &> /dev/null
