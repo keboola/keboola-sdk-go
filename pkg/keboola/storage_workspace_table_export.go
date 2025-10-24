@@ -3,7 +3,6 @@ package keboola
 import (
 	"context"
 	jsonLib "encoding/json"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -21,10 +20,9 @@ type WorkspaceTableExportRequestBuilder struct {
 }
 
 type workspaceTableExportConfig struct {
-	TableName  string `json:"tableName"`
-	FileName   string `json:"fileName,omitempty"`
-	Format     string `json:"format,omitempty"`
-	Compressed *bool  `json:"compressed,omitempty"`
+	TableName string `json:"tableName"`
+	FileName  string `json:"fileName"`
+	Format    string `json:"format"`
 }
 
 // NewWorkspaceTableExportRequest creates a new workspace table export request builder.
@@ -44,11 +42,10 @@ func (b *WorkspaceTableExportRequestBuilder) Build() request.APIRequest[*Storage
 	result := &StorageJob{}
 	req := b.api.newRequest(StorageAPI).
 		WithResult(result).
-		WithMethod(http.MethodPost).
-		WithURL("branch/{branchId}/workspaces/{workspaceId}/table-export").
+		WithPost("branch/{branchId}/workspaces/{workspaceId}/table-export").
 		AndPathParam("branchId", b.branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(b.workspaceID, 10)).
-		WithJSONBody(b.config)
+		WithJSONBody(request.StructToMap(b.config, nil))
 	return request.NewAPIRequest(result, req)
 }
 
@@ -106,11 +103,5 @@ func (b *WorkspaceTableExportRequestBuilder) WithFileName(fileName string) *Work
 // If not specified, the default format will be used.
 func (b *WorkspaceTableExportRequestBuilder) WithFormat(format string) *WorkspaceTableExportRequestBuilder {
 	b.config.Format = format
-	return b
-}
-
-// WithCompressed sets whether the exported file should be compressed.
-func (b *WorkspaceTableExportRequestBuilder) WithCompressed(compressed bool) *WorkspaceTableExportRequestBuilder {
-	b.config.Compressed = &compressed
 	return b
 }
