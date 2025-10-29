@@ -1,6 +1,7 @@
 package keboola_test
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"testing"
@@ -15,7 +16,6 @@ import (
 
 func TestWorkspaceTableExport(t *testing.T) {
 	t.Parallel()
-	t.Skip()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
@@ -99,14 +99,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 }
 
 // TestWorkspaceTableExportSuccess tests the successful export of a table from workspace.
-// This test requires a workspace with actual data loaded.
-// To run this test, you need to:
-// 1. Have a Snowflake workspace
-// 2. Load a table into the workspace
-// 3. Set the table name in the test.
 func TestWorkspaceTableExportSuccess(t *testing.T) {
-	t.Skip()
-
 	t.Parallel()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -116,6 +109,25 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 
 	// Get default branch
 	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create bucket and table in Storage
+	bucket, tableKey := createBucketAndTableKey(defBranch)
+	_, err = api.CreateBucketRequest(bucket).Send(ctx)
+	require.NoError(t, err)
+
+	// Create file with test data
+	fileName := "test_data.csv"
+	file, err := api.CreateFileResourceRequest(defBranch.ID, fileName).Send(ctx)
+	require.NoError(t, err)
+
+	// Upload file with test data
+	content := []byte("col1,col2\nval1,val2\nval3,val4\n")
+	_, err = keboola.Upload(ctx, file, bytes.NewReader(content))
+	require.NoError(t, err)
+
+	// Create table from file
+	_, err = api.CreateTableFromFileRequest(tableKey, file.FileKey).Send(ctx)
 	require.NoError(t, err)
 
 	// Create workspace
@@ -139,11 +151,29 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	// The table name that exists in the workspace
-	tableName := "TEST_TABLE" // Update this to match actual table in workspace
+	// Load data into workspace
+	loadPayload := &keboola.WorkspaceLoadDataPayload{
+		Input: []keboola.WorkspaceLoadDataInput{
+			{
+				Source:      tableKey.TableID.String(),
+				Destination: "test_table",
+			},
+		},
+	}
+
+	job, err := api.StorageWorkspaceLoadDataRequest(defBranch.ID, createdWorkspace.ID, loadPayload).Send(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, job)
+
+	// Wait for load job to complete
+	waitCtx1, waitCancelFn1 := context.WithTimeout(ctx, time.Minute*5)
+	defer waitCancelFn1()
+	err = api.WaitForStorageJob(waitCtx1, job)
+	require.NoError(t, err)
+	assert.Equal(t, "success", job.Status)
 
 	// Export the table from workspace
-	result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, tableName).
+	result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 		WithFileName("test_export.csv").
 		WithFormat("csv").
 		SendAndWait(ctx, time.Second*30)
@@ -160,9 +190,9 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 		BranchID: defBranch.ID,
 		FileID:   result.FileID,
 	}
-	file, err := api.GetFileRequest(fileKey).Send(ctx)
+	file2, err := api.GetFileRequest(fileKey).Send(ctx)
 	require.NoError(t, err)
-	require.NotNil(t, file)
-	require.Equal(t, result.FileID, file.FileID)
-	require.Equal(t, defBranch.ID, file.BranchID)
+	require.NotNil(t, file2)
+	require.Equal(t, result.FileID, file2.FileID)
+	require.Equal(t, defBranch.ID, file2.BranchID)
 }
