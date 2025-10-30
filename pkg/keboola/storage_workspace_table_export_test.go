@@ -15,7 +15,6 @@ import (
 )
 
 func TestWorkspaceTableExport(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -40,11 +39,6 @@ func TestWorkspaceTableExport(t *testing.T) {
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
-	t.Cleanup(func() {
-		// Clean up workspace after test
-		_, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-		require.NoError(t, err)
-	})
 
 	// Test the workspace table export functionality
 	// Note: A full end-to-end test would require:
@@ -97,11 +91,22 @@ func TestWorkspaceTableExport(t *testing.T) {
 			SendAndWait(ctx, time.Minute*2)
 		require.Error(t, err)
 	})
+
+	t.Run("Format does not match", func(t *testing.T) {
+		_, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
+			WithFileName("exported_table.csv").
+			WithFormat("fake_format").
+			SendAndWait(ctx, time.Minute*2)
+		require.Error(t, err)
+	})
+
+	// Clean up workspace after test
+	_, err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	require.NoError(t, err)
 }
 
 // TestWorkspaceTableExportSuccess tests the successful export of a table from workspace.
 func TestWorkspaceTableExportSuccess(t *testing.T) {
-	//t.Skip()
 	t.Parallel()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -135,8 +140,8 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	// Create workspace
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend: keboola.StorageWorkspaceBackendSnowflake,
-		//BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		Backend:       keboola.StorageWorkspaceBackendSnowflake,
+		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
@@ -148,10 +153,6 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
 	//assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
-	t.Cleanup(func() {
-		_, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-		require.NoError(t, err)
-	})
 
 	// Load data into workspace
 	loadPayload := &keboola.WorkspaceLoadDataPayload{
@@ -195,4 +196,7 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	require.NotNil(t, file2)
 	require.Equal(t, result.File.FileID, file2.FileID)
 	require.Equal(t, defBranch.ID, file2.BranchID)
+
+	_, err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	require.NoError(t, err)
 }

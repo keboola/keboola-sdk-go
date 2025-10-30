@@ -3,7 +3,6 @@ package keboola
 import (
 	"context"
 	jsonLib "encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -88,14 +87,11 @@ func (b *WorkspaceTableExportRequestBuilder) SendAndWait(ctx context.Context, ti
 		return nil, err
 	}
 
-	fmt.Println("Raw JSON from API:", string(data))
-
 	err = jsonLib.Unmarshal(data, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("Parsed result: FileID=%v (type=%T)\n", result.File.FileID, result.File.FileID)
 	return result, nil
 }
 
