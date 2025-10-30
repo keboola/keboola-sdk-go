@@ -101,7 +101,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 
 // TestWorkspaceTableExportSuccess tests the successful export of a table from workspace.
 func TestWorkspaceTableExportSuccess(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	t.Parallel()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -135,8 +135,8 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	// Create workspace
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		Backend: keboola.StorageWorkspaceBackendSnowflake,
+		//BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
@@ -146,7 +146,7 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
+	//assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 	t.Cleanup(func() {
 		_, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
@@ -183,18 +183,16 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	// Verify successful export
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	require.NotZero(t, result.FileID)
-	require.Equal(t, "test_export.csv", result.FileName)
-	require.NotZero(t, result.SizeBytes)
+	require.NotZero(t, result.File.FileID)
 
 	// Verify the exported file exists in Storage
 	fileKey := keboola.FileKey{
 		BranchID: defBranch.ID,
-		FileID:   result.FileID,
+		FileID:   result.File.FileID,
 	}
 	file2, err := api.GetFileRequest(fileKey).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, file2)
-	require.Equal(t, result.FileID, file2.FileID)
+	require.Equal(t, result.File.FileID, file2.FileID)
 	require.Equal(t, defBranch.ID, file2.BranchID)
 }

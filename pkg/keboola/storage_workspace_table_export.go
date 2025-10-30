@@ -3,6 +3,7 @@ package keboola
 import (
 	"context"
 	jsonLib "encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -55,9 +56,11 @@ func (b *WorkspaceTableExportRequestBuilder) Send(ctx context.Context) (*Storage
 
 // WorkspaceTableExportJobResult contains the result of a workspace table export job.
 type WorkspaceTableExportJobResult struct {
-	FileID    FileID `json:"fileId"`
-	FileName  string `json:"fileName"`
-	SizeBytes uint64 `json:"sizeBytes,omitempty"`
+	File ExportedFile `json:"file"`
+}
+
+type ExportedFile struct {
+	FileID FileID `json:"id"`
 }
 
 // SendAndWait executes the request and waits for the resulting storage job to finish.
@@ -84,11 +87,15 @@ func (b *WorkspaceTableExportRequestBuilder) SendAndWait(ctx context.Context, ti
 	if err != nil {
 		return nil, err
 	}
-	err = jsonLib.Unmarshal(data, result)
+
+	fmt.Println("Raw JSON from API:", string(data))
+
+	err = jsonLib.Unmarshal(data, &result)
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Printf("Parsed result: FileID=%v (type=%T)\n", result.File.FileID, result.File.FileID)
 	return result, nil
 }
 
