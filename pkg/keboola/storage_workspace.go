@@ -187,3 +187,30 @@ func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(branchID BranchID, workspa
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
 	return request.NewAPIRequest(result, req)
 }
+
+// WorkspaceLoadDataInput represents a single table mapping for workspace load-data operation.
+type WorkspaceLoadDataInput struct {
+	Source      string `json:"source"`              // Full table identifier (e.g., in.c-bucket.mytable)
+	Destination string `json:"destination"`         // Destination table name in workspace
+	Overwrite   *bool  `json:"overwrite,omitempty"` // When preserve is true, duplicate tables will be overwritten
+}
+
+// WorkspaceLoadDataPayload represents the request body for workspace load-data operation.
+type WorkspaceLoadDataPayload struct {
+	Input    []WorkspaceLoadDataInput `json:"input"`              // Mappings of source tables with destinations
+	Preserve *bool                    `json:"preserve,omitempty"` // Keep existing tables in workspace; otherwise purge before loading
+}
+
+// StorageWorkspaceLoadDataRequest https://keboola.docs.apiary.io/#reference/workspaces/load-data/load-data
+// Loads data from Storage tables into a workspace and waits for the operation to complete.
+func (a *AuthorizedAPI) StorageWorkspaceLoadDataRequest(branchID BranchID, workspaceID uint64, payload *WorkspaceLoadDataPayload) request.APIRequest[*StorageJob] {
+	result := &StorageJob{}
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(result).
+		WithPost("branch/{branchId}/workspaces/{workspaceId}/load").
+		AndPathParam("branchId", branchID.String()).
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
+		WithJSONBody(request.StructToMap(payload, nil))
+	return request.NewAPIRequest(result, req)
+}
