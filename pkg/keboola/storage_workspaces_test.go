@@ -34,8 +34,8 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	// Create workspace
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend: keboola.StorageWorkspaceBackendSnowflake,
-		//BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		Backend:       keboola.StorageWorkspaceBackendSnowflake,
+		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
@@ -45,7 +45,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
-	//assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
+	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
@@ -134,6 +134,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 
 func TestStorageWorkspaceLoadData(t *testing.T) {
 	t.Parallel()
+
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
@@ -166,8 +167,8 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	// Create workspace
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend: keboola.StorageWorkspaceBackendSnowflake,
-		//BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		Backend:       keboola.StorageWorkspaceBackendSnowflake,
+		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
