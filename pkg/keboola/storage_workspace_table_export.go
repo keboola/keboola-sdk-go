@@ -27,6 +27,8 @@ type workspaceTableExportConfig struct {
 
 // NewWorkspaceTableExportRequest creates a new workspace table export request builder.
 // The table will be exported from the workspace to a file in the storage backend.
+// /v2/storage/branch/{branchId}/workspaces/{workspaceId}/table-export is the API endpoint.
+// https://connection.canary-orion.keboola.dev/api/doc/storage for reference.
 func (a *AuthorizedAPI) NewWorkspaceTableExportRequest(branchID BranchID, workspaceID uint64, tableName string) *WorkspaceTableExportRequestBuilder {
 	return &WorkspaceTableExportRequestBuilder{
 		branchID:    branchID,
