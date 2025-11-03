@@ -55,7 +55,7 @@ func TestWorkspacesCreateAndDeletePython(t *testing.T) {
 	foundInstance := false
 	for _, v := range workspaces {
 		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypePython))
+			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypePython)
 			foundInstance = true
 			break
 		}
@@ -105,7 +105,7 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	foundInstance := false
 	for _, v := range workspaces {
 		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypeSnowflake))
+			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypeSnowflake)
 			foundInstance = true
 			break
 		}
@@ -167,7 +167,7 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	foundInstance := false
 	for _, v := range workspaces {
 		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == string(keboola.SandboxWorkspaceTypeBigQuery))
+			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypeBigQuery)
 			foundInstance = true
 			break
 		}

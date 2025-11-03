@@ -39,7 +39,7 @@ type SandboxWorkspaceCredentials struct {
 
 type SandboxWorkspace struct {
 	ID       SandboxWorkspaceID    `json:"id"`
-	Type     string                `json:"type"`
+	Type     SandboxWorkspaceType  `json:"type"`
 	Size     string                `json:"size"` // Only exists for container workspaces (Python, R)
 	Active   bool                  `json:"active"`
 	Shared   bool                  `json:"shared"`
