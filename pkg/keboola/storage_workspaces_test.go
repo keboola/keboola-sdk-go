@@ -28,7 +28,8 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 
 	// List workspaces - should be empty initially
 	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, workspaces)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
 
 	// Create workspace
@@ -42,16 +43,16 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, createdWorkspace)
+	require.NoError(t, err)
+	require.NotNil(t, createdWorkspace)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
 	retrievedWorkspace, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, retrievedWorkspace)
+	require.NoError(t, err)
+	require.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
@@ -59,8 +60,8 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 
 	// Create credentials
 	credentials, err := api.StorageWorkspaceCreateCredentialsRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, credentials)
+	require.NoError(t, err)
+	require.NotNil(t, credentials)
 	assert.Equal(t, credentials.ID, credentials.ID)
 	assert.Equal(t, credentials.StorageWorkspaceDetails.Backend, credentials.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, credentials.StorageWorkspaceDetails.Host, credentials.StorageWorkspaceDetails.Host)
@@ -72,8 +73,8 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 
 	// Fetch credentials
 	fetchedCredentials, err := api.StorageWorkspaceFetchCredentialsRequest(defBranch.ID, createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, fetchedCredentials)
+	require.NoError(t, err)
+	require.NotNil(t, fetchedCredentials)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, fetchedCredentials.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Host, fetchedCredentials.StorageWorkspaceDetails.Host)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Region, fetchedCredentials.StorageWorkspaceDetails.Region)
@@ -84,23 +85,25 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 
 	// Delete credentials
 	deletedCredentials, err := api.StorageWorkspaceDeleteCredentialsRequest(defBranch.ID, createdWorkspace.ID, credentials.StorageWorkspaceDetails.Credentials.ID).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, deletedCredentials)
+	require.NoError(t, err)
+	require.NotNil(t, deletedCredentials)
 
 	// List workspaces - should contain the created workspace
 	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, workspaces)
 	assert.Len(t, *workspaces, 1, "Workspace list should contain one workspace")
 	assert.Equal(t, createdWorkspace.ID, (*workspaces)[0].ID)
 
 	// Delete workspace
 	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, deletedWorkspace)
+	require.NoError(t, err)
+	require.NotNil(t, deletedWorkspace)
 
 	// List workspaces - should be empty again
 	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, workspaces)
 	assert.Len(t, *workspaces, 0, "Workspace list should be empty after deletion")
 }
 

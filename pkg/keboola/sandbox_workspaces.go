@@ -30,7 +30,7 @@ type SandboxWorkspaceWithConfig struct {
 }
 
 func (v SandboxWorkspaceWithConfig) String() string {
-	if SandboxWorkspaceSupportsSizes(SandboxWorkspaceType(v.SandboxWorkspace.Type)) {
+	if SandboxWorkspaceSupportsSizes(v.SandboxWorkspace.Type) {
 		return fmt.Sprintf("ID: %s, Type: %s, Size: %s, Name: %s", v.SandboxWorkspace.ID, v.SandboxWorkspace.Type, v.SandboxWorkspace.Size, v.Config.Name)
 	} else {
 		return fmt.Sprintf("ID: %s, Type: %s, Name: %s", v.SandboxWorkspace.ID, v.SandboxWorkspace.Type, v.Config.Name)
