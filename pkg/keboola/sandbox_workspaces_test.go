@@ -38,6 +38,17 @@ func TestWorkspacesCreateAndDeletePython(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, workspace)
 
+	defer func() {
+		// Delete workspace
+		err = api.DeleteSandboxWorkspace(
+			ctx,
+			branch.ID,
+			workspace.Config.ID,
+			workspace.SandboxWorkspace.ID,
+		)
+		require.NoError(t, err)
+	}()
+
 	// List workspaces - try to find the one we just created
 	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
 	require.NoError(t, err)
@@ -50,15 +61,6 @@ func TestWorkspacesCreateAndDeletePython(t *testing.T) {
 		}
 	}
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
-
-	// Delete workspace
-	err = api.DeleteSandboxWorkspace(
-		ctx,
-		branch.ID,
-		workspace.Config.ID,
-		workspace.SandboxWorkspace.ID,
-	)
-	require.NoError(t, err)
 }
 
 func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
@@ -86,6 +88,17 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, workspace)
 
+	defer func() {
+		// Delete workspace
+		err = api.DeleteSandboxWorkspace(
+			ctx,
+			branch.ID,
+			workspace.Config.ID,
+			workspace.SandboxWorkspace.ID,
+		)
+		require.NoError(t, err)
+	}()
+
 	// List workspaces - try to find the one we just created
 	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
 	require.NoError(t, err)
@@ -98,15 +111,6 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 		}
 	}
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
-
-	// Delete workspace
-	err = api.DeleteSandboxWorkspace(
-		ctx,
-		branch.ID,
-		workspace.Config.ID,
-		workspace.SandboxWorkspace.ID,
-	)
-	require.NoError(t, err)
 }
 
 func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
@@ -133,6 +137,17 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, workspace)
 
+	defer func() {
+		// Delete workspace
+		err = api.DeleteSandboxWorkspace(
+			ctx,
+			branch.ID,
+			workspace.Config.ID,
+			workspace.SandboxWorkspace.ID,
+		)
+		require.NoError(t, err)
+	}()
+
 	// Verify that credentials are populated for BigQuery workspace
 	require.NotNil(t, workspace.SandboxWorkspace.Credentials, "BigQuery workspace should have credentials")
 	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.Type, "Credentials type should not be empty")
@@ -158,13 +173,4 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 		}
 	}
 	assert.True(t, foundInstance, "Workspace list did not find created workspace")
-
-	// Delete workspace
-	err = api.DeleteSandboxWorkspace(
-		ctx,
-		branch.ID,
-		workspace.Config.ID,
-		workspace.SandboxWorkspace.ID,
-	)
-	require.NoError(t, err)
 }
