@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"slices"
 	"testing"
 	"time"
 
@@ -26,12 +27,6 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
 	require.NoError(t, err)
 
-	// List workspaces - should be empty initially
-	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, workspaces)
-	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
-
 	// Create workspace
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
@@ -45,6 +40,14 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
+
+	// Ensure workspace is cleaned up even if test fails
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+	})
+
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
@@ -89,22 +92,23 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	require.NotNil(t, deletedCredentials)
 
 	// List workspaces - should contain the created workspace
-	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
+	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, workspaces)
-	assert.Len(t, *workspaces, 1, "Workspace list should contain one workspace")
-	assert.Equal(t, createdWorkspace.ID, (*workspaces)[0].ID)
+
+	assert.True(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 
 	// Delete workspace
 	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, deletedWorkspace)
 
-	// List workspaces - should be empty again
+	// List workspaces - should not contain the deleted workspace
 	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, workspaces)
-	assert.Len(t, *workspaces, 0, "Workspace list should be empty after deletion")
+
+	assert.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == deletedWorkspace.ID }))
 }
 
 func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
@@ -181,6 +185,13 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
 
+	// Ensure workspace is cleaned up even if test fails
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+	})
+
 	// Load data into workspace
 	loadPayload := &keboola.WorkspaceLoadDataPayload{
 		Input: []keboola.WorkspaceLoadDataInput{
@@ -201,9 +212,6 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	err = api.WaitForStorageJob(waitCtx, job)
 	require.NoError(t, err)
 	assert.Equal(t, "success", job.Status)
-
-	_, err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-	require.NoError(t, err)
 }
 
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {

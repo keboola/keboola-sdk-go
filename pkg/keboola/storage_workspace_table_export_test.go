@@ -41,6 +41,13 @@ func TestWorkspaceTableExport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
 
+	// Ensure workspace is cleaned up even if test fails
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+	})
+
 	// Test the workspace table export functionality
 	// Note: A full end-to-end test would require:
 	// 1. Creating a workspace (done above)
@@ -101,10 +108,6 @@ func TestWorkspaceTableExport(t *testing.T) {
 			SendAndWait(ctx, time.Minute*2)
 		require.Error(t, err)
 	})
-
-	// Clean up workspace after test
-	_, err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
-	require.NoError(t, err)
 }
 
 // TestWorkspaceTableExportSuccess tests the successful export of a table from workspace.
@@ -153,6 +156,14 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, createdWorkspace)
+
+	// Ensure workspace is cleaned up even if test fails
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+	})
+
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
 	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
