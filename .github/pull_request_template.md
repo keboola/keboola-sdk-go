@@ -1,5 +1,3 @@
-Jira: XXXXX
-
 **Changes:**
 - ...
 
