@@ -24,6 +24,10 @@ const (
 
 type SandboxWorkspaceType string
 
+func (s SandboxWorkspaceType) String() string {
+	return string(s)
+}
+
 type SandboxWorkspaceWithConfig struct {
 	SandboxWorkspace *SandboxWorkspace
 	Config           *Config
