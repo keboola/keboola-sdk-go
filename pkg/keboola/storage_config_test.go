@@ -339,3 +339,43 @@ func expectedComponentsAfterConfigOnlyUpdate() string {
 ]
 `
 }
+
+// TestConfigWithArrayOfStringConfiguration tests real-world case where API returns
+// configuration as array containing JSON string: ["{\...}"]
+// This was seen in keboola.variables component configurations.
+func TestConfigWithArrayOfStringConfiguration(t *testing.T) {
+	t.Parallel()
+
+	// Real example from keboola.variables component
+	configJSON := `{
+	"id": "01k4yhwsmgfdh1pk4r8kv09ske",
+	"name": "Test configuration",
+	"description": "",
+	"created": "2025-09-12T10:50:26+0200",
+	"creatorToken": {
+		"id": 165618,
+		"description": "queue test"
+	},
+	"version": 3,
+	"changeDescription": "Row row2 added",
+	"isDisabled": false,
+	"isDeleted": false,
+	"configuration": {
+	"key1":["val1","val2"]
+},
+	"rowsSortOrder": ["1"],
+	"currentVersion": {
+		"created": "2025-09-12T10:50:26+0200",
+		"creatorToken": {
+			"id": 165618,
+			"description": "queue test"
+		},
+		"changeDescription": "Row row2 added",
+		"versionIdentifier": "01K4YHWSWRK0T35KZFYF4QWR5R"
+	}
+}`
+
+	var config Config
+	err := json.Unmarshal([]byte(configJSON), &config)
+	assert.NoError(t, err)
+}
