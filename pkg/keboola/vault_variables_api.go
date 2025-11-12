@@ -1,8 +1,8 @@
 package keboola
 
 import (
+	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
@@ -70,6 +70,12 @@ func (a *AuthorizedAPI) ListVariablesScopedRequest(branchID BranchID, opts *Vaul
 				req = req.AndQueryParam("attributes["+k+"]", toString(v))
 			}
 		}
+		if opts.Offset > 0 {
+			req = req.AndQueryParam("offset", strconv.Itoa(opts.Offset))
+		}
+		if opts.Limit > 0 {
+			req = req.AndQueryParam("limit", strconv.Itoa(opts.Limit))
+		}
 	}
 
 	return request.NewAPIRequest(&result, req)
@@ -88,6 +94,6 @@ func toString(v interface{}) string {
 	case bool:
 		return strconv.FormatBool(val)
 	default:
-		return url.QueryEscape(string([]byte(v.(string))))
+		return fmt.Sprint(v)
 	}
 }
