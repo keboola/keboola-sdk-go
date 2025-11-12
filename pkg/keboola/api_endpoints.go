@@ -20,4 +20,9 @@ const (
 	// Endpoints for workspaces API.
 	WorkspacesAPISandboxes = "sandboxes"
 	WorkspacesAPISandbox   = "sandboxes/{sandboxId}"
+
+	// Endpoints for variables API.
+	VariablesAPIVariables      = "variables"
+	VariablesAPIVariable       = "variables/{hash}"
+	VariablesAPIScopedBranch   = "variables/scoped/branch/{branchId}"
 )
