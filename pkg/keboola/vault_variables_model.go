@@ -11,12 +11,12 @@ type VaultVariableKey struct {
 }
 
 type VaultVariable struct {
+	VaultVariableKey
 	Key        string                 `json:"key"`
 	Value      string                 `json:"value"`
 	Flags      []string               `json:"flags,omitempty"`
 	Group      string                 `json:"group,omitempty"`
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
-	Hash       VaultVariableHash      `json:"hash"`
 }
 
 type VaultVariableCreatePayload struct {
