@@ -8,30 +8,30 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
-func (a *AuthorizedAPI) CreateVariableRequest(payload *VariableCreatePayload) request.APIRequest[*Variable] {
-	result := &Variable{}
-	req := a.newRequest(VariablesAPI).
+func (a *AuthorizedAPI) CreateVariableRequest(payload *VaultVariableCreatePayload) request.APIRequest[*VaultVariable] {
+	result := &VaultVariable{}
+	req := a.newRequest(VaultVariablesAPI).
 		WithResult(result).
 		WithMethod(http.MethodPost).
-		WithURL(VariablesAPIVariables).
+		WithURL(VaultAPIVariables).
 		WithJSONBody(payload)
 	return request.NewAPIRequest(result, req)
 }
 
-func (a *AuthorizedAPI) DeleteVariableRequest(hash VariableHash) request.APIRequest[request.NoResult] {
-	req := a.newRequest(VariablesAPI).
+func (a *AuthorizedAPI) DeleteVariableRequest(hash VaultVariableHash) request.APIRequest[request.NoResult] {
+	req := a.newRequest(VaultVariablesAPI).
 		WithMethod(http.MethodDelete).
-		WithURL(VariablesAPIVariable).
+		WithURL(VaultAPIVariable).
 		AndPathParam("hash", hash.String())
 	return request.NewAPIRequest(request.NoResult{}, req)
 }
 
-func (a *AuthorizedAPI) ListVariablesRequest(opts *VariableListOptions) request.APIRequest[*[]*Variable] {
-	result := make([]*Variable, 0)
-	req := a.newRequest(VariablesAPI).
+func (a *AuthorizedAPI) ListVariablesRequest(opts *VaultVariableListOptions) request.APIRequest[*[]*VaultVariable] {
+	result := make([]*VaultVariable, 0)
+	req := a.newRequest(VaultVariablesAPI).
 		WithResult(&result).
 		WithMethod(http.MethodGet).
-		WithURL(VariablesAPIVariables)
+		WithURL(VaultAPIVariables)
 
 	if opts != nil {
 		if opts.Key != "" {
@@ -53,12 +53,12 @@ func (a *AuthorizedAPI) ListVariablesRequest(opts *VariableListOptions) request.
 	return request.NewAPIRequest(&result, req)
 }
 
-func (a *AuthorizedAPI) ListVariablesScopedRequest(branchID BranchID, opts *VariableListOptions) request.APIRequest[*[]*Variable] {
-	result := make([]*Variable, 0)
-	req := a.newRequest(VariablesAPI).
+func (a *AuthorizedAPI) ListVariablesScopedRequest(branchID BranchID, opts *VaultVariableListOptions) request.APIRequest[*[]*VaultVariable] {
+	result := make([]*VaultVariable, 0)
+	req := a.newRequest(VaultVariablesAPI).
 		WithResult(&result).
 		WithMethod(http.MethodGet).
-		WithURL(VariablesAPIScopedBranch).
+		WithURL(VaultAPIScopedBranch).
 		AndPathParam("branchId", branchID.String())
 
 	if opts != nil {

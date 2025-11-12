@@ -1,25 +1,25 @@
 package keboola
 
-type VariableHash string
+type VaultVariableHash string
 
-func (v VariableHash) String() string {
+func (v VaultVariableHash) String() string {
 	return string(v)
 }
 
-type VariableKey struct {
-	Hash VariableHash `json:"hash" validate:"required"`
+type VaultVariableKey struct {
+	Hash VaultVariableHash `json:"hash" validate:"required"`
 }
 
-type Variable struct {
+type VaultVariable struct {
 	Key        string                 `json:"key"`
 	Value      string                 `json:"value"`
 	Flags      []string               `json:"flags,omitempty"`
 	Group      string                 `json:"group,omitempty"`
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
-	Hash       VariableHash           `json:"hash"`
+	Hash       VaultVariableHash      `json:"hash"`
 }
 
-type VariableCreatePayload struct {
+type VaultVariableCreatePayload struct {
 	Key        string                 `json:"key"`
 	Value      string                 `json:"value"`
 	Flags      []string               `json:"flags,omitempty"`
@@ -27,7 +27,7 @@ type VariableCreatePayload struct {
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 }
 
-type VariableListOptions struct {
+type VaultVariableListOptions struct {
 	Key        string                 `json:"key,omitempty"`
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 	Offset     int                    `json:"offset,omitempty"`

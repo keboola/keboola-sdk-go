@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type VariablesError struct {
+type VaultVariablesError struct {
 	Message     string `json:"error"`
 	ErrCode     int    `json:"code"`
 	ExceptionID string `json:"exceptionId"`
@@ -14,8 +14,8 @@ type VariablesError struct {
 	response    *http.Response
 }
 
-func (e *VariablesError) Error() string {
-	msg := fmt.Sprintf("variables api error[%d]: %s", e.ErrCode, e.Message)
+func (e *VaultVariablesError) Error() string {
+	msg := fmt.Sprintf("vault variables api error[%d]: %s", e.ErrCode, e.Message)
 	if e.request != nil {
 		msg += fmt.Sprintf(`, method: "%s", url: "%s"`, e.request.Method, e.request.URL)
 	}
@@ -29,22 +29,22 @@ func (e *VariablesError) Error() string {
 }
 
 // ErrorName returns a human-readable name of the error.
-func (e *VariablesError) ErrorName() string {
+func (e *VaultVariablesError) ErrorName() string {
 	return http.StatusText(e.ErrCode)
 }
 
 // ErrorUserMessage returns error message for end user.
-func (e *VariablesError) ErrorUserMessage() string {
+func (e *VaultVariablesError) ErrorUserMessage() string {
 	return e.Message
 }
 
 // ErrorExceptionID returns exception ID to find details in logs.
-func (e *VariablesError) ErrorExceptionID() string {
+func (e *VaultVariablesError) ErrorExceptionID() string {
 	return e.ExceptionID
 }
 
 // StatusCode returns HTTP status code.
-func (e *VariablesError) StatusCode() int {
+func (e *VaultVariablesError) StatusCode() int {
 	if e.response == nil {
 		return 0
 	}
@@ -52,11 +52,11 @@ func (e *VariablesError) StatusCode() int {
 }
 
 // SetRequest method allows injection of HTTP request to the error, it implements client.errorWithRequest.
-func (e *VariablesError) SetRequest(request *http.Request) {
+func (e *VaultVariablesError) SetRequest(request *http.Request) {
 	e.request = request
 }
 
 // SetResponse method allows injection of HTTP response to the error, it implements client.errorWithResponse.
-func (e *VariablesError) SetResponse(response *http.Response) {
+func (e *VaultVariablesError) SetResponse(response *http.Response) {
 	e.response = response
 }

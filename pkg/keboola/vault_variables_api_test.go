@@ -24,7 +24,7 @@ func TestVariablesApiCalls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, branch)
 
-	createPayload := &keboola.VariableCreatePayload{
+	createPayload := &keboola.VaultVariableCreatePayload{
 		Key:   "test_variable",
 		Value: "test_value",
 		Attributes: map[string]interface{}{
@@ -38,7 +38,7 @@ func TestVariablesApiCalls(t *testing.T) {
 	assert.Equal(t, "test_value", variable.Value)
 	assert.NotEmpty(t, variable.Hash)
 
-	listOpts := &keboola.VariableListOptions{
+	listOpts := &keboola.VaultVariableListOptions{
 		Attributes: map[string]interface{}{
 			"branchId": branch.ID.String(),
 		},
@@ -105,7 +105,7 @@ func TestVariablesWithEncryption(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, branch)
 
-	createPayload := &keboola.VariableCreatePayload{
+	createPayload := &keboola.VaultVariableCreatePayload{
 		Key:   "test_encrypted_variable",
 		Value: "secret_value",
 		Flags: []string{"encrypted"},
@@ -120,7 +120,7 @@ func TestVariablesWithEncryption(t *testing.T) {
 	assert.NotEmpty(t, variable.Hash)
 	assert.Contains(t, variable.Flags, "encrypted")
 
-	listOpts := &keboola.VariableListOptions{
+	listOpts := &keboola.VaultVariableListOptions{
 		Key: "test_encrypted_variable",
 		Attributes: map[string]interface{}{
 			"branchId": branch.ID.String(),
@@ -159,7 +159,7 @@ func TestVariablesWithGroup(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, branch)
 
-	createPayload := &keboola.VariableCreatePayload{
+	createPayload := &keboola.VaultVariableCreatePayload{
 		Key:   "test_grouped_variable",
 		Value: "grouped_value",
 		Group: "Test Group",
@@ -174,7 +174,7 @@ func TestVariablesWithGroup(t *testing.T) {
 	assert.Equal(t, "Test Group", variable.Group)
 	assert.NotEmpty(t, variable.Hash)
 
-	listOpts := &keboola.VariableListOptions{
+	listOpts := &keboola.VaultVariableListOptions{
 		Key: "test_grouped_variable",
 	}
 	scopedVariables, err := api.ListVariablesScopedRequest(branch.ID, listOpts).Send(ctx)

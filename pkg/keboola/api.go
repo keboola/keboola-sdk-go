@@ -20,12 +20,12 @@ import (
 type ServiceType string
 
 const (
-	EncryptionAPI = ServiceType("encryption")
-	QueueAPI      = ServiceType("queue")
-	SchedulerAPI  = ServiceType("scheduler")
-	StorageAPI    = ServiceType("storage")
-	VariablesAPI  = ServiceType("vault")
-	WorkspacesAPI = ServiceType("sandboxes")
+	EncryptionAPI     = ServiceType("encryption")
+	QueueAPI          = ServiceType("queue")
+	SchedulerAPI      = ServiceType("scheduler")
+	StorageAPI        = ServiceType("storage")
+	VaultVariablesAPI = ServiceType("vault")
+	WorkspacesAPI     = ServiceType("sandboxes")
 	// Deprecated: Syrup and old queue should no longer be used.
 	// See https://changelog.keboola.com/2021-11-10-what-is-new-queue/ for information on how to migrate your project.
 	SyrupAPI              = ServiceType("syrup")
