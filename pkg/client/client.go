@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	otelMetric "go.opentelemetry.io/otel/metric"
 	otelTrace "go.opentelemetry.io/otel/trace"
 
@@ -399,6 +399,7 @@ type roundTripper struct {
 
 func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
+	startedAt := time.Now()
 	state := rt.retry.NewBackoff()
 	attempt := 0
 	for {
@@ -465,6 +466,11 @@ func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		delay := state.NextBackOff()
 		if delay == backoff.Stop {
 			// Stop
+			return res, err
+		}
+
+		// Stop retrying if maximum elapsed time exceeded.
+		if rt.retry.TotalRequestTimeout > 0 && time.Since(startedAt)+delay > rt.retry.TotalRequestTimeout {
 			return res, err
 		}
 

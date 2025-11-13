@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 )
 
 // RetriesCount - default retries count.
@@ -89,7 +89,6 @@ func (c RetryConfig) NewBackoff() backoff.BackOff {
 	b := backoff.NewExponentialBackOff()
 	b.InitialInterval = c.WaitTimeStart
 	b.MaxInterval = c.WaitTimeMax
-	b.MaxElapsedTime = c.TotalRequestTimeout
 	b.Multiplier = 2
 	b.RandomizationFactor = 0
 	b.Reset()
