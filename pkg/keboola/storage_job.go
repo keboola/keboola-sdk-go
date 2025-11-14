@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/relvacode/iso8601"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -136,7 +136,6 @@ func newStorageJobBackoff() *backoff.ExponentialBackOff {
 	b.InitialInterval = 50 * time.Millisecond
 	b.Multiplier = 2
 	b.MaxInterval = 3 * time.Second
-	b.MaxElapsedTime = 0 // no limit, run until context timeout
 	b.Reset()
 	return b
 }
