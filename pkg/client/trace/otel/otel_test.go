@@ -53,8 +53,8 @@ func TestSimpleRealRequest(t *testing.T) {
 	// Create client
 	c := client.New().
 		WithTransport(client.DefaultTransport()).
-		WithRetry(client.RetryConfig{
-			Condition:     client.DefaultRetryCondition(),
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
 			Count:         3,
 			WaitTimeStart: 1 * time.Millisecond,
 			WaitTimeMax:   20 * time.Millisecond,
@@ -188,8 +188,8 @@ func TestComplexMockedRequest(t *testing.T) {
 	c := client.New().
 		WithTransport(transport).
 		WithBaseURL("https://connection.keboola.com").
-		WithRetry(client.RetryConfig{
-			Condition:     client.DefaultRetryCondition(),
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
 			Count:         3,
 			WaitTimeStart: 1 * time.Millisecond,
 			WaitTimeMax:   20 * time.Millisecond,

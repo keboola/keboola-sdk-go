@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 func TestIsResourceAlreadyExistsError(t *testing.T) {
@@ -95,7 +96,7 @@ func TestHack_CreateConfigRequest_AlreadyExists(t *testing.T) {
 	)
 
 	// Create client
-	c := client.New().WithTransport(transport).WithRetry(client.TestingRetry())
+	c := client.New().WithTransport(transport).WithRetry(request.TestingRetry())
 	api, err := NewAuthorizedAPI(context.Background(), "https://connection.keboola.com", "my-token", WithClient(&c))
 	assert.NoError(t, err)
 
@@ -140,7 +141,7 @@ func TestHack_DeleteTableRequest_NotFound(t *testing.T) {
 	)
 
 	// Create client
-	c := client.New().WithTransport(transport).WithRetry(client.TestingRetry())
+	c := client.New().WithTransport(transport).WithRetry(request.TestingRetry())
 	api, err := NewAuthorizedAPI(context.Background(), "https://connection.keboola.com", "my-token", WithClient(&c))
 	assert.NoError(t, err)
 

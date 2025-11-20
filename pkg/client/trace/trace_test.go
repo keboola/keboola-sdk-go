@@ -15,7 +15,7 @@ import (
 
 	. "github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	. "github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
-	. "github.com/keboola/keboola-sdk-go/v2/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 func TestTrace(t *testing.T) {
@@ -54,13 +54,13 @@ func TestTrace(t *testing.T) {
 	ctx := context.Background()
 	c := New().
 		WithTransport(transport).
-		WithRetry(RetryConfig{
-			Condition:     DefaultRetryCondition(),
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
 			Count:         3,
 			WaitTimeStart: 1 * time.Microsecond,
 			WaitTimeMax:   20 * time.Microsecond,
 		}).
-		AndTrace(func(ctx context.Context, reqDef HTTPRequest) (context.Context, *ClientTrace) {
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
 			s := spew.NewDefaultConfig()
 			s.DisablePointerAddresses = true
 			s.DisableCapacities = true
@@ -112,7 +112,7 @@ RequestProcessed  result=(*string)((len=2) "OK") err=<nil>
 
 	// Test
 	str := ""
-	_, result, err := NewHTTPRequest(c).WithPost("https://example.com/redirect1").WithBody("my-body").WithResult(&str).Send(ctx)
+	_, result, err := request.NewHTTPRequest(c).WithPost("https://example.com/redirect1").WithBody("my-body").WithResult(&str).Send(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, "OK", *result.(*string))
 	assert.Equal(t, strings.TrimLeft(expected, "\n"), logs.String())
@@ -132,8 +132,8 @@ func TestTrace_Multiple(t *testing.T) {
 	ctx := context.Background()
 	c := New().
 		WithTransport(transport).
-		WithRetry(TestingRetry()).
-		AndTrace(func(ctx context.Context, reqDef HTTPRequest) (context.Context, *ClientTrace) {
+		WithRetry(request.TestingRetry()).
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
 			logs.WriteString(fmt.Sprintf("1: GotRequest        %s %s\n", reqDef.Method(), reqDef.URL()))
 			return ctx, &ClientTrace{
 				RequestProcessed: func(result any, err error) {
@@ -153,7 +153,7 @@ func TestTrace_Multiple(t *testing.T) {
 				},
 			}
 		}).
-		AndTrace(func(ctx context.Context, reqDef HTTPRequest) (context.Context, *ClientTrace) {
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
 			logs.WriteString(fmt.Sprintf("2: GotRequest        %s %s\n", reqDef.Method(), reqDef.URL()))
 			return ctx, &ClientTrace{
 				HTTPRequestStart: func(request *http.Request) {
@@ -167,7 +167,7 @@ func TestTrace_Multiple(t *testing.T) {
 				},
 			}
 		}).
-		AndTrace(func(ctx context.Context, _ HTTPRequest) (context.Context, *ClientTrace) {
+		AndTrace(func(ctx context.Context, _ request.HTTPRequest) (context.Context, *ClientTrace) {
 			return ctx, &ClientTrace{
 				RequestProcessed: func(result any, err error) {
 					s := spew.NewDefaultConfig()
@@ -203,7 +203,7 @@ func TestTrace_Multiple(t *testing.T) {
 
 	// Test
 	str := ""
-	_, result, err := NewHTTPRequest(c).WithGet("https://example.com").WithResult(&str).Send(ctx)
+	_, result, err := request.NewHTTPRequest(c).WithGet("https://example.com").WithResult(&str).Send(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, "OK", *result.(*string))
 	assert.Equal(t, strings.TrimLeft(expected, "\n"), logs.String())

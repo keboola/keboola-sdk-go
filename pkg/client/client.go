@@ -43,13 +43,13 @@ type Client struct {
 	transport      http.RoundTripper
 	baseURL        *url.URL
 	header         http.Header
-	retry          RetryConfig
+	retry          request.RetryConfig
 	traceFactories []trace.Factory
 }
 
 // New creates new HTTP Client.
 func New() Client {
-	c := Client{transport: DefaultTransport(), header: make(http.Header), retry: DefaultRetry()}
+	c := Client{transport: DefaultTransport(), header: make(http.Header), retry: request.DefaultRetry()}
 	c.header.Set("User-Agent", "keboola-sdk-go")
 	c.header.Set("Accept-Encoding", "gzip, br")
 	return c
@@ -99,7 +99,9 @@ func (c Client) WithTransport(transport http.RoundTripper) Client {
 }
 
 // WithRetry returns a clone of the Client with retry config set.
-func (c Client) WithRetry(retry RetryConfig) Client {
+// This sets the default retry configuration for all requests sent by this client.
+// Individual requests can override this using APIRequest.WithRetry().
+func (c Client) WithRetry(retry request.RetryConfig) Client {
 	c.retry = retry
 	return c
 }
@@ -199,10 +201,18 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 		}
 	}
 
+	// Get retry config: use per-request override if available, otherwise use client default.
+	retryConfig := c.retry
+	if override, ok := request.RetryConfigFromContext(ctx); ok {
+		if rc, ok := override.(request.RetryConfig); ok {
+			retryConfig = rc
+		}
+	}
+
 	// Setup native client
 	nativeClient := http.Client{
-		Timeout:   c.retry.TotalRequestTimeout,
-		Transport: roundTripper{retry: c.retry, trace: tc, wrapped: c.transport}, // wrapped transport for trace/retry
+		Timeout:   retryConfig.TotalRequestTimeout,
+		Transport: roundTripper{retry: retryConfig, trace: tc, wrapped: c.transport}, // wrapped transport for trace/retry
 	}
 
 	// Send request
@@ -393,7 +403,7 @@ func handleSendError(startedAt time.Time, clientTimeout time.Duration, req *http
 // roundTripper wraps a http.RoundTripper and adds trace and retry functionality.
 type roundTripper struct {
 	trace   *trace.ClientTrace
-	retry   RetryConfig
+	retry   request.RetryConfig
 	wrapped http.RoundTripper
 }
 

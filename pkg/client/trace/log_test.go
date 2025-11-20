@@ -35,7 +35,7 @@ func TestLogTracer(t *testing.T) {
 	ctx := context.Background()
 	c := client.New().
 		WithTransport(transport).
-		WithRetry(client.TestingRetry()).
+		WithRetry(request.TestingRetry()).
 		AndTrace(trace.LogTracer(&logs))
 
 	// Expected trace

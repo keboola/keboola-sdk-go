@@ -12,7 +12,7 @@ import (
 
 	. "github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	. "github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
-	. "github.com/keboola/keboola-sdk-go/v2/pkg/request"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 func TestRetryCount(t *testing.T) {
@@ -30,13 +30,13 @@ func TestRetryCount(t *testing.T) {
 	ctx := context.Background()
 	c := New().
 		WithTransport(transport).
-		WithRetry(RetryConfig{
-			Condition:     DefaultRetryCondition(),
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
 			Count:         retryCount,
 			WaitTimeStart: 1 * time.Microsecond,
 			WaitTimeMax:   20 * time.Microsecond,
 		}).
-		AndTrace(func(ctx context.Context, reqDef HTTPRequest) (context.Context, *ClientTrace) {
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
 			return ctx, &ClientTrace{
 				RetryDelay: func(_ int, delay time.Duration) {
 					delays = append(delays, delay)
@@ -45,9 +45,9 @@ func TestRetryCount(t *testing.T) {
 		})
 
 	// Get
-	_, _, err := NewHTTPRequest(c).
+	_, _, err := request.NewHTTPRequest(c).
 		WithGet("https://example.com").
-		WithOnComplete(func(ctx context.Context, response HTTPResponse, err error) error {
+		WithOnComplete(func(ctx context.Context, response request.HTTPResponse, err error) error {
 			// Check context
 			attempt, found := ContextRetryAttempt(response.RawRequest().Context())
 			assert.True(t, found)
@@ -93,11 +93,11 @@ func TestRetryBodyRewind(t *testing.T) {
 	ctx := context.Background()
 	c := New().
 		WithTransport(transport).
-		WithRetry(TestingRetry())
+		WithRetry(request.TestingRetry())
 
 	// Post
 	jsonBody := map[string]any{"foo": "bar"}
-	_, _, err := NewHTTPRequest(c).WithPost("https://example.com").WithJSONBody(jsonBody).Send(ctx)
+	_, _, err := request.NewHTTPRequest(c).WithPost("https://example.com").WithJSONBody(jsonBody).Send(ctx)
 	assert.Error(t, err)
 	assert.Equal(t, `request POST "https://example.com" failed: 502 Bad Gateway`, err.Error())
 
@@ -119,13 +119,13 @@ func TestDoNotRetry(t *testing.T) {
 	ctx := context.Background()
 	c := New().
 		WithTransport(transport).
-		WithRetry(RetryConfig{
-			Condition:     DefaultRetryCondition(),
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
 			Count:         10,
 			WaitTimeStart: 1 * time.Microsecond,
 			WaitTimeMax:   20 * time.Microsecond,
 		}).
-		AndTrace(func(ctx context.Context, reqDef HTTPRequest) (context.Context, *ClientTrace) {
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
 			return ctx, &ClientTrace{
 				RetryDelay: func(_ int, delay time.Duration) {
 					delays = append(delays, delay)
@@ -134,7 +134,7 @@ func TestDoNotRetry(t *testing.T) {
 		})
 
 	// Get
-	_, _, err := NewHTTPRequest(c).WithGet("https://example.com").Send(ctx)
+	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com").Send(ctx)
 	assert.Error(t, err)
 	assert.Equal(t, `request GET "https://example.com" failed: 403 Forbidden`, err.Error())
 

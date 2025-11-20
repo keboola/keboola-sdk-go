@@ -1,4 +1,4 @@
-package client
+package request
 
 import (
 	"net/http"
@@ -20,19 +20,28 @@ const RetryWaitTimeStart = 100 * time.Millisecond
 // RetryWaitTimeMax - default maximum retry interval.
 const RetryWaitTimeMax = 3 * time.Second
 
-// RetryConfig configures Client retries.
+// RetryConfig configures request retries.
+// It can be set at the client level (for all requests) or per-request (to override client defaults).
 type RetryConfig struct {
-	Condition           RetryCondition
-	Count               int
+	// Condition defines which responses should be retried.
+	// If nil, no retries will be performed.
+	Condition RetryCondition
+	// Count is the maximum number of retry attempts.
+	Count int
+	// TotalRequestTimeout is the maximum time allowed for the entire request including retries.
 	TotalRequestTimeout time.Duration
-	WaitTimeStart       time.Duration
-	WaitTimeMax         time.Duration
+	// WaitTimeStart is the initial delay before the first retry.
+	WaitTimeStart time.Duration
+	// WaitTimeMax is the maximum delay between retries.
+	WaitTimeMax time.Duration
 }
 
-// RetryCondition defines which responses should retry.
+// RetryCondition defines which responses should be retried.
+// It receives the HTTP response and error, and returns true if the request should be retried.
 type RetryCondition func(*http.Response, error) bool
 
-// TestingRetry - fast retry for use in tests.
+// TestingRetry returns a fast retry configuration for use in tests.
+// It uses minimal wait times to speed up test execution.
 func TestingRetry() RetryConfig {
 	v := DefaultRetry()
 	v.WaitTimeStart = 1 * time.Millisecond
@@ -40,7 +49,8 @@ func TestingRetry() RetryConfig {
 	return v
 }
 
-// DefaultRetry returns a default RetryConfig.
+// DefaultRetry returns a default RetryConfig with sensible defaults.
+// It includes retry condition that handles common network and HTTP errors.
 func DefaultRetry() RetryConfig {
 	return RetryConfig{
 		TotalRequestTimeout: RequestTimeout,
@@ -51,7 +61,9 @@ func DefaultRetry() RetryConfig {
 	}
 }
 
-// DefaultRetryCondition retries on common network and HTTP errors.
+// DefaultRetryCondition returns a retry condition that retries on common network and HTTP errors.
+// It retries on network errors (except hostname resolution failures) and specific HTTP status codes
+// that indicate temporary failures (timeouts, rate limits, server errors).
 func DefaultRetryCondition() RetryCondition {
 	return func(response *http.Response, err error) bool {
 		// On network errors - except hostname not found
@@ -85,6 +97,7 @@ func DefaultRetryCondition() RetryCondition {
 }
 
 // NewBackoff returns an exponential backoff for HTTP retries.
+// The backoff uses exponential backoff strategy with the configured wait times.
 func (c RetryConfig) NewBackoff() backoff.BackOff {
 	b := backoff.NewExponentialBackOff()
 	b.InitialInterval = c.WaitTimeStart
