@@ -34,7 +34,7 @@ func TestDumpTracer(t *testing.T) {
 	ctx := context.Background()
 	c := client.New().
 		WithTransport(transport).
-		WithRetry(client.TestingRetry()).
+		WithRetry(request.TestingRetry()).
 		AndTrace(trace.DumpTracer(&logs))
 
 	// Expected trace

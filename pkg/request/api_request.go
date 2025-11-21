@@ -26,6 +26,18 @@ const (
 	attrSpanTypeValueHTTP   = "http"
 )
 
+type contextKey string
+
+const retryConfigContextKey = contextKey("retryConfig")
+
+func RetryConfigFromContext(ctx context.Context) (any, bool) {
+	retryConfig := ctx.Value(retryConfigContextKey)
+	if retryConfig == nil {
+		return nil, false
+	}
+	return retryConfig, true
+}
+
 // APIRequest with response mapped to the generic type R.
 type APIRequest[R Result] interface {
 	// WithBefore method registers callback to be executed before the request.
@@ -37,6 +49,9 @@ type APIRequest[R Result] interface {
 	WithOnSuccess(func(ctx context.Context, result R) error) APIRequest[R]
 	// WithOnError method registers callback to be executed when the request is completed and `code >= 400`.
 	WithOnError(func(ctx context.Context, err error) error) APIRequest[R]
+	// WithRetry sets a per-request retry configuration that overrides the client's default retry config.
+	// The retryConfig parameter accepts a RetryConfig that will override the client's default retry configuration for this specific request.
+	WithRetry(retryConfig RetryConfig) APIRequest[R]
 	// Send sends the request by the sender.
 	Send(ctx context.Context) (result R, err error)
 	SendOrErr(ctx context.Context) error
@@ -88,10 +103,11 @@ func NewNoOperationAPIRequest[R Result](result R) APIRequest[R] {
 
 // apiRequest implements generic APIRequest interface.
 type apiRequest[R Result] struct {
-	requests []Sendable
-	before   []func(ctx context.Context) error
-	after    []func(ctx context.Context, result R, err error) error
-	result   R
+	requests    []Sendable
+	before      []func(ctx context.Context) error
+	after       []func(ctx context.Context, result R, err error) error
+	result      R
+	retryConfig *RetryConfig
 	// definedIn is optional name of the function, where the request was defined
 	definedIn string
 }
@@ -123,6 +139,14 @@ func (r apiRequest[R]) WithOnError(fn func(ctx context.Context, err error) error
 		}
 		return err
 	})
+	return r
+}
+
+// WithRetry sets a per-request retry configuration that overrides the client's default retry config.
+// The retryConfig must be of type RetryConfig.
+// If nil, the client's default retry configuration will be used.
+func (r apiRequest[R]) WithRetry(retryConfig RetryConfig) APIRequest[R] {
+	r.retryConfig = &retryConfig
 	return r
 }
 
@@ -182,6 +206,11 @@ func (r apiRequest[R]) Send(ctx context.Context) (result R, err error) {
 	// Stop if context has been cancelled
 	if err := ctx.Err(); err != nil {
 		return r.result, err
+	}
+
+	// Set retry config to the context
+	if r.retryConfig != nil {
+		ctx = context.WithValue(ctx, retryConfigContextKey, r.retryConfig)
 	}
 
 	// Send requests in parallel
