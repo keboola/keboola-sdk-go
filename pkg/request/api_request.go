@@ -50,7 +50,7 @@ type APIRequest[R Result] interface {
 	// WithOnError method registers callback to be executed when the request is completed and `code >= 400`.
 	WithOnError(func(ctx context.Context, err error) error) APIRequest[R]
 	// WithRetry sets a per-request retry configuration that overrides the client's default retry config.
-	// The retryConfig can be a RetryConfig type or any compatible type.
+	// The retryConfig parameter accepts a RetryConfig that will override the client's default retry configuration for this specific request.
 	WithRetry(retryConfig RetryConfig) APIRequest[R]
 	// Send sends the request by the sender.
 	Send(ctx context.Context) (result R, err error)
@@ -143,7 +143,7 @@ func (r apiRequest[R]) WithOnError(fn func(ctx context.Context, err error) error
 }
 
 // WithRetry sets a per-request retry configuration that overrides the client's default retry config.
-// The retryConfig can be a RetryConfig type or any compatible type.
+// The retryConfig must be of type RetryConfig.
 // If nil, the client's default retry configuration will be used.
 func (r apiRequest[R]) WithRetry(retryConfig RetryConfig) APIRequest[R] {
 	r.retryConfig = &retryConfig
