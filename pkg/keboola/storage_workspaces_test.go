@@ -123,12 +123,12 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
-	// List workspaces - should be empty initially
+	// List workspaces - record initial count
 	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
-	assert.Len(t, *workspaces, 0, "Workspace list should be empty initially")
+	initialLen := len(*workspaces)
 
-	// Create workspace
+	// Create workspace - should fail
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:     keboola.StorageWorkspaceBackendBigQuery,
 		BackendSize: ptr(keboola.StorageWorkspaceBackendSizeMedium),
@@ -137,6 +137,11 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 
 	_, err = api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
 	assert.Error(t, err)
+
+	// List again - no new workspace should have been created
+	workspacesAfter, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
+	assert.NoError(t, err)
+	assert.Len(t, *workspacesAfter, initialLen, "Workspace count should not increase when creation fails")
 }
 
 func TestStorageWorkspaceLoadData(t *testing.T) {
