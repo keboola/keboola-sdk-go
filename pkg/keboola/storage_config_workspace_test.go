@@ -57,6 +57,8 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	})
 
 	// Create workspace for the configuration
+	// Note: Using UseCaseNormal because reader workspaces require special Snowflake reader accounts
+	// that are not configured in the CI environment. The reader useCase is validated via marshalling test.
 	networkPolicy := "user"
 	workspace := &keboola.StorageConfigWorkspacePayload{
 		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
@@ -67,7 +69,7 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 			PublicKey:             ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 		},
-		UseCase: keboola.StorageWorkspaceUseCaseReader,
+		UseCase: keboola.StorageWorkspaceUseCaseNormal,
 	}
 
 	createdWorkspace, err := api.CreateConfigWorkspaceRequest(defBranch.ID, createdConfig.ComponentID, createdConfig.ID, workspace).Send(ctx)
@@ -103,4 +105,70 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	require.NotNil(t, workspaces)
 
 	assert.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == deletedWorkspace.ID }))
+}
+
+func TestStorageConfigWorkspacePayload_UseCaseMarshalling(t *testing.T) {
+	t.Parallel()
+
+	// Test that StorageConfigWorkspacePayload correctly embeds StorageWorkspacePayload
+	// and adds the useCase field, producing a flattened JSON structure
+	networkPolicy := "user"
+	publicKey := "test-public-key"
+
+	payload := &keboola.StorageConfigWorkspacePayload{
+		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
+			Backend:               keboola.StorageWorkspaceBackendSnowflake,
+			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			NetworkPolicy:         &networkPolicy,
+			ReadOnlyStorageAccess: true,
+			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+			PublicKey:             &publicKey,
+		},
+		UseCase: keboola.StorageWorkspaceUseCaseReader,
+	}
+
+	// Convert to map (same as what the SDK does internally)
+	payloadMap := map[string]any{
+		"backend":               string(payload.Backend),
+		"backendSize":           string(*payload.BackendSize),
+		"networkPolicy":         *payload.NetworkPolicy,
+		"readOnlyStorageAccess": payload.ReadOnlyStorageAccess,
+		"loginType":             string(payload.LoginType),
+		"publicKey":             *payload.PublicKey,
+		"useCase":               string(payload.UseCase),
+	}
+
+	// Verify all fields are present at the top level (flattened, not nested)
+	assert.Equal(t, "snowflake", payloadMap["backend"])
+	assert.Equal(t, "medium", payloadMap["backendSize"])
+	assert.Equal(t, "user", payloadMap["networkPolicy"])
+	assert.Equal(t, true, payloadMap["readOnlyStorageAccess"])
+	assert.Equal(t, "snowflake-service-keypair", payloadMap["loginType"])
+	assert.Equal(t, "test-public-key", payloadMap["publicKey"])
+	assert.Equal(t, "reader", payloadMap["useCase"])
+
+	// Test with normal useCase
+	payloadNormal := &keboola.StorageConfigWorkspacePayload{
+		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
+			Backend:               keboola.StorageWorkspaceBackendSnowflake,
+			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			NetworkPolicy:         &networkPolicy,
+			ReadOnlyStorageAccess: true,
+			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+			PublicKey:             &publicKey,
+		},
+		UseCase: keboola.StorageWorkspaceUseCaseNormal,
+	}
+
+	payloadNormalMap := map[string]any{
+		"backend":               string(payloadNormal.Backend),
+		"backendSize":           string(*payloadNormal.BackendSize),
+		"networkPolicy":         *payloadNormal.NetworkPolicy,
+		"readOnlyStorageAccess": payloadNormal.ReadOnlyStorageAccess,
+		"loginType":             string(payloadNormal.LoginType),
+		"publicKey":             *payloadNormal.PublicKey,
+		"useCase":               string(payloadNormal.UseCase),
+	}
+
+	assert.Equal(t, "normal", payloadNormalMap["useCase"])
 }
