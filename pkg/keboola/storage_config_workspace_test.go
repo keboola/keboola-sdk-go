@@ -58,13 +58,16 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 
 	// Create workspace for the configuration
 	networkPolicy := "user"
-	workspace := &keboola.StorageWorkspacePayload{
-		Backend:               keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
-		NetworkPolicy:         &networkPolicy,
-		ReadOnlyStorageAccess: true,
-		LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:             ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+	workspace := &keboola.StorageConfigWorkspacePayload{
+		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
+			Backend:               keboola.StorageWorkspaceBackendSnowflake,
+			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			NetworkPolicy:         &networkPolicy,
+			ReadOnlyStorageAccess: true,
+			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+			PublicKey:             ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		},
+		UseCase: keboola.StorageWorkspaceUseCaseReader,
 	}
 
 	createdWorkspace, err := api.CreateConfigWorkspaceRequest(defBranch.ID, createdConfig.ComponentID, createdConfig.ID, workspace).Send(ctx)

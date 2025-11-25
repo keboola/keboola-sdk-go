@@ -8,9 +8,16 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
+// StorageConfigWorkspacePayload represents the payload for creating a configuration workspace.
+// It embeds StorageWorkspacePayload and adds the UseCase field specific to configuration workspaces.
+type StorageConfigWorkspacePayload struct {
+	StorageWorkspacePayload
+	UseCase StorageWorkspaceUseCase `json:"useCase,omitempty" writeoptional:"true"`
+}
+
 // CreateConfigWorkspaceRequestAsync https://keboola.docs.apiary.io/#reference/workspaces/configuration-workspaces-collection/create-configuration-workspace
 // Creates a configuration workspace asynchronously and returns a storage job that can be monitored for completion.
-func (a *AuthorizedAPI) CreateConfigWorkspaceRequestAsync(branchID BranchID, componentID ComponentID, configID ConfigID, payload *StorageWorkspacePayload) request.APIRequest[*StorageJob] {
+func (a *AuthorizedAPI) CreateConfigWorkspaceRequestAsync(branchID BranchID, componentID ComponentID, configID ConfigID, payload *StorageConfigWorkspacePayload) request.APIRequest[*StorageJob] {
 	result := &StorageJob{}
 	req := a.
 		newRequest(StorageAPI).
@@ -25,7 +32,7 @@ func (a *AuthorizedAPI) CreateConfigWorkspaceRequestAsync(branchID BranchID, com
 }
 
 // CreateConfigWorkspaceRequest https://keboola.docs.apiary.io/#reference/workspaces/configuration-workspaces-collection/create-configuration-workspace
-func (a *AuthorizedAPI) CreateConfigWorkspaceRequest(branchID BranchID, componentID ComponentID, configID ConfigID, payload *StorageWorkspacePayload) request.APIRequest[*StorageWorkspace] {
+func (a *AuthorizedAPI) CreateConfigWorkspaceRequest(branchID BranchID, componentID ComponentID, configID ConfigID, payload *StorageConfigWorkspacePayload) request.APIRequest[*StorageWorkspace] {
 	result := &StorageWorkspace{}
 	req := a.
 		CreateConfigWorkspaceRequestAsync(branchID, componentID, configID, payload).
