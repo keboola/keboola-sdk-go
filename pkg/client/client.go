@@ -319,6 +319,7 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 	if v, ok := resultDef.(*[]byte); ok {
 		// Load response body as []byte
 		bodyBytes, err := io.ReadAll(decodedBody)
+		fmt.Println(string(bodyBytes))
 		if err != nil {
 			return nil, nil, fmt.Errorf(`cannot read resonse body: %w`, err)
 		}
@@ -358,6 +359,8 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil {
 				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
 			}
+
+			fmt.Println("ERROR ", errDef.Error())
 			// Set HTTP request
 			var errWithReq errorWithRequest
 			if errors.As(errDef, &errWithReq) {

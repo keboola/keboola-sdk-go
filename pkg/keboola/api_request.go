@@ -22,6 +22,7 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 	// Set request base URL according to the ServiceType
 	r := request.NewHTTPRequest(a.sender).WithBaseURL(a.baseURLForService(s))
 
+	fmt.Println("AAAA: ", s)
 	// Set error schema
 	switch s {
 	case StorageAPI:
