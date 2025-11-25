@@ -17,7 +17,7 @@ import (
 
 func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)

@@ -17,7 +17,7 @@ import (
 
 func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
@@ -113,7 +113,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 
 func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
 
 	// Get default branch
@@ -125,7 +125,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 
 	// List workspaces - record initial count
 	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	initialLen := len(*workspaces)
 
 	// Create workspace - should fail
@@ -140,14 +140,14 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 
 	// List again - no new workspace should have been created
 	workspacesAfter, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, *workspacesAfter, initialLen, "Workspace count should not increase when creation fails")
 }
 
 func TestStorageWorkspaceLoadData(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
@@ -222,7 +222,7 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	t.Parallel()
 	t.Skip("Skipping BigQuery test until we have a way to create a project with BigQuery backend")
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
