@@ -12,6 +12,7 @@ import (
 type StorageWorkspaceBackend string
 type StorageWorkspaceBackendSize string
 type StorageWorkspaceLoginType string
+type StorageWorkspaceUseCase string
 
 const (
 	StorageWorkspaceBackendRedshift  StorageWorkspaceBackend = "redshift"
@@ -26,6 +27,9 @@ const (
 	StorageWorkspaceLoginTypeSnowflakePersonSSO      StorageWorkspaceLoginType = "snowflake-person-sso"
 	StorageWorkspaceLoginTypeSnowflakePersonKeypair  StorageWorkspaceLoginType = "snowflake-person-keypair"
 	StorageWorkspaceLoginTypeSnowflakeServiceKeypair StorageWorkspaceLoginType = "snowflake-service-keypair"
+
+	StorageWorkspaceUseCaseNormal StorageWorkspaceUseCase = "normal"
+	StorageWorkspaceUseCaseReader StorageWorkspaceUseCase = "reader" // Use "reader" to create reader workspace.
 )
 
 type StorageWorkspaceDetails struct {
