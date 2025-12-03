@@ -103,7 +103,7 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, workspaces)
 
-	assert.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
+	require.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 }
 
 func TestStorageConfigWorkspacePayload_UseCaseMarshalling(t *testing.T) {
