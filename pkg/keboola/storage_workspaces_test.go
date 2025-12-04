@@ -45,7 +45,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cleanupCancel()
-		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
 	})
 
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
@@ -99,16 +99,15 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.True(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 
 	// Delete workspace
-	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(ctx)
 	require.NoError(t, err)
-	require.NotNil(t, deletedWorkspace)
 
 	// List workspaces - should not contain the deleted workspace
 	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, workspaces)
 
-	assert.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == deletedWorkspace.ID }))
+	require.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 }
 
 func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
@@ -194,7 +193,7 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cleanupCancel()
-		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
 	})
 
 	// Load data into workspace
@@ -302,9 +301,8 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.Equal(t, createdWorkspace.ID, (*workspaces)[0].ID)
 
 	// Delete workspace
-	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(ctx)
 	assert.NoError(t, err)
-	assert.NotNil(t, deletedWorkspace)
 
 	// List workspaces - should be empty again
 	workspaces, err = api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)

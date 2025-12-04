@@ -80,7 +80,7 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cleanupCancel()
-		_, _ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(cleanupCtx)
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
 	})
 
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
@@ -95,16 +95,15 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	assert.True(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 
 	// Delete workspace
-	deletedWorkspace, err := api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	err = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(ctx)
 	require.NoError(t, err)
-	require.NotNil(t, deletedWorkspace)
 
 	// List configuration workspaces - should not contain the deleted workspace
 	workspaces, err = api.ListConfigWorkspacesRequest(defBranch.ID, createdConfig.ComponentID, createdConfig.ID).Send(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, workspaces)
 
-	assert.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == deletedWorkspace.ID }))
+	require.False(t, slices.ContainsFunc(*workspaces, func(ws *keboola.StorageWorkspace) bool { return ws.ID == createdWorkspace.ID }))
 }
 
 func TestStorageConfigWorkspacePayload_UseCaseMarshalling(t *testing.T) {

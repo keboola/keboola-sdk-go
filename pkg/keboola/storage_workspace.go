@@ -180,16 +180,32 @@ func (a *AuthorizedAPI) StorageWorkspaceDeleteCredentialsRequest(branchID Branch
 	return request.NewAPIRequest(result, req)
 }
 
-// StorageWorkspaceDeleteRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/delete-workspace
-func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(branchID BranchID, workspaceID uint64) request.APIRequest[*StorageWorkspace] {
-	result := &StorageWorkspace{}
+// StorageWorkspaceDeleteRequestAsync https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/delete-workspace
+// Deletes a workspace asynchronously and returns a storage job that can be monitored for completion.
+func (a *AuthorizedAPI) StorageWorkspaceDeleteRequestAsync(branchID BranchID, workspaceID uint64) request.APIRequest[*StorageJob] {
+	result := &StorageJob{}
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(result).
 		WithDelete("branch/{branchId}/workspaces/{workspaceId}").
 		AndPathParam("branchId", branchID.String()).
-		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10))
+		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
+		AndQueryParam("async", "1")
 	return request.NewAPIRequest(result, req)
+}
+
+// StorageWorkspaceDeleteRequest https://keboola.docs.apiary.io/#reference/workspaces/manage-workspace/delete-workspace
+func (a *AuthorizedAPI) StorageWorkspaceDeleteRequest(branchID BranchID, workspaceID uint64) request.APIRequest[request.NoResult] {
+	req := a.
+		StorageWorkspaceDeleteRequestAsync(branchID, workspaceID).
+		WithOnSuccess(func(ctx context.Context, job *StorageJob) error {
+			// Wait for storage job
+			waitCtx, waitCancelFn := context.WithTimeout(ctx, a.onSuccessTimeout)
+			defer waitCancelFn()
+			return a.WaitForStorageJob(waitCtx, job)
+		})
+	// Result is NoResult since delete doesn't return workspace data.
+	return request.NewAPIRequest(request.NoResult{}, req)
 }
 
 // WorkspaceLoadDataInput represents a single table mapping for workspace load-data operation.
