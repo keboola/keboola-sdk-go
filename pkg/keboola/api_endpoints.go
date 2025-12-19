@@ -10,7 +10,7 @@ const (
 	// Endpoints for queue API.
 	QueueAPIJobs       = "jobs"
 	QueueAPIJob        = "jobs/{jobId}"
-	QueueAPISearchJobs = "search/jobs"
+	QueueAPISearchJobs = "jobs/search"
 
 	// Endpoints for scheduler API.
 	SchedulerAPISchedules       = "schedules"
