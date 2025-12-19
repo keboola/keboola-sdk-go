@@ -8,8 +8,9 @@ const (
 	EncryptionAPIEncrypt = "encrypt"
 
 	// Endpoints for queue API.
-	QueueAPIJobs = "jobs"
-	QueueAPIJob  = "jobs/{jobId}"
+	QueueAPIJobs       = "jobs"
+	QueueAPIJob        = "jobs/{jobId}"
+	QueueAPISearchJobs = "search/jobs"
 
 	// Endpoints for scheduler API.
 	SchedulerAPISchedules       = "schedules"
