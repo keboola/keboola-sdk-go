@@ -56,11 +56,17 @@ func (r *JobResult) UnmarshalJSON(data []byte) (err error) {
 // QueueJob is a component job.
 type QueueJob struct {
 	JobKey
-	Status     string        `json:"status"`
-	IsFinished bool          `json:"isFinished"`
-	URL        string        `json:"url"`
-	Result     JobResult     `json:"result"`
-	CreateTime iso8601.Time  `json:"createdTime"`
-	StartTime  *iso8601.Time `json:"startTime"`
-	EndTime    *iso8601.Time `json:"endTime"`
+	Status          string        `json:"status"`
+	IsFinished      bool          `json:"isFinished"`
+	URL             string        `json:"url"`
+	Result          JobResult     `json:"result"`
+	CreateTime      iso8601.Time  `json:"createdTime"`
+	StartTime       *iso8601.Time `json:"startTime"`
+	EndTime         *iso8601.Time `json:"endTime"`
+	ComponentID     ComponentID   `json:"component,omitempty"`
+	ConfigID        ConfigID      `json:"config,omitempty"`
+	BranchID        BranchID      `json:"branchId,omitempty"`
+	OperationName   string        `json:"operationName,omitempty"`
+	DurationSeconds int           `json:"durationSeconds,omitempty"`
+	RunID           string        `json:"runId,omitempty"`
 }
