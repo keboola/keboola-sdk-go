@@ -18,6 +18,32 @@ func (id BranchID) String() string {
 	return strconv.Itoa(int(id))
 }
 
+// UnmarshalJSON implements JSON decoding for BranchID.
+// It handles both numeric and string representations from different APIs.
+func (id *BranchID) UnmarshalJSON(b []byte) error {
+	var asInt int
+	err := json.Unmarshal(b, &asInt)
+	if err == nil {
+		*id = BranchID(asInt)
+		return nil
+	}
+	var asString string
+	err = json.Unmarshal(b, &asString)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal BranchID: expected int or string")
+	}
+	if asString == "" {
+		*id = 0
+		return nil
+	}
+	parsed, err := strconv.Atoi(asString)
+	if err != nil {
+		return fmt.Errorf("failed to parse BranchID string %q: %w", asString, err)
+	}
+	*id = BranchID(parsed)
+	return nil
+}
+
 // BranchKey is a unique identifier of a branch.
 type BranchKey struct {
 	ID BranchID `json:"id" writeoptional:"true"`
