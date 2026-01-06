@@ -221,3 +221,68 @@ func TestWithRetryOverridesDefault(t *testing.T) {
 	}
 	assert.Equal(t, expectedDelays, delays, "delays should follow exponential backoff pattern")
 }
+
+// TestPerRequestRetryOverride tests that request-level WithRetry overrides client default.
+// This is a regression test for the bug where per-request retry config was not being applied
+// due to a type mismatch (storing *RetryConfig in context but asserting to RetryConfig).
+func TestPerRequestRetryOverride(t *testing.T) {
+	t.Parallel()
+
+	// Mocked response that fails for first 8 attempts, then succeeds on 9th attempt.
+	attemptCount := 0
+	transport := httpmock.NewMockTransport()
+	transport.RegisterResponder("GET", `https://example.com`, func(req *http.Request) (*http.Response, error) {
+		attemptCount++
+		// Fail for first 8 attempts with 504 Gateway Timeout (retryable error)
+		if attemptCount < 9 {
+			return httpmock.NewStringResponse(504, "Gateway Timeout"), nil
+		}
+		// Succeed on 9th attempt
+		return httpmock.NewStringResponse(200, "Success"), nil
+	})
+
+	// Setup: Track retry attempts and delays
+	var retryAttempts []int
+	var delays []time.Duration
+
+	// Create client with default retry config (5 retries)
+	ctx := context.Background()
+	c := New().
+		WithTransport(transport).
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
+			Count:         5, // Default client-level retry count
+			WaitTimeStart: 1 * time.Microsecond,
+			WaitTimeMax:   20 * time.Microsecond,
+		}).
+		AndTrace(func(ctx context.Context, reqDef request.HTTPRequest) (context.Context, *ClientTrace) {
+			return ctx, &ClientTrace{
+				RetryDelay: func(attempt int, delay time.Duration) {
+					retryAttempts = append(retryAttempts, attempt)
+					delays = append(delays, delay)
+				},
+			}
+		})
+
+	// Send request with per-request retry override (10 retries) - should succeed after 8 retries
+	httpReq := request.NewHTTPRequest(c).WithGet("https://example.com")
+	result := ""
+	apiReq := request.NewAPIRequest(&result, httpReq).
+		WithRetry(request.RetryConfig{
+			Condition:     request.DefaultRetryCondition(),
+			Count:         10, // Override to 10 retries for this request
+			WaitTimeStart: 1 * time.Microsecond,
+			WaitTimeMax:   20 * time.Microsecond,
+		})
+	_, err := apiReq.Send(ctx)
+	assert.NoError(t, err, "request should succeed after retries")
+
+	// Verify total number of requests: 1 initial + 8 retries = 9 total
+	// This proves the per-request override worked. If it didn't, we would have only made
+	// 6 requests (1 initial + 5 retries from client default) and failed.
+	assert.Equal(t, 9, transport.GetCallCountInfo()["GET https://example.com"],
+		"should have made 9 requests (1 initial + 8 retries), proving per-request retry override worked")
+
+	// Verify we retried 8 times
+	assert.Equal(t, 8, len(retryAttempts), "should have retried 8 times")
+}
