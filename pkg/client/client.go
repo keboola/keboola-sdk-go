@@ -204,8 +204,8 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 	// Get retry config: use per-request override if available, otherwise use client default.
 	retryConfig := c.retry
 	if override, ok := request.RetryConfigFromContext(ctx); ok {
-		if rc, ok := override.(request.RetryConfig); ok {
-			retryConfig = rc
+		if rc, ok := override.(*request.RetryConfig); ok {
+			retryConfig = *rc
 		}
 	}
 
