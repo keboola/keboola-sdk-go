@@ -361,7 +361,7 @@ func (a *AuthorizedAPI) SearchJobsRequest(opts ...SearchJobsOption) request.APIR
 	if config.Limit > 0 {
 		req = req.AndQueryParam("limit", fmt.Sprintf("%d", config.Limit))
 	}
-	if config.Offset > 0 {
+	if config.Offset >= 0 {
 		req = req.AndQueryParam("offset", fmt.Sprintf("%d", config.Offset))
 	}
 
