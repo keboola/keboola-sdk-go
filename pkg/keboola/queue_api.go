@@ -316,6 +316,8 @@ func WithSearchJobsStatus(status string) SearchJobsOption {
 }
 
 // WithSearchJobsLimit sets the maximum number of jobs to return.
+// If not called, defaults to 100. Setting limit to 0 or negative
+// will omit the limit parameter from the request, using server default.
 func WithSearchJobsLimit(limit int) SearchJobsOption {
 	return func(c *SearchJobsConfig) {
 		c.Limit = limit
