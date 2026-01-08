@@ -345,6 +345,26 @@ func TestSearchJobsAPICalls(t *testing.T) {
 	}
 	assert.True(t, found, "Created job should be in search results")
 
+	// Test SearchJobsRequest - search by status
+	// The job we created should have failed, so search for "error" status
+	jobsByStatus, err := api.SearchJobsRequest(
+		WithSearchJobsStatus("error"),
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsByStatus)
+	// Verify our failed job is in the error status results
+	foundInStatus := false
+	for _, j := range *jobsByStatus {
+		if j.ID == job.ID {
+			foundInStatus = true
+			assert.Equal(t, "error", j.Status)
+			break
+		}
+	}
+	assert.True(t, foundInStatus, "Failed job should be found when searching by error status")
+
 	// Test SearchJobsRequest - search by branch
 	jobsByBranch, err := api.SearchJobsRequest(
 		WithSearchJobsBranch(branch.ID),
