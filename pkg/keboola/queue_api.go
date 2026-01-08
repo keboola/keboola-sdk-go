@@ -273,3 +273,97 @@ func newQueueJobBackoff() *backoff.ExponentialBackOff {
 	b.Reset()
 	return b
 }
+
+// SearchJobsConfig holds configuration for SearchJobsRequest.
+type SearchJobsConfig struct {
+	BranchID    BranchID
+	ComponentID ComponentID
+	ConfigID    ConfigID
+	Status      string
+	Limit       int
+	Offset      int
+}
+
+// SearchJobsOption is a functional option for SearchJobsRequest.
+type SearchJobsOption func(c *SearchJobsConfig)
+
+// WithSearchJobsBranch filters jobs by branch ID.
+func WithSearchJobsBranch(branchID BranchID) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.BranchID = branchID
+	}
+}
+
+// WithSearchJobsComponent filters jobs by component ID.
+func WithSearchJobsComponent(componentID ComponentID) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.ComponentID = componentID
+	}
+}
+
+// WithSearchJobsConfig filters jobs by config ID.
+func WithSearchJobsConfig(configID ConfigID) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.ConfigID = configID
+	}
+}
+
+// WithSearchJobsStatus filters jobs by status.
+func WithSearchJobsStatus(status string) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.Status = status
+	}
+}
+
+// WithSearchJobsLimit sets the maximum number of jobs to return.
+// If not called, defaults to 100. Setting limit to 0 or negative
+// will omit the limit parameter from the request, using server default.
+func WithSearchJobsLimit(limit int) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.Limit = limit
+	}
+}
+
+// WithSearchJobsOffset sets the offset for pagination.
+func WithSearchJobsOffset(offset int) SearchJobsOption {
+	return func(c *SearchJobsConfig) {
+		c.Offset = offset
+	}
+}
+
+// SearchJobsRequest searches for jobs in the Jobs Queue API.
+// https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.8#/Jobs/get_search_jobs
+func (a *AuthorizedAPI) SearchJobsRequest(opts ...SearchJobsOption) request.APIRequest[*[]*QueueJob] {
+	config := SearchJobsConfig{
+		Limit: 100, // Default limit
+	}
+	for _, opt := range opts {
+		opt(&config)
+	}
+
+	result := make([]*QueueJob, 0)
+	req := a.newRequest(QueueAPI).
+		WithResult(&result).
+		WithGet(QueueAPISearchJobs)
+
+	if config.BranchID != 0 {
+		req = req.AndQueryParam("branchId", config.BranchID.String())
+	}
+	if config.ComponentID != "" {
+		req = req.AndQueryParam("component", config.ComponentID.String())
+	}
+	if config.ConfigID != "" {
+		req = req.AndQueryParam("config", config.ConfigID.String())
+	}
+	if config.Status != "" {
+		req = req.AndQueryParam("status", config.Status)
+	}
+	if config.Limit > 0 {
+		req = req.AndQueryParam("limit", fmt.Sprintf("%d", config.Limit))
+	}
+	if config.Offset >= 0 {
+		req = req.AndQueryParam("offset", fmt.Sprintf("%d", config.Offset))
+	}
+
+	return request.NewAPIRequest(&result, req)
+}
