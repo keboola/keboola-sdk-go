@@ -285,7 +285,7 @@ func TestSearchJobsOptions(t *testing.T) {
 	})
 }
 
-func TestSearchJobsApiCalls(t *testing.T) {
+func TestSearchJobsAPICalls(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	_, api := APIClientForAnEmptyProject(t, ctx)
