@@ -374,14 +374,31 @@ func TestSearchJobsAPICalls(t *testing.T) {
 	assert.NotNil(t, jobsCombined)
 	assert.NotEmpty(t, *jobsCombined)
 
-	// Test SearchJobsRequest - with offset for pagination
-	jobsWithOffset, err := api.SearchJobsRequest(
+	// Test SearchJobsRequest - pagination with offset
+	// First, get jobs with limit 1 and offset 0
+	jobsPage1, err := api.SearchJobsRequest(
 		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
-		WithSearchJobsLimit(5),
+		WithSearchJobsLimit(1),
 		WithSearchJobsOffset(0),
 	).Send(ctx)
 	assert.NoError(t, err)
-	assert.NotNil(t, jobsWithOffset)
+	assert.NotNil(t, jobsPage1)
+	assert.Len(t, *jobsPage1, 1, "Expected exactly 1 job with limit=1")
+
+	// Get jobs with limit 1 and offset 1 (should return different job if more exist)
+	jobsPage2, err := api.SearchJobsRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(1),
+		WithSearchJobsOffset(1),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsPage2)
+
+	// If there are multiple jobs, the offset should return different results
+	if len(*jobsPage2) > 0 {
+		assert.NotEqual(t, (*jobsPage1)[0].ID, (*jobsPage2)[0].ID,
+			"Pagination should return different jobs at different offsets")
+	}
 
 	// Test SearchJobsRequest - default (no options)
 	jobsDefault, err := api.SearchJobsRequest().Send(ctx)
