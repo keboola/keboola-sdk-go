@@ -25,13 +25,14 @@ func createTestTableWithEvents(t *testing.T, ctx context.Context, api *Authorize
 	require.NoError(t, err)
 
 	// Create bucket with unique name
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// Use single random number for all resource names for consistency
+	randomSuffix := rand.Int()
 	bucket := &Bucket{
 		BucketKey: BucketKey{
 			BranchID: defBranch.ID,
 			BucketID: BucketID{
 				Stage:      BucketStageIn,
-				BucketName: fmt.Sprintf("c-test-events-%s-%d", nameSuffix, rng.Int()),
+				BucketName: fmt.Sprintf("c-test-events-%s-%d", nameSuffix, randomSuffix),
 			},
 		},
 	}
@@ -42,12 +43,12 @@ func createTestTableWithEvents(t *testing.T, ctx context.Context, api *Authorize
 		BranchID: defBranch.ID,
 		TableID: TableID{
 			BucketID:  bucket.BucketID,
-			TableName: fmt.Sprintf("test_events_%s_%d", nameSuffix, rng.Int()),
+			TableName: fmt.Sprintf("test_events_%s_%d", nameSuffix, randomSuffix),
 		},
 	}
 
 	// Create file for table data
-	fileName := fmt.Sprintf("file_events_%s_%d", nameSuffix, rng.Int())
+	fileName := fmt.Sprintf("file_events_%s_%d", nameSuffix, randomSuffix)
 	file, err := api.CreateFileResourceRequest(defBranch.ID, fileName).Send(ctx)
 	require.NoError(t, err)
 
