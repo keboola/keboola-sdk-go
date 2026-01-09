@@ -99,7 +99,9 @@ type listTableEventsConfig struct {
 // ListTableEventsOption is an option for ListTableEventsRequest.
 type ListTableEventsOption func(c *listTableEventsConfig)
 
-// WithTableEventsLimit sets the limit for the number of events to fetch.
+// WithTableEventsLimit sets the maximum number of events to return.
+// If not called, defaults to 50. Setting limit to 0 or negative
+// will omit the limit parameter from the request, using server default.
 func WithTableEventsLimit(limit int) ListTableEventsOption {
 	return func(c *listTableEventsConfig) {
 		c.limit = limit
