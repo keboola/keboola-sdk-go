@@ -17,6 +17,7 @@ import (
 
 // createTestTableWithEvents creates a bucket, table, and generates events for testing.
 // Returns the TableID of the created table.
+// The bucket is automatically cleaned up after the test completes.
 func createTestTableWithEvents(t *testing.T, ctx context.Context, api *AuthorizedAPI, nameSuffix string) TableID {
 	t.Helper()
 
@@ -38,6 +39,13 @@ func createTestTableWithEvents(t *testing.T, ctx context.Context, api *Authorize
 	}
 	_, err = api.CreateBucketRequest(bucket).Send(ctx)
 	require.NoError(t, err)
+
+	// Register cleanup to delete bucket after test completes
+	t.Cleanup(func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		_, _ = api.DeleteBucketRequest(bucket.BucketKey, WithForce()).Send(cleanupCtx)
+	})
 
 	tableKey := TableKey{
 		BranchID: defBranch.ID,
