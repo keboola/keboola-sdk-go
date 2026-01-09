@@ -94,8 +94,8 @@ type QueueJobDetail struct {
 
 // JobResultExtended contains the full result data from a job including input/output tables.
 type JobResultExtended struct {
-	Message   string          `json:"message,omitempty"`
 	Error     map[string]any  `json:"error,omitempty"`
+	Message   string          `json:"message,omitempty"`
 	Input     *JobIO          `json:"input,omitempty"`
 	Output    *JobIO          `json:"output,omitempty"`
 	Artifacts *JobArtifacts   `json:"artifacts,omitempty"`
