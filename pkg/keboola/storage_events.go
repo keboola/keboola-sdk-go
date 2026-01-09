@@ -118,8 +118,11 @@ func (a *AuthorizedAPI) ListTableEventsRequest(tableID TableID, opts ...ListTabl
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(&result).
-		WithGet(fmt.Sprintf("tables/%s/events", tableID.String())).
-		AndQueryParam("limit", fmt.Sprintf("%d", config.limit))
+		WithGet(fmt.Sprintf("tables/%s/events", tableID.String()))
+
+	if config.limit > 0 {
+		req = req.AndQueryParam("limit", fmt.Sprintf("%d", config.limit))
+	}
 
 	return request.NewAPIRequest(&result, req)
 }
