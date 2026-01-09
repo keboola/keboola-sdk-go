@@ -397,6 +397,14 @@ func TestGetQueueJobDetailRequest(t *testing.T) {
 	assert.Equal(t, job.ID, jobDetail.ID)
 	assert.Equal(t, ComponentID("ex-generic-v2"), jobDetail.ComponentID)
 	assert.True(t, jobDetail.IsFinished)
+
+	// Verify extended fields are accessible (may be nil/empty depending on job type)
+	// The Result struct should be populated with at least a message for failed jobs
+	assert.NotEmpty(t, jobDetail.Result.Message, "Result message should be populated for finished jobs")
+	// Type field indicates job type (standard, orchestrationContainer, etc.)
+	assert.NotEmpty(t, jobDetail.Type, "Type field should be populated")
+	// Metrics may be nil for some job types, but the field should be accessible
+	// Input/Output tables depend on job configuration, so we just verify the struct is correctly deserialized
 }
 
 func TestSearchJobsDetailRequest(t *testing.T) {
@@ -443,13 +451,21 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 	assert.NotNil(t, jobs)
 	assert.NotEmpty(t, *jobs)
 
-	// Find our job in results
+	// Find our job in results and verify extended fields
 	found := false
 	for _, j := range *jobs {
 		if j.ID == job.ID {
 			found = true
 			assert.Equal(t, ComponentID("ex-generic-v2"), j.ComponentID)
 			assert.True(t, j.IsFinished)
+
+			// Verify extended fields are accessible (may be nil/empty depending on job type)
+			// The Result struct should be populated with at least a message for failed jobs
+			assert.NotEmpty(t, j.Result.Message, "Result message should be populated for finished jobs")
+			// Type field indicates job type (standard, orchestrationContainer, etc.)
+			assert.NotEmpty(t, j.Type, "Type field should be populated")
+			// Metrics may be nil for some job types, but the field should be accessible
+			// Input/Output tables depend on job configuration, so we just verify the struct is correctly deserialized
 			break
 		}
 	}
