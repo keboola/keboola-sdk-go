@@ -2,6 +2,7 @@ package keboola
 
 import (
 	jsonLib "encoding/json"
+	"fmt"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
@@ -70,4 +71,55 @@ func (v JSONString) String() string {
 		panic(err)
 	}
 	return string(bytes)
+}
+
+// TableEvent represents an event from the table events API.
+// This is different from Event which is used for creating events.
+// https://keboola.docs.apiary.io/#reference/events/events/list-events
+type TableEvent struct {
+	ID        EventID           `json:"uuid"`
+	Event     string            `json:"event"`
+	Component string            `json:"component"`
+	Message   string            `json:"message"`
+	RunID     string            `json:"runId"`
+	Created   string            `json:"created"`
+	Context   TableEventContext `json:"context"`
+}
+
+// TableEventContext contains context information for a table event.
+type TableEventContext struct {
+	UserAgent string `json:"userAgent"`
+}
+
+// listTableEventsConfig holds configuration for listing table events.
+type listTableEventsConfig struct {
+	limit int
+}
+
+// ListTableEventsOption is an option for ListTableEventsRequest.
+type ListTableEventsOption func(c *listTableEventsConfig)
+
+// WithTableEventsLimit sets the limit for the number of events to fetch.
+func WithTableEventsLimit(limit int) ListTableEventsOption {
+	return func(c *listTableEventsConfig) {
+		c.limit = limit
+	}
+}
+
+// ListTableEventsRequest lists events for a specific table.
+// https://keboola.docs.apiary.io/#reference/events/events/list-events
+func (a *AuthorizedAPI) ListTableEventsRequest(tableID TableID, opts ...ListTableEventsOption) request.APIRequest[*[]*TableEvent] {
+	config := listTableEventsConfig{limit: 50} // default limit
+	for _, opt := range opts {
+		opt(&config)
+	}
+
+	result := make([]*TableEvent, 0)
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(&result).
+		WithGet(fmt.Sprintf("tables/%s/events", tableID.String())).
+		AndQueryParam("limit", fmt.Sprintf("%d", config.limit))
+
+	return request.NewAPIRequest(&result, req)
 }
