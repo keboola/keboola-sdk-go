@@ -3,3 +3,4 @@ vendor
 .env
 /projects.json
 .vscode
+/.claude

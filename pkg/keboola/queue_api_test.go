@@ -12,6 +12,7 @@ import (
 	"github.com/keboola/go-utils/pkg/orderedmap"
 	"github.com/keboola/go-utils/pkg/wildcards"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
@@ -424,4 +425,255 @@ func TestSearchJobsAPICalls(t *testing.T) {
 	jobsDefault, err := api.SearchJobsRequest().Send(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, jobsDefault)
+}
+
+func TestJobResultExtended_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty array returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte("[]"), &result)
+		assert.NoError(t, err)
+		assert.Empty(t, result.Message)
+		assert.Nil(t, result.Input)
+		assert.Nil(t, result.Output)
+	})
+
+	t.Run("object with message", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{"message": "Job completed"}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Job completed", result.Message)
+	})
+
+	t.Run("object with input/output tables", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{
+			"message": "Success",
+			"input": {
+				"tables": [{"id": "in.c-bucket.table1", "name": "table1"}]
+			},
+			"output": {
+				"tables": [{"id": "out.c-bucket.table2", "name": "table2"}]
+			}
+		}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Success", result.Message)
+		assert.NotNil(t, result.Input)
+		assert.Len(t, result.Input.Tables, 1)
+		assert.Equal(t, "in.c-bucket.table1", result.Input.Tables[0].ID)
+		assert.NotNil(t, result.Output)
+		assert.Len(t, result.Output.Tables, 1)
+		assert.Equal(t, "out.c-bucket.table2", result.Output.Tables[0].ID)
+	})
+
+	t.Run("object with error", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{
+			"message": "Job failed",
+			"error": {"code": 500, "message": "Internal error"}
+		}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Job failed", result.Message)
+		assert.NotNil(t, result.Error)
+		assert.Equal(t, float64(500), result.Error["code"])
+	})
+}
+
+func TestJobMetrics_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty array returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte("[]"), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("null returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte("null"), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("object with storage metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"storage": {
+				"inputTablesBytesSum": 1024,
+				"outputTablesBytesSum": 2048
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.NotNil(t, metrics.Storage)
+		assert.Equal(t, int64(1024), metrics.Storage.InputTablesBytesSum)
+		assert.Equal(t, int64(2048), metrics.Storage.OutputTablesBytesSum)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("object with backend metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"backend": {
+				"size": "small",
+				"containerSize": "medium",
+				"context": "wlm"
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.NotNil(t, metrics.Backend)
+		assert.Equal(t, "small", metrics.Backend.Size)
+		assert.Equal(t, "medium", metrics.Backend.ContainerSize)
+		assert.Equal(t, "wlm", metrics.Backend.Context)
+	})
+
+	t.Run("object with both storage and backend metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"storage": {
+				"inputTablesBytesSum": 5000,
+				"outputTablesBytesSum": 10000
+			},
+			"backend": {
+				"size": "large"
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.NotNil(t, metrics.Storage)
+		assert.Equal(t, int64(5000), metrics.Storage.InputTablesBytesSum)
+		assert.NotNil(t, metrics.Backend)
+		assert.Equal(t, "large", metrics.Backend.Size)
+	})
+}
+
+func TestGetQueueJobDetailRequest(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	_, api := APIClientForAnEmptyProject(t, ctx)
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create config
+	config := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey: ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "ex-generic-v2",
+			},
+			Name:              "Test Detail",
+			Description:       "Test for GetQueueJobDetailRequest",
+			ChangeDescription: "Test",
+			Content:           orderedmap.New(),
+		},
+		Rows: []*ConfigRow{},
+	}
+	_, err = api.CreateConfigRequest(config, true).Send(ctx)
+	require.NoError(t, err)
+
+	// Run a job
+	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
+	require.NoError(t, err)
+
+	// Wait for job to finish
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancelFn()
+	_ = api.WaitForQueueJob(timeoutCtx, job.ID)
+
+	// Get job detail using JobKey
+	jobDetail, err := api.GetQueueJobDetailRequest(job.JobKey).Send(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, jobDetail)
+	assert.Equal(t, job.ID, jobDetail.ID)
+	assert.Equal(t, ComponentID("ex-generic-v2"), jobDetail.ComponentID)
+	assert.True(t, jobDetail.IsFinished)
+
+	// Verify extended fields are accessible (may be nil/empty depending on job type)
+	// The job fails due to empty config, so Result.Message contains the error message
+	// Note: successful jobs may have empty Result.Message
+	assert.NotEmpty(t, jobDetail.Result.Message, "Result message should be populated for failed jobs")
+	// Type field indicates job type (standard, orchestrationContainer, etc.)
+	assert.NotEmpty(t, jobDetail.Type, "Type field should be populated")
+	// Metrics may be nil for some job types, but the field should be accessible
+	// Input/Output tables depend on job configuration, so we just verify the struct is correctly deserialized
+}
+
+func TestSearchJobsDetailRequest(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	_, api := APIClientForAnEmptyProject(t, ctx)
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create config
+	config := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey: ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "ex-generic-v2",
+			},
+			Name:              "Test Search Detail",
+			Description:       "Test for SearchJobsDetailRequest",
+			ChangeDescription: "Test",
+			Content:           orderedmap.New(),
+		},
+		Rows: []*ConfigRow{},
+	}
+	_, err = api.CreateConfigRequest(config, true).Send(ctx)
+	require.NoError(t, err)
+
+	// Run a job
+	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
+	require.NoError(t, err)
+
+	// Wait for job to finish
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancelFn()
+	_ = api.WaitForQueueJob(timeoutCtx, job.ID)
+
+	// Search for jobs with detail
+	jobs, err := api.SearchJobsDetailRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, jobs)
+	require.NotEmpty(t, *jobs)
+
+	// Find our job in results and verify extended fields
+	found := false
+	for _, j := range *jobs {
+		if j.ID == job.ID {
+			found = true
+			assert.Equal(t, ComponentID("ex-generic-v2"), j.ComponentID)
+			assert.True(t, j.IsFinished)
+
+			// Verify extended fields are accessible (may be nil/empty depending on job type)
+			// The job fails due to empty config, so Result.Message contains the error message
+			// Note: successful jobs may have empty Result.Message
+			assert.NotEmpty(t, j.Result.Message, "Result message should be populated for failed jobs")
+			// Type field indicates job type (standard, orchestrationContainer, etc.)
+			assert.NotEmpty(t, j.Type, "Type field should be populated")
+			// Metrics may be nil for some job types, but the field should be accessible
+			// Input/Output tables depend on job configuration, so we just verify the struct is correctly deserialized
+			break
+		}
+	}
+	assert.True(t, found, "Created job should be in search results")
 }

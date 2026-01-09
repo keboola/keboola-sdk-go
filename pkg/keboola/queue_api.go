@@ -218,6 +218,60 @@ func (a *AuthorizedAPI) getQueueJobRequest(id JobID) request.APIRequest[*QueueJo
 	return request.NewAPIRequest(job, req)
 }
 
+// GetQueueJobDetailRequest fetches a job with extended result data including input/output tables.
+// This uses the same API endpoint as GetQueueJobRequest but deserializes into QueueJobDetail
+// which captures additional fields (Result.Input, Result.Output, Metrics, etc.) that QueueJob ignores.
+// The API always returns full job data; the difference is only in which fields are captured.
+// https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.8#/Jobs/getJob
+func (a *AuthorizedAPI) GetQueueJobDetailRequest(key JobKey) request.APIRequest[*QueueJobDetail] {
+	job := &QueueJobDetail{}
+	req := a.newRequest(QueueAPI).
+		WithResult(job).
+		WithGet(QueueAPIJob).
+		AndPathParam("jobId", key.ID.String())
+	return request.NewAPIRequest(job, req)
+}
+
+// SearchJobsDetailRequest searches for jobs with extended result data including input/output tables.
+// This uses the same API endpoint as SearchJobsRequest but deserializes into QueueJobDetail
+// which captures additional fields (Result.Input, Result.Output, Metrics, etc.) that QueueJob ignores.
+// The API always returns full job data; the difference is only in which fields are captured.
+// https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.8#/Jobs/get_search_jobs
+func (a *AuthorizedAPI) SearchJobsDetailRequest(opts ...SearchJobsOption) request.APIRequest[*[]*QueueJobDetail] {
+	config := SearchJobsConfig{
+		Limit: 100, // Default limit
+	}
+	for _, opt := range opts {
+		opt(&config)
+	}
+
+	result := make([]*QueueJobDetail, 0)
+	req := a.newRequest(QueueAPI).
+		WithResult(&result).
+		WithGet(QueueAPISearchJobs)
+
+	if config.BranchID != 0 {
+		req = req.AndQueryParam("branchId", config.BranchID.String())
+	}
+	if config.ComponentID != "" {
+		req = req.AndQueryParam("component", config.ComponentID.String())
+	}
+	if config.ConfigID != "" {
+		req = req.AndQueryParam("config", config.ConfigID.String())
+	}
+	if config.Status != "" {
+		req = req.AndQueryParam("status", config.Status)
+	}
+	if config.Limit > 0 {
+		req = req.AndQueryParam("limit", fmt.Sprintf("%d", config.Limit))
+	}
+	if config.Offset >= 0 {
+		req = req.AndQueryParam("offset", fmt.Sprintf("%d", config.Offset))
+	}
+
+	return request.NewAPIRequest(&result, req)
+}
+
 // WaitForQueueJob pulls job status until it is completed.
 func (a *AuthorizedAPI) WaitForQueueJob(ctx context.Context, id JobID) (err error) {
 	_, ok := ctx.Deadline()
