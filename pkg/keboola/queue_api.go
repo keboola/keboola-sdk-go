@@ -219,7 +219,10 @@ func (a *AuthorizedAPI) getQueueJobRequest(id JobID) request.APIRequest[*QueueJo
 }
 
 // GetQueueJobDetailRequest fetches a job with extended result data including input/output tables.
-// https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.2#/Jobs/getJob
+// This uses the same API endpoint as GetQueueJobRequest but deserializes into QueueJobDetail
+// which captures additional fields (Result.Input, Result.Output, Metrics, etc.) that QueueJob ignores.
+// The API always returns full job data; the difference is only in which fields are captured.
+// https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.8#/Jobs/getJob
 func (a *AuthorizedAPI) GetQueueJobDetailRequest(key JobKey) request.APIRequest[*QueueJobDetail] {
 	job := &QueueJobDetail{}
 	req := a.newRequest(QueueAPI).
@@ -230,6 +233,9 @@ func (a *AuthorizedAPI) GetQueueJobDetailRequest(key JobKey) request.APIRequest[
 }
 
 // SearchJobsDetailRequest searches for jobs with extended result data including input/output tables.
+// This uses the same API endpoint as SearchJobsRequest but deserializes into QueueJobDetail
+// which captures additional fields (Result.Input, Result.Output, Metrics, etc.) that QueueJob ignores.
+// The API always returns full job data; the difference is only in which fields are captured.
 // https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.8#/Jobs/get_search_jobs
 func (a *AuthorizedAPI) SearchJobsDetailRequest(opts ...SearchJobsOption) request.APIRequest[*[]*QueueJobDetail] {
 	config := SearchJobsConfig{
