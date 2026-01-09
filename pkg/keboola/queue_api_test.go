@@ -665,8 +665,9 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 			assert.True(t, j.IsFinished)
 
 			// Verify extended fields are accessible (may be nil/empty depending on job type)
-			// The Result struct should be populated with at least a message for failed jobs
-			assert.NotEmpty(t, j.Result.Message, "Result message should be populated for finished jobs")
+			// The job fails due to empty config, so Result.Message contains the error message
+			// Note: successful jobs may have empty Result.Message
+			assert.NotEmpty(t, j.Result.Message, "Result message should be populated for failed jobs")
 			// Type field indicates job type (standard, orchestrationContainer, etc.)
 			assert.NotEmpty(t, j.Type, "Type field should be populated")
 			// Metrics may be nil for some job types, but the field should be accessible
