@@ -319,7 +319,7 @@ func TestSearchJobsAPICalls(t *testing.T) {
 	assert.NotEmpty(t, job.ID)
 
 	// Wait for the job to finish (it will fail due to empty config, but that's OK)
-	timeoutCtx, cancelFn := context.WithTimeout(ctx, time.Minute*5)
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancelFn()
 	_ = api.WaitForQueueJob(timeoutCtx, job.ID) // Ignore error, job will fail
 
