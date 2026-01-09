@@ -222,3 +222,206 @@ func newJSONResponder(response string) httpmock.Responder {
 	r.Header.Set("Content-Type", "application/json")
 	return httpmock.ResponderFromResponse(r)
 }
+
+func TestSearchJobsOptions(t *testing.T) {
+	t.Parallel()
+
+	t.Run("WithSearchJobsBranch", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsBranch(BranchID(123))(&config)
+		assert.Equal(t, BranchID(123), config.BranchID)
+	})
+
+	t.Run("WithSearchJobsComponent", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsComponent(ComponentID("my-component"))(&config)
+		assert.Equal(t, ComponentID("my-component"), config.ComponentID)
+	})
+
+	t.Run("WithSearchJobsConfig", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsConfig(ConfigID("my-config"))(&config)
+		assert.Equal(t, ConfigID("my-config"), config.ConfigID)
+	})
+
+	t.Run("WithSearchJobsStatus", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsStatus("success")(&config)
+		assert.Equal(t, "success", config.Status)
+	})
+
+	t.Run("WithSearchJobsLimit", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsLimit(50)(&config)
+		assert.Equal(t, 50, config.Limit)
+	})
+
+	t.Run("WithSearchJobsOffset", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsOffset(10)(&config)
+		assert.Equal(t, 10, config.Offset)
+	})
+
+	t.Run("multiple options", func(t *testing.T) {
+		t.Parallel()
+		config := SearchJobsConfig{}
+		WithSearchJobsBranch(BranchID(456))(&config)
+		WithSearchJobsComponent(ComponentID("ex-generic-v2"))(&config)
+		WithSearchJobsStatus("waiting")(&config)
+		WithSearchJobsLimit(25)(&config)
+		WithSearchJobsOffset(5)(&config)
+
+		assert.Equal(t, BranchID(456), config.BranchID)
+		assert.Equal(t, ComponentID("ex-generic-v2"), config.ComponentID)
+		assert.Equal(t, "waiting", config.Status)
+		assert.Equal(t, 25, config.Limit)
+		assert.Equal(t, 5, config.Offset)
+	})
+}
+
+func TestSearchJobsAPICalls(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	_, api := APIClientForAnEmptyProject(t, ctx)
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, branch)
+
+	// Create config for the job
+	config := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey: ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "ex-generic-v2",
+			},
+			Name:              "Test SearchJobs",
+			Description:       "Test config for SearchJobs API",
+			ChangeDescription: "Test",
+			Content:           orderedmap.New(),
+		},
+		Rows: []*ConfigRow{},
+	}
+	_, err = api.CreateConfigRequest(config, true).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, config.ID)
+
+	// Run a job on the config
+	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, job.ID)
+
+	// Wait for the job to finish (it will fail due to empty config, but that's OK)
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancelFn()
+	_ = api.WaitForQueueJob(timeoutCtx, job.ID) // Ignore error, job will fail
+
+	// Test SearchJobsRequest - search for jobs by component
+	jobs, err := api.SearchJobsRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobs)
+	assert.NotEmpty(t, *jobs, "Expected at least one job")
+
+	// Verify the job we created is in the results
+	found := false
+	for _, j := range *jobs {
+		if j.ID == job.ID {
+			found = true
+			assert.Equal(t, ComponentID("ex-generic-v2"), j.ComponentID)
+			assert.Equal(t, config.ID, j.ConfigID)
+			assert.Equal(t, branch.ID, j.BranchID)
+			break
+		}
+	}
+	assert.True(t, found, "Created job should be in search results")
+
+	// Test SearchJobsRequest - search by status
+	// The job we created should have failed, so search for "error" status
+	jobsByStatus, err := api.SearchJobsRequest(
+		WithSearchJobsStatus("error"),
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsByStatus)
+	// Verify our failed job is in the error status results
+	foundInStatus := false
+	for _, j := range *jobsByStatus {
+		if j.ID == job.ID {
+			foundInStatus = true
+			assert.Equal(t, "error", j.Status)
+			break
+		}
+	}
+	assert.True(t, foundInStatus, "Failed job should be found when searching by error status")
+
+	// Test SearchJobsRequest - search by branch
+	jobsByBranch, err := api.SearchJobsRequest(
+		WithSearchJobsBranch(branch.ID),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsByBranch)
+	assert.NotEmpty(t, *jobsByBranch)
+
+	// Test SearchJobsRequest - search by config
+	jobsByConfig, err := api.SearchJobsRequest(
+		WithSearchJobsConfig(config.ID),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsByConfig)
+	assert.NotEmpty(t, *jobsByConfig)
+
+	// Test SearchJobsRequest - combined filters
+	jobsCombined, err := api.SearchJobsRequest(
+		WithSearchJobsBranch(branch.ID),
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsConfig(config.ID),
+		WithSearchJobsLimit(5),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsCombined)
+	assert.NotEmpty(t, *jobsCombined)
+
+	// Test SearchJobsRequest - pagination with offset
+	// First, get jobs with limit 1 and offset 0
+	jobsPage1, err := api.SearchJobsRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(1),
+		WithSearchJobsOffset(0),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsPage1)
+	assert.Len(t, *jobsPage1, 1, "Expected exactly 1 job with limit=1")
+
+	// Get jobs with limit 1 and offset 1 (should return different job if more exist)
+	jobsPage2, err := api.SearchJobsRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(1),
+		WithSearchJobsOffset(1),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsPage2)
+
+	// If there are multiple jobs, the offset should return different results
+	if len(*jobsPage2) > 0 {
+		assert.NotEqual(t, (*jobsPage1)[0].ID, (*jobsPage2)[0].ID,
+			"Pagination should return different jobs at different offsets")
+	}
+
+	// Test SearchJobsRequest - default (no options)
+	jobsDefault, err := api.SearchJobsRequest().Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobsDefault)
+}
