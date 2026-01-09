@@ -147,7 +147,7 @@ type JobTask struct {
 	Status    string          `json:"status"`
 	Component string          `json:"component,omitempty"`
 	Duration  int             `json:"duration,omitempty"`
-	StartTime string          `json:"startTime,omitempty"`
+	StartTime *iso8601.Time   `json:"startTime,omitempty"`
 	Results   []JobTaskResult `json:"results,omitempty"`
 }
 
@@ -161,11 +161,11 @@ type JobTaskResult struct {
 
 // JobPhase represents a phase in a flow job.
 type JobPhase struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	Duration  int    `json:"duration,omitempty"`
-	StartTime string `json:"startTime,omitempty"`
+	ID        string        `json:"id"`
+	Name      string        `json:"name"`
+	Status    string        `json:"status"`
+	Duration  int           `json:"duration,omitempty"`
+	StartTime *iso8601.Time `json:"startTime,omitempty"`
 }
 
 // JobMetrics represents metrics for a job.
