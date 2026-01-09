@@ -222,3 +222,161 @@ func newJSONResponder(response string) httpmock.Responder {
 	r.Header.Set("Content-Type", "application/json")
 	return httpmock.ResponderFromResponse(r)
 }
+
+func TestJobResultExtended_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty array returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte("[]"), &result)
+		assert.NoError(t, err)
+		assert.Empty(t, result.Message)
+		assert.Nil(t, result.Input)
+		assert.Nil(t, result.Output)
+	})
+
+	t.Run("object with message", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{"message": "Job completed"}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Job completed", result.Message)
+	})
+
+	t.Run("object with input/output tables", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{
+			"message": "Success",
+			"input": {
+				"tables": [{"id": "in.c-bucket.table1", "name": "table1"}]
+			},
+			"output": {
+				"tables": [{"id": "out.c-bucket.table2", "name": "table2"}]
+			}
+		}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Success", result.Message)
+		assert.NotNil(t, result.Input)
+		assert.Len(t, result.Input.Tables, 1)
+		assert.Equal(t, "in.c-bucket.table1", result.Input.Tables[0].ID)
+		assert.NotNil(t, result.Output)
+		assert.Len(t, result.Output.Tables, 1)
+		assert.Equal(t, "out.c-bucket.table2", result.Output.Tables[0].ID)
+	})
+
+	t.Run("object with error", func(t *testing.T) {
+		t.Parallel()
+		var result JobResultExtended
+		err := json.Unmarshal([]byte(`{
+			"message": "Job failed",
+			"error": {"code": 500, "message": "Internal error"}
+		}`), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Job failed", result.Message)
+		assert.NotNil(t, result.Error)
+		assert.Equal(t, float64(500), result.Error["code"])
+	})
+}
+
+func TestGetQueueJobDetailRequest(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_, api := APIClientForAnEmptyProject(t, ctx)
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	assert.NoError(t, err)
+
+	// Create config
+	config := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey: ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "ex-generic-v2",
+			},
+			Name:              "Test Detail",
+			Description:       "Test for GetQueueJobDetailRequest",
+			ChangeDescription: "Test",
+			Content:           orderedmap.New(),
+		},
+		Rows: []*ConfigRow{},
+	}
+	_, err = api.CreateConfigRequest(config, true).Send(ctx)
+	assert.NoError(t, err)
+
+	// Run a job
+	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
+	assert.NoError(t, err)
+
+	// Wait for job to finish
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, time.Minute*5)
+	defer cancelFn()
+	_ = api.WaitForQueueJob(timeoutCtx, job.ID)
+
+	// Get job detail using JobKey
+	jobDetail, err := api.GetQueueJobDetailRequest(job.JobKey).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobDetail)
+	assert.Equal(t, job.ID, jobDetail.ID)
+	assert.Equal(t, ComponentID("ex-generic-v2"), jobDetail.ComponentID)
+	assert.True(t, jobDetail.IsFinished)
+}
+
+func TestSearchJobsDetailRequest(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_, api := APIClientForAnEmptyProject(t, ctx)
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	assert.NoError(t, err)
+
+	// Create config
+	config := &ConfigWithRows{
+		Config: &Config{
+			ConfigKey: ConfigKey{
+				BranchID:    branch.ID,
+				ComponentID: "ex-generic-v2",
+			},
+			Name:              "Test Search Detail",
+			Description:       "Test for SearchJobsDetailRequest",
+			ChangeDescription: "Test",
+			Content:           orderedmap.New(),
+		},
+		Rows: []*ConfigRow{},
+	}
+	_, err = api.CreateConfigRequest(config, true).Send(ctx)
+	assert.NoError(t, err)
+
+	// Run a job
+	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
+	assert.NoError(t, err)
+
+	// Wait for job to finish
+	timeoutCtx, cancelFn := context.WithTimeout(ctx, time.Minute*5)
+	defer cancelFn()
+	_ = api.WaitForQueueJob(timeoutCtx, job.ID)
+
+	// Search for jobs with detail
+	jobs, err := api.SearchJobsDetailRequest(
+		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+		WithSearchJobsLimit(10),
+	).Send(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, jobs)
+	assert.NotEmpty(t, *jobs)
+
+	// Find our job in results
+	found := false
+	for _, j := range *jobs {
+		if j.ID == job.ID {
+			found = true
+			assert.Equal(t, ComponentID("ex-generic-v2"), j.ComponentID)
+			assert.True(t, j.IsFinished)
+			break
+		}
+	}
+	assert.True(t, found, "Created job should be in search results")
+}
