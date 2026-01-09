@@ -152,3 +152,80 @@ func expectedBranchesMain() string {
   }
 ]`
 }
+
+func TestBranchID_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected BranchID
+		wantErr  bool
+	}{
+		{name: "numeric", input: "123", expected: BranchID(123), wantErr: false},
+		{name: "string number", input: `"456"`, expected: BranchID(456), wantErr: false},
+		{name: "empty string", input: `""`, expected: BranchID(0), wantErr: false},
+		{name: "zero numeric", input: "0", expected: BranchID(0), wantErr: false},
+		{name: "zero string", input: `"0"`, expected: BranchID(0), wantErr: false},
+		{name: "invalid string", input: `"abc"`, expected: BranchID(0), wantErr: true},
+		{name: "negative numeric", input: "-1", expected: BranchID(-1), wantErr: false},
+		{name: "negative string", input: `"-1"`, expected: BranchID(-1), wantErr: false},
+		{name: "large number", input: "999999", expected: BranchID(999999), wantErr: false},
+		{name: "large string number", input: `"999999"`, expected: BranchID(999999), wantErr: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var id BranchID
+			err := json.Unmarshal([]byte(tc.input), &id)
+			if tc.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, id)
+			}
+		})
+	}
+}
+
+func TestBranchID_UnmarshalJSON_InStruct(t *testing.T) {
+	t.Parallel()
+
+	// Test unmarshaling BranchID as part of a struct (like QueueJob response)
+	type testStruct struct {
+		BranchID BranchID `json:"branchId"`
+	}
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected BranchID
+	}{
+		{
+			name:     "branchId as string (Queue API format)",
+			input:    `{"branchId": "12345"}`,
+			expected: BranchID(12345),
+		},
+		{
+			name:     "branchId as number (Storage API format)",
+			input:    `{"branchId": 67890}`,
+			expected: BranchID(67890),
+		},
+		{
+			name:     "branchId as empty string",
+			input:    `{"branchId": ""}`,
+			expected: BranchID(0),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var s testStruct
+			err := json.Unmarshal([]byte(tc.input), &s)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, s.BranchID)
+		})
+	}
+}

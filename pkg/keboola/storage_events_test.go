@@ -74,7 +74,7 @@ func createTestTableWithEvents(t *testing.T, ctx context.Context, api *Authorize
 
 func TestSendEvent(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := APIClientForRandomProject(t, ctx)
 	event, err := api.CreateEventRequest(&Event{
 		ComponentID: "keboola.keboola-as-code",
@@ -91,7 +91,7 @@ func TestSendEvent(t *testing.T) {
 
 func TestListTableEvents(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := APIClientForAnEmptyProject(t, ctx)
 
 	// Create table with events using helper
@@ -114,7 +114,7 @@ func TestListTableEvents(t *testing.T) {
 
 func TestListTableEventsWithLimit(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
+	ctx := t.Context()
 	_, api := APIClientForAnEmptyProject(t, ctx)
 
 	// Create table with events using helper
