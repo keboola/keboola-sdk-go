@@ -27,6 +27,19 @@ go test -race -v ./pkg/keboola/...
 task godoc  # then open http://localhost:6060
 ```
 
+## Docker Development
+
+If Go is not available locally, use Docker Compose to run all commands:
+
+```bash
+# Start a shell in the dev container
+docker-compose run --rm -u "$UID:$GID" --service-ports dev bash
+
+# Then run commands inside the container
+task lint
+task tests
+```
+
 ## Test Project Setup
 
 Integration tests require real Keboola projects. Before running tests:
