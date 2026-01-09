@@ -15,6 +15,54 @@ import (
 	. "github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
+// createTestTableWithEvents creates a bucket, table, and generates events for testing.
+// Returns the TableID of the created table.
+func createTestTableWithEvents(t *testing.T, ctx context.Context, api *AuthorizedAPI, nameSuffix string) TableID {
+	t.Helper()
+
+	// Get default branch
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create bucket with unique name
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	bucket := &Bucket{
+		BucketKey: BucketKey{
+			BranchID: defBranch.ID,
+			BucketID: BucketID{
+				Stage:      BucketStageIn,
+				BucketName: fmt.Sprintf("c-test-events-%s-%d", nameSuffix, rng.Int()),
+			},
+		},
+	}
+	_, err = api.CreateBucketRequest(bucket).Send(ctx)
+	require.NoError(t, err)
+
+	tableKey := TableKey{
+		BranchID: defBranch.ID,
+		TableID: TableID{
+			BucketID:  bucket.BucketID,
+			TableName: fmt.Sprintf("test_events_%s_%d", nameSuffix, rng.Int()),
+		},
+	}
+
+	// Create file for table data
+	fileName := fmt.Sprintf("file_events_%s_%d", nameSuffix, rng.Int())
+	file, err := api.CreateFileResourceRequest(defBranch.ID, fileName).Send(ctx)
+	require.NoError(t, err)
+
+	// Upload file
+	content := []byte("col1,col2\nval1,val2\n")
+	_, err = Upload(ctx, file, bytes.NewReader(content))
+	require.NoError(t, err)
+
+	// Create table from file (this generates events)
+	_, err = api.CreateTableFromFileRequest(tableKey, file.FileKey).Send(ctx)
+	require.NoError(t, err)
+
+	return tableKey.TableID
+}
+
 func TestSendEvent(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -37,48 +85,11 @@ func TestListTableEvents(t *testing.T) {
 	ctx := context.Background()
 	_, api := APIClientForAnEmptyProject(t, ctx)
 
-	// Get default branch
-	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
-	require.NoError(t, err)
-
-	// Create bucket
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	bucket := &Bucket{
-		BucketKey: BucketKey{
-			BranchID: defBranch.ID,
-			BucketID: BucketID{
-				Stage:      BucketStageIn,
-				BucketName: fmt.Sprintf("c-test-events-%d", rng.Int()),
-			},
-		},
-	}
-	_, err = api.CreateBucketRequest(bucket).Send(ctx)
-	require.NoError(t, err)
-
-	tableKey := TableKey{
-		BranchID: defBranch.ID,
-		TableID: TableID{
-			BucketID:  bucket.BucketID,
-			TableName: fmt.Sprintf("test_events_%d", rng.Int()),
-		},
-	}
-
-	// Create file for table data
-	fileName := fmt.Sprintf("file_events_%d", rng.Int())
-	file, err := api.CreateFileResourceRequest(defBranch.ID, fileName).Send(ctx)
-	require.NoError(t, err)
-
-	// Upload file
-	content := []byte("col1,col2\nval1,val2\n")
-	_, err = Upload(ctx, file, bytes.NewReader(content))
-	require.NoError(t, err)
-
-	// Create table from file (this generates events)
-	_, err = api.CreateTableFromFileRequest(tableKey, file.FileKey).Send(ctx)
-	require.NoError(t, err)
+	// Create table with events using helper
+	tableID := createTestTableWithEvents(t, ctx, api, "basic")
 
 	// List events for the table
-	events, err := api.ListTableEventsRequest(tableKey.TableID).Send(ctx)
+	events, err := api.ListTableEventsRequest(tableID).Send(ctx)
 	require.NoError(t, err)
 
 	// Should have at least one event (tableCreated or tableImportDone)
@@ -97,48 +108,11 @@ func TestListTableEventsWithLimit(t *testing.T) {
 	ctx := context.Background()
 	_, api := APIClientForAnEmptyProject(t, ctx)
 
-	// Get default branch
-	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
-	require.NoError(t, err)
-
-	// Create bucket
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	bucket := &Bucket{
-		BucketKey: BucketKey{
-			BranchID: defBranch.ID,
-			BucketID: BucketID{
-				Stage:      BucketStageIn,
-				BucketName: fmt.Sprintf("c-test-events-limit-%d", rng.Int()),
-			},
-		},
-	}
-	_, err = api.CreateBucketRequest(bucket).Send(ctx)
-	require.NoError(t, err)
-
-	tableKey := TableKey{
-		BranchID: defBranch.ID,
-		TableID: TableID{
-			BucketID:  bucket.BucketID,
-			TableName: fmt.Sprintf("test_events_limit_%d", rng.Int()),
-		},
-	}
-
-	// Create file for table data
-	fileName := fmt.Sprintf("file_events_limit_%d", rng.Int())
-	file, err := api.CreateFileResourceRequest(defBranch.ID, fileName).Send(ctx)
-	require.NoError(t, err)
-
-	// Upload file
-	content := []byte("col1,col2\nval1,val2\n")
-	_, err = Upload(ctx, file, bytes.NewReader(content))
-	require.NoError(t, err)
-
-	// Create table from file
-	_, err = api.CreateTableFromFileRequest(tableKey, file.FileKey).Send(ctx)
-	require.NoError(t, err)
+	// Create table with events using helper
+	tableID := createTestTableWithEvents(t, ctx, api, "limit")
 
 	// List events with limit
-	events, err := api.ListTableEventsRequest(tableKey.TableID, WithTableEventsLimit(1)).Send(ctx)
+	events, err := api.ListTableEventsRequest(tableID, WithTableEventsLimit(1)).Send(ctx)
 	require.NoError(t, err)
 
 	// Should have at most 1 event due to limit
