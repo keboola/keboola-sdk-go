@@ -174,6 +174,17 @@ type JobMetrics struct {
 	Backend *JobBackendMetrics `json:"backend,omitempty"`
 }
 
+// UnmarshalJSON implements JSON decoding for JobMetrics.
+// Handles the case where the API returns an empty array [] instead of an object or null.
+func (m *JobMetrics) UnmarshalJSON(data []byte) (err error) {
+	if string(data) == "[]" {
+		*m = JobMetrics{}
+		return nil
+	}
+	type _m JobMetrics
+	return jsonLib.Unmarshal(data, (*_m)(m))
+}
+
 // JobStorageMetrics represents storage metrics for a job.
 type JobStorageMetrics struct {
 	InputTablesBytesSum  int64 `json:"inputTablesBytesSum"`
