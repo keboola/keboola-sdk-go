@@ -151,7 +151,7 @@ type JobTask struct {
 	Results   []JobTaskResult `json:"results,omitempty"`
 }
 
-// JobTaskResult represents the result of a task within an orchestration.
+// JobTaskResult represents the result of a task within an orchestration or flow.
 type JobTaskResult struct {
 	JobID    string            `json:"jobId"`
 	Status   string            `json:"status"`
