@@ -12,6 +12,7 @@ import (
 	"github.com/keboola/go-utils/pkg/orderedmap"
 	"github.com/keboola/go-utils/pkg/wildcards"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 	"github.com/keboola/keboola-sdk-go/v2/pkg/client/trace"
@@ -565,7 +566,7 @@ func TestGetQueueJobDetailRequest(t *testing.T) {
 
 	// Get default branch
 	branch, err := api.GetDefaultBranchRequest().Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Create config
 	config := &ConfigWithRows{
@@ -582,11 +583,11 @@ func TestGetQueueJobDetailRequest(t *testing.T) {
 		Rows: []*ConfigRow{},
 	}
 	_, err = api.CreateConfigRequest(config, true).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Run a job
 	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Wait for job to finish
 	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
@@ -595,8 +596,8 @@ func TestGetQueueJobDetailRequest(t *testing.T) {
 
 	// Get job detail using JobKey
 	jobDetail, err := api.GetQueueJobDetailRequest(job.JobKey).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, jobDetail)
+	require.NoError(t, err)
+	require.NotNil(t, jobDetail)
 	assert.Equal(t, job.ID, jobDetail.ID)
 	assert.Equal(t, ComponentID("ex-generic-v2"), jobDetail.ComponentID)
 	assert.True(t, jobDetail.IsFinished)
@@ -617,7 +618,7 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 
 	// Get default branch
 	branch, err := api.GetDefaultBranchRequest().Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Create config
 	config := &ConfigWithRows{
@@ -634,11 +635,11 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 		Rows: []*ConfigRow{},
 	}
 	_, err = api.CreateConfigRequest(config, true).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Run a job
 	job, err := api.NewCreateJobRequest("ex-generic-v2").WithConfig(config.ID).Send(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Wait for job to finish
 	timeoutCtx, cancelFn := context.WithTimeout(ctx, 5*time.Minute)
@@ -650,9 +651,9 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
 		WithSearchJobsLimit(10),
 	).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, jobs)
-	assert.NotEmpty(t, *jobs)
+	require.NoError(t, err)
+	require.NotNil(t, jobs)
+	require.NotEmpty(t, *jobs)
 
 	// Find our job in results and verify extended fields
 	found := false
