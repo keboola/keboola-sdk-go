@@ -280,6 +280,81 @@ func TestJobResultExtended_UnmarshalJSON(t *testing.T) {
 	})
 }
 
+func TestJobMetrics_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty array returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte("[]"), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("null returns empty struct", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte("null"), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("object with storage metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"storage": {
+				"inputTablesBytesSum": 1024,
+				"outputTablesBytesSum": 2048
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.NotNil(t, metrics.Storage)
+		assert.Equal(t, int64(1024), metrics.Storage.InputTablesBytesSum)
+		assert.Equal(t, int64(2048), metrics.Storage.OutputTablesBytesSum)
+		assert.Nil(t, metrics.Backend)
+	})
+
+	t.Run("object with backend metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"backend": {
+				"size": "small",
+				"containerSize": "medium",
+				"context": "wlm"
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.Nil(t, metrics.Storage)
+		assert.NotNil(t, metrics.Backend)
+		assert.Equal(t, "small", metrics.Backend.Size)
+		assert.Equal(t, "medium", metrics.Backend.ContainerSize)
+		assert.Equal(t, "wlm", metrics.Backend.Context)
+	})
+
+	t.Run("object with both storage and backend metrics", func(t *testing.T) {
+		t.Parallel()
+		var metrics JobMetrics
+		err := json.Unmarshal([]byte(`{
+			"storage": {
+				"inputTablesBytesSum": 5000,
+				"outputTablesBytesSum": 10000
+			},
+			"backend": {
+				"size": "large"
+			}
+		}`), &metrics)
+		assert.NoError(t, err)
+		assert.NotNil(t, metrics.Storage)
+		assert.Equal(t, int64(5000), metrics.Storage.InputTablesBytesSum)
+		assert.NotNil(t, metrics.Backend)
+		assert.Equal(t, "large", metrics.Backend.Size)
+	})
+}
+
 func TestGetQueueJobDetailRequest(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
