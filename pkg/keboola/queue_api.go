@@ -220,12 +220,12 @@ func (a *AuthorizedAPI) getQueueJobRequest(id JobID) request.APIRequest[*QueueJo
 
 // GetQueueJobDetailRequest fetches a job with extended result data including input/output tables.
 // https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.3.2#/Jobs/getJob
-func (a *AuthorizedAPI) GetQueueJobDetailRequest(id JobID) request.APIRequest[*QueueJobDetail] {
+func (a *AuthorizedAPI) GetQueueJobDetailRequest(key JobKey) request.APIRequest[*QueueJobDetail] {
 	job := &QueueJobDetail{}
 	req := a.newRequest(QueueAPI).
 		WithResult(job).
 		WithGet(QueueAPIJob).
-		AndPathParam("jobId", id.String())
+		AndPathParam("jobId", key.ID.String())
 	return request.NewAPIRequest(job, req)
 }
 
