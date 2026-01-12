@@ -63,7 +63,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 		// Test building the request without sending
 		req := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 			WithFileName("exported_table.csv").
-			WithFormat("csv").
+			WithFileType("csv").
 			Build()
 
 		require.NotNil(t, req)
@@ -75,7 +75,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 		// This will fail because the table doesn't exist in the workspace
 		_, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 			WithFileName("exported_table.csv").
-			WithFormat("csv").
+			WithFileType("csv").
 			Send(ctx)
 		require.Error(t, err)
 	})
@@ -95,7 +95,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 		// This will fail because the table doesn't exist in the workspace
 		_, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 			WithFileName("exported_table.csv").
-			WithFormat("csv").
+			WithFileType("csv").
 			SendAndWait(ctx, time.Minute*2)
 		require.Error(t, err)
 	})
@@ -104,7 +104,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 		t.Parallel()
 		_, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 			WithFileName("exported_table.csv").
-			WithFormat("fake_format").
+			WithFileType("fake_format").
 			SendAndWait(ctx, time.Minute*2)
 		require.Error(t, err)
 	})
@@ -191,7 +191,7 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	// Export the table from workspace
 	result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 		WithFileName("test_export.csv").
-		WithFormat("csv").
+		WithFileType("csv").
 		SendAndWait(ctx, time.Second*30)
 
 	// Verify successful export
