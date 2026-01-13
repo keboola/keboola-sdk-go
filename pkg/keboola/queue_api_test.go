@@ -348,23 +348,27 @@ func TestSearchJobsAPICalls(t *testing.T) {
 
 	// Test SearchJobsRequest - search by status
 	// The job we created should have failed, so search for "error" status
-	jobsByStatus, err := api.SearchJobsRequest(
-		WithSearchJobsStatus("error"),
-		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
-		WithSearchJobsLimit(10),
-	).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotNil(t, jobsByStatus)
-	// Verify our failed job is in the error status results
-	foundInStatus := false
-	for _, j := range *jobsByStatus {
-		if j.ID == job.ID {
-			foundInStatus = true
-			assert.Equal(t, "error", j.Status)
-			break
+	assert.EventuallyWithT(t, func(t *assert.CollectT) {
+		jobsByStatus, err := api.SearchJobsRequest(
+			WithSearchJobsStatus("error"),
+			WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+			WithSearchJobsLimit(10),
+		).Send(ctx)
+		assert.NoError(t, err)
+		assert.NotNil(t, jobsByStatus)
+		assert.NotEmpty(t, *jobsByStatus, "Expected at least one job with error status")
+
+		// Verify our failed job is in the error status results
+		found := false
+		for _, j := range *jobsByStatus {
+			if j.ID == job.ID {
+				assert.Equal(t, "error", j.Status)
+				found = true
+				break
+			}
 		}
-	}
-	assert.True(t, foundInStatus, "Failed job should be found when searching by error status")
+		assert.True(t, found, "Failed job should be in error status results")
+	}, 5*time.Second, 10*time.Millisecond, "Failed job should be found when searching by error status")
 
 	// Test SearchJobsRequest - search by branch
 	jobsByBranch, err := api.SearchJobsRequest(
