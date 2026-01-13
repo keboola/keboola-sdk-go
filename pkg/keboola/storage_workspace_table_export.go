@@ -22,7 +22,7 @@ type WorkspaceTableExportRequestBuilder struct {
 type workspaceTableExportConfig struct {
 	TableName string `json:"tableName"`
 	FileName  string `json:"fileName"`
-	Format    string `json:"format"`
+	FileType  string `json:"fileType"`
 }
 
 // NewWorkspaceTableExportRequest creates a new workspace table export request builder.
@@ -104,9 +104,8 @@ func (b *WorkspaceTableExportRequestBuilder) WithFileName(fileName string) *Work
 	return b
 }
 
-// WithFormat sets the export format (e.g., "csv", "json").
-// If not specified, the default format will be used.
-func (b *WorkspaceTableExportRequestBuilder) WithFormat(format string) *WorkspaceTableExportRequestBuilder {
-	b.config.Format = format
+// WithFileType sets the file type for the exported table, such as "csv" or "json".
+func (b *WorkspaceTableExportRequestBuilder) WithFileType(fileType string) *WorkspaceTableExportRequestBuilder {
+	b.config.FileType = fileType
 	return b
 }
