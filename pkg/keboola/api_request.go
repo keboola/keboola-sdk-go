@@ -32,6 +32,8 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&QueueError{})
 	case SchedulerAPI:
 		r = r.WithError(&SchedulerError{})
+	case VaultVariablesAPI:
+		r = r.WithError(&VaultVariablesError{})
 	case WorkspacesAPI:
 		r = r.WithError(&WorkspacesError{})
 	}
