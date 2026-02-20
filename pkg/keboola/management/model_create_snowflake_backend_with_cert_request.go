@@ -1,0 +1,491 @@
+/*
+Manage API
+
+API version: 1.0.0
+*/
+
+package management
+
+import (
+	"encoding/json"
+	"bytes"
+	"fmt"
+)
+
+// checks if the CreateSnowflakeBackendWithCertRequest type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &CreateSnowflakeBackendWithCertRequest{}
+
+// CreateSnowflakeBackendWithCertRequest struct for CreateSnowflakeBackendWithCertRequest
+type CreateSnowflakeBackendWithCertRequest struct {
+	// Snowflake host
+	Host string `json:"host"`
+	// Snowflake warehouse name
+	Warehouse string `json:"warehouse"`
+	// Snowflake region
+	Region string `json:"region"`
+	// Snowflake account owner
+	Owner string `json:"owner"`
+	// Technical owner of the backend
+	TechnicalOwner string `json:"technicalOwner"`
+	// Snowflake username
+	Username *string `json:"username,omitempty"`
+	// Contact emails for the technical owner
+	TechnicalOwnerContactEmails []string `json:"technicalOwnerContactEmails,omitempty"`
+	// Enable dynamic backends
+	UseDynamicBackends *bool `json:"useDynamicBackends,omitempty"`
+	// Enable network policies
+	UseNetworkPolicies *bool `json:"useNetworkPolicies,omitempty"`
+	// Enable SSO
+	UseSso *bool `json:"useSso,omitempty"`
+	// Snowflake edition
+	Edition *string `json:"edition,omitempty"`
+}
+
+type _CreateSnowflakeBackendWithCertRequest CreateSnowflakeBackendWithCertRequest
+
+// NewCreateSnowflakeBackendWithCertRequest instantiates a new CreateSnowflakeBackendWithCertRequest object
+// This constructor will assign default values to properties that have it defined,
+// and makes sure properties required by API are set, but the set of arguments
+// will change when the set of required properties is changed
+func NewCreateSnowflakeBackendWithCertRequest(host string, warehouse string, region string, owner string, technicalOwner string) *CreateSnowflakeBackendWithCertRequest {
+	this := CreateSnowflakeBackendWithCertRequest{}
+	this.Host = host
+	this.Warehouse = warehouse
+	this.Region = region
+	this.Owner = owner
+	this.TechnicalOwner = technicalOwner
+	return &this
+}
+
+// NewCreateSnowflakeBackendWithCertRequestWithDefaults instantiates a new CreateSnowflakeBackendWithCertRequest object
+// This constructor will only assign default values to properties that have it defined,
+// but it doesn't guarantee that properties required by API are set
+func NewCreateSnowflakeBackendWithCertRequestWithDefaults() *CreateSnowflakeBackendWithCertRequest {
+	this := CreateSnowflakeBackendWithCertRequest{}
+	return &this
+}
+
+// GetHost returns the Host field value
+func (o *CreateSnowflakeBackendWithCertRequest) GetHost() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Host
+}
+
+// GetHostOk returns a tuple with the Host field value
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetHostOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Host, true
+}
+
+// SetHost sets field value
+func (o *CreateSnowflakeBackendWithCertRequest) SetHost(v string) {
+	o.Host = v
+}
+
+// GetWarehouse returns the Warehouse field value
+func (o *CreateSnowflakeBackendWithCertRequest) GetWarehouse() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Warehouse
+}
+
+// GetWarehouseOk returns a tuple with the Warehouse field value
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetWarehouseOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Warehouse, true
+}
+
+// SetWarehouse sets field value
+func (o *CreateSnowflakeBackendWithCertRequest) SetWarehouse(v string) {
+	o.Warehouse = v
+}
+
+// GetRegion returns the Region field value
+func (o *CreateSnowflakeBackendWithCertRequest) GetRegion() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Region
+}
+
+// GetRegionOk returns a tuple with the Region field value
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetRegionOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Region, true
+}
+
+// SetRegion sets field value
+func (o *CreateSnowflakeBackendWithCertRequest) SetRegion(v string) {
+	o.Region = v
+}
+
+// GetOwner returns the Owner field value
+func (o *CreateSnowflakeBackendWithCertRequest) GetOwner() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.Owner
+}
+
+// GetOwnerOk returns a tuple with the Owner field value
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetOwnerOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Owner, true
+}
+
+// SetOwner sets field value
+func (o *CreateSnowflakeBackendWithCertRequest) SetOwner(v string) {
+	o.Owner = v
+}
+
+// GetTechnicalOwner returns the TechnicalOwner field value
+func (o *CreateSnowflakeBackendWithCertRequest) GetTechnicalOwner() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.TechnicalOwner
+}
+
+// GetTechnicalOwnerOk returns a tuple with the TechnicalOwner field value
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetTechnicalOwnerOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.TechnicalOwner, true
+}
+
+// SetTechnicalOwner sets field value
+func (o *CreateSnowflakeBackendWithCertRequest) SetTechnicalOwner(v string) {
+	o.TechnicalOwner = v
+}
+
+// GetUsername returns the Username field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUsername() string {
+	if o == nil || IsNil(o.Username) {
+		var ret string
+		return ret
+	}
+	return *o.Username
+}
+
+// GetUsernameOk returns a tuple with the Username field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUsernameOk() (*string, bool) {
+	if o == nil || IsNil(o.Username) {
+		return nil, false
+	}
+	return o.Username, true
+}
+
+// HasUsername returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasUsername() bool {
+	if o != nil && !IsNil(o.Username) {
+		return true
+	}
+
+	return false
+}
+
+// SetUsername gets a reference to the given string and assigns it to the Username field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetUsername(v string) {
+	o.Username = &v
+}
+
+// GetTechnicalOwnerContactEmails returns the TechnicalOwnerContactEmails field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetTechnicalOwnerContactEmails() []string {
+	if o == nil || IsNil(o.TechnicalOwnerContactEmails) {
+		var ret []string
+		return ret
+	}
+	return o.TechnicalOwnerContactEmails
+}
+
+// GetTechnicalOwnerContactEmailsOk returns a tuple with the TechnicalOwnerContactEmails field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetTechnicalOwnerContactEmailsOk() ([]string, bool) {
+	if o == nil || IsNil(o.TechnicalOwnerContactEmails) {
+		return nil, false
+	}
+	return o.TechnicalOwnerContactEmails, true
+}
+
+// HasTechnicalOwnerContactEmails returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasTechnicalOwnerContactEmails() bool {
+	if o != nil && !IsNil(o.TechnicalOwnerContactEmails) {
+		return true
+	}
+
+	return false
+}
+
+// SetTechnicalOwnerContactEmails gets a reference to the given []string and assigns it to the TechnicalOwnerContactEmails field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetTechnicalOwnerContactEmails(v []string) {
+	o.TechnicalOwnerContactEmails = v
+}
+
+// GetUseDynamicBackends returns the UseDynamicBackends field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseDynamicBackends() bool {
+	if o == nil || IsNil(o.UseDynamicBackends) {
+		var ret bool
+		return ret
+	}
+	return *o.UseDynamicBackends
+}
+
+// GetUseDynamicBackendsOk returns a tuple with the UseDynamicBackends field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseDynamicBackendsOk() (*bool, bool) {
+	if o == nil || IsNil(o.UseDynamicBackends) {
+		return nil, false
+	}
+	return o.UseDynamicBackends, true
+}
+
+// HasUseDynamicBackends returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasUseDynamicBackends() bool {
+	if o != nil && !IsNil(o.UseDynamicBackends) {
+		return true
+	}
+
+	return false
+}
+
+// SetUseDynamicBackends gets a reference to the given bool and assigns it to the UseDynamicBackends field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetUseDynamicBackends(v bool) {
+	o.UseDynamicBackends = &v
+}
+
+// GetUseNetworkPolicies returns the UseNetworkPolicies field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseNetworkPolicies() bool {
+	if o == nil || IsNil(o.UseNetworkPolicies) {
+		var ret bool
+		return ret
+	}
+	return *o.UseNetworkPolicies
+}
+
+// GetUseNetworkPoliciesOk returns a tuple with the UseNetworkPolicies field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseNetworkPoliciesOk() (*bool, bool) {
+	if o == nil || IsNil(o.UseNetworkPolicies) {
+		return nil, false
+	}
+	return o.UseNetworkPolicies, true
+}
+
+// HasUseNetworkPolicies returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasUseNetworkPolicies() bool {
+	if o != nil && !IsNil(o.UseNetworkPolicies) {
+		return true
+	}
+
+	return false
+}
+
+// SetUseNetworkPolicies gets a reference to the given bool and assigns it to the UseNetworkPolicies field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetUseNetworkPolicies(v bool) {
+	o.UseNetworkPolicies = &v
+}
+
+// GetUseSso returns the UseSso field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseSso() bool {
+	if o == nil || IsNil(o.UseSso) {
+		var ret bool
+		return ret
+	}
+	return *o.UseSso
+}
+
+// GetUseSsoOk returns a tuple with the UseSso field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetUseSsoOk() (*bool, bool) {
+	if o == nil || IsNil(o.UseSso) {
+		return nil, false
+	}
+	return o.UseSso, true
+}
+
+// HasUseSso returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasUseSso() bool {
+	if o != nil && !IsNil(o.UseSso) {
+		return true
+	}
+
+	return false
+}
+
+// SetUseSso gets a reference to the given bool and assigns it to the UseSso field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetUseSso(v bool) {
+	o.UseSso = &v
+}
+
+// GetEdition returns the Edition field value if set, zero value otherwise.
+func (o *CreateSnowflakeBackendWithCertRequest) GetEdition() string {
+	if o == nil || IsNil(o.Edition) {
+		var ret string
+		return ret
+	}
+	return *o.Edition
+}
+
+// GetEditionOk returns a tuple with the Edition field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) GetEditionOk() (*string, bool) {
+	if o == nil || IsNil(o.Edition) {
+		return nil, false
+	}
+	return o.Edition, true
+}
+
+// HasEdition returns a boolean if a field has been set.
+func (o *CreateSnowflakeBackendWithCertRequest) HasEdition() bool {
+	if o != nil && !IsNil(o.Edition) {
+		return true
+	}
+
+	return false
+}
+
+// SetEdition gets a reference to the given string and assigns it to the Edition field.
+func (o *CreateSnowflakeBackendWithCertRequest) SetEdition(v string) {
+	o.Edition = &v
+}
+
+func (o CreateSnowflakeBackendWithCertRequest) MarshalJSON() ([]byte, error) {
+	toSerialize,err := o.ToMap()
+	if err != nil {
+		return []byte{}, err
+	}
+	return json.Marshal(toSerialize)
+}
+
+func (o CreateSnowflakeBackendWithCertRequest) ToMap() (map[string]interface{}, error) {
+	toSerialize := map[string]interface{}{}
+	toSerialize["host"] = o.Host
+	toSerialize["warehouse"] = o.Warehouse
+	toSerialize["region"] = o.Region
+	toSerialize["owner"] = o.Owner
+	toSerialize["technicalOwner"] = o.TechnicalOwner
+	if !IsNil(o.Username) {
+		toSerialize["username"] = o.Username
+	}
+	if !IsNil(o.TechnicalOwnerContactEmails) {
+		toSerialize["technicalOwnerContactEmails"] = o.TechnicalOwnerContactEmails
+	}
+	if !IsNil(o.UseDynamicBackends) {
+		toSerialize["useDynamicBackends"] = o.UseDynamicBackends
+	}
+	if !IsNil(o.UseNetworkPolicies) {
+		toSerialize["useNetworkPolicies"] = o.UseNetworkPolicies
+	}
+	if !IsNil(o.UseSso) {
+		toSerialize["useSso"] = o.UseSso
+	}
+	if !IsNil(o.Edition) {
+		toSerialize["edition"] = o.Edition
+	}
+	return toSerialize, nil
+}
+
+func (o *CreateSnowflakeBackendWithCertRequest) UnmarshalJSON(data []byte) (err error) {
+	// This validates that all required properties are included in the JSON object
+	// by unmarshalling the object into a generic map with string keys and checking
+	// that every required field exists as a key in the generic map.
+	requiredProperties := []string{
+		"host",
+		"warehouse",
+		"region",
+		"owner",
+		"technicalOwner",
+	}
+
+	allProperties := make(map[string]interface{})
+
+	err = json.Unmarshal(data, &allProperties)
+
+	if err != nil {
+		return err;
+	}
+
+	for _, requiredProperty := range(requiredProperties) {
+		if _, exists := allProperties[requiredProperty]; !exists {
+			return fmt.Errorf("no value given for required property %v", requiredProperty)
+		}
+	}
+
+	varCreateSnowflakeBackendWithCertRequest := _CreateSnowflakeBackendWithCertRequest{}
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&varCreateSnowflakeBackendWithCertRequest)
+
+	if err != nil {
+		return err
+	}
+
+	*o = CreateSnowflakeBackendWithCertRequest(varCreateSnowflakeBackendWithCertRequest)
+
+	return err
+}
+
+type NullableCreateSnowflakeBackendWithCertRequest struct {
+	value *CreateSnowflakeBackendWithCertRequest
+	isSet bool
+}
+
+func (v NullableCreateSnowflakeBackendWithCertRequest) Get() *CreateSnowflakeBackendWithCertRequest {
+	return v.value
+}
+
+func (v *NullableCreateSnowflakeBackendWithCertRequest) Set(val *CreateSnowflakeBackendWithCertRequest) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableCreateSnowflakeBackendWithCertRequest) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableCreateSnowflakeBackendWithCertRequest) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableCreateSnowflakeBackendWithCertRequest(val *CreateSnowflakeBackendWithCertRequest) *NullableCreateSnowflakeBackendWithCertRequest {
+	return &NullableCreateSnowflakeBackendWithCertRequest{value: val, isSet: true}
+}
+
+func (v NullableCreateSnowflakeBackendWithCertRequest) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableCreateSnowflakeBackendWithCertRequest) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
