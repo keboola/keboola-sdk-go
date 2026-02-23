@@ -14,9 +14,22 @@ type NotificationError struct {
 	response    *http.Response
 }
 
-// Error returns the error message.
-func (e NotificationError) Error() string {
-	return e.Message
+// Error returns the error message with HTTP context.
+func (e *NotificationError) Error() string {
+	msg := e.Message
+	if e.request != nil {
+		msg += fmt.Sprintf(`, method: "%s", url: "%s"`, e.request.Method, e.request.URL)
+	}
+	if e.response != nil {
+		msg += fmt.Sprintf(`, httpCode: "%d"`, e.response.StatusCode)
+	}
+	if e.ErrCode != 0 {
+		msg += fmt.Sprintf(`, code: "%d"`, e.ErrCode)
+	}
+	if len(e.ExceptionID) > 0 {
+		msg += fmt.Sprintf(`, exceptionId: "%s"`, e.ExceptionID)
+	}
+	return msg
 }
 
 // ErrorName returns a human-readable name for the error.

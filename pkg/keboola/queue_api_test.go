@@ -651,33 +651,34 @@ func TestSearchJobsDetailRequest(t *testing.T) {
 	defer cancelFn()
 	_ = api.WaitForQueueJob(timeoutCtx, job.ID)
 
-	// Search for jobs with detail
-	jobs, err := api.SearchJobsDetailRequest(
-		WithSearchJobsComponent(ComponentID("ex-generic-v2")),
-		WithSearchJobsLimit(10),
-	).Send(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, jobs)
-	require.NotEmpty(t, *jobs)
+	// Wait for job to be indexed in search results and verify it has expected state
+	var foundJob *QueueJobDetail
+	assert.EventuallyWithT(t, func(c *assert.CollectT) {
+		// Search for jobs with detail
+		jobs, err := api.SearchJobsDetailRequest(
+			WithSearchJobsComponent(ComponentID("ex-generic-v2")),
+			WithSearchJobsLimit(10),
+		).Send(ctx)
+		assert.NoError(c, err)
 
-	// Find our job in results and verify extended fields
-	found := false
-	for _, j := range *jobs {
-		if j.ID == job.ID {
-			found = true
-			assert.Equal(t, ComponentID("ex-generic-v2"), j.ComponentID)
-			assert.True(t, j.IsFinished)
-
-			// Verify extended fields are accessible (may be nil/empty depending on job type)
-			// The job fails due to empty config, so Result.Message contains the error message
-			// Note: successful jobs may have empty Result.Message
-			assert.NotEmpty(t, j.Result.Message, "Result message should be populated for failed jobs")
-			// Type field indicates job type (standard, orchestrationContainer, etc.)
-			assert.NotEmpty(t, j.Type, "Type field should be populated")
-			// Metrics may be nil for some job types, but the field should be accessible
-			// Input/Output tables depend on job configuration, so we just verify the struct is correctly deserialized
-			break
+		// Find our specific job
+		for _, j := range *jobs {
+			if j.ID == job.ID {
+				// Verify the job is finished and has expected fields
+				assert.Equal(c, ComponentID("ex-generic-v2"), j.ComponentID)
+				assert.True(c, j.IsFinished, "Job should be finished")
+				// Verify extended fields are accessible (may be nil/empty depending on job type)
+				// The job fails due to empty config, so Result.Message contains the error message
+				assert.NotEmpty(c, j.Result.Message, "Result message should be populated for failed jobs")
+				// Type field indicates job type (standard, orchestrationContainer, etc.)
+				assert.NotEmpty(c, j.Type, "Type field should be populated")
+				foundJob = j
+				return
+			}
 		}
-	}
-	assert.True(t, found, "Created job should be in search results")
+
+		assert.Fail(c, "Job not found in search results yet")
+	}, 5*time.Second, 50*time.Millisecond, "Job should appear in search results with complete details")
+
+	require.NotNil(t, foundJob, "Job must be found after eventual consistency wait")
 }

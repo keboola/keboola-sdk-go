@@ -2,7 +2,6 @@ package keboola
 
 import (
 	"context"
-	"net/url"
 	"time"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
@@ -13,6 +12,7 @@ import (
 type CreateNotificationSubscriptionRequestBuilder struct {
 	payload createSubscriptionRequest
 	api     *AuthorizedAPI
+	err     error
 }
 
 // NewCreateNotificationSubscriptionRequest creates a builder for creating a notification subscription.
@@ -41,13 +41,17 @@ func (b *CreateNotificationSubscriptionRequestBuilder) WithFilter(
 	field, value string,
 	operator NotificationFilterOperator,
 ) *CreateNotificationSubscriptionRequestBuilder {
+	if b.err != nil {
+		return b
+	}
 	filter := NotificationFilter{
 		Field:    field,
 		Value:    value,
 		Operator: operator,
 	}
 	if err := filter.Validate(); err != nil {
-		panic(err)
+		b.err = err
+		return b
 	}
 	b.payload.Filters = append(b.payload.Filters, filter)
 	return b
@@ -58,9 +62,13 @@ func (b *CreateNotificationSubscriptionRequestBuilder) WithFilter(
 func (b *CreateNotificationSubscriptionRequestBuilder) WithFilters(
 	filters []NotificationFilter,
 ) *CreateNotificationSubscriptionRequestBuilder {
+	if b.err != nil {
+		return b
+	}
 	for _, filter := range filters {
 		if err := filter.Validate(); err != nil {
-			panic(err)
+			b.err = err
+			return b
 		}
 		b.payload.Filters = append(b.payload.Filters, filter)
 	}
@@ -85,6 +93,11 @@ func (b *CreateNotificationSubscriptionRequestBuilder) WithRelativeExpiration(
 
 // Build constructs the API request without sending it.
 func (b *CreateNotificationSubscriptionRequestBuilder) Build() request.APIRequest[*NotificationSubscription] {
+	// Check for validation errors
+	if b.err != nil {
+		return request.NewAPIRequest(&NotificationSubscription{}, request.NewReqDefinitionError(b.err))
+	}
+
 	result := &NotificationSubscription{}
 	req := b.api.
 		newRequest(NotificationAPI).
@@ -148,7 +161,7 @@ func (a *AuthorizedAPI) GetNotificationSubscriptionRequest(
 	req := a.
 		newRequest(NotificationAPI).
 		WithGet(NotificationAPIProjectSubscription).
-		AndPathParam("subscriptionId", url.PathEscape(string(key.ID))).
+		AndPathParam("subscriptionId", string(key.ID)).
 		WithResult(result)
 	return request.NewAPIRequest(result, req)
 }
@@ -161,6 +174,6 @@ func (a *AuthorizedAPI) DeleteNotificationSubscriptionRequest(
 	req := a.
 		newRequest(NotificationAPI).
 		WithDelete(NotificationAPIProjectSubscription).
-		AndPathParam("subscriptionId", url.PathEscape(string(key.ID)))
+		AndPathParam("subscriptionId", string(key.ID))
 	return request.NewAPIRequest(request.NoResult{}, req)
 }
