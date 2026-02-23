@@ -28,6 +28,8 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&StorageError{})
 	case EncryptionAPI:
 		r = r.WithError(&EncryptionError{})
+	case NotificationAPI:
+		r = r.WithError(&NotificationError{})
 	case QueueAPI:
 		r = r.WithError(&QueueError{})
 	case SchedulerAPI:
