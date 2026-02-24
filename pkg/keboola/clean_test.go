@@ -61,6 +61,11 @@ func TestCleanProject(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, *instances, 0)
 
+	// No notification subscriptions
+	notifications, err := api.ListNotificationSubscriptionsRequest().Send(ctx)
+	assert.NoError(t, err)
+	assert.Len(t, *notifications, 0)
+
 	// No storage workspaces
 	workspaces, err := api.StorageWorkspacesListRequest(defBranch.ID).Send(ctx)
 	assert.NoError(t, err)
