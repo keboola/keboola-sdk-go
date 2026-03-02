@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_MaintainersAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService AddAUserToMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId float32
 
@@ -38,7 +37,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService CancelMaintainerInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 		var invitationId string
@@ -52,7 +51,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService CreateAMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MaintainersAPI.CreateAMaintainer(context.Background()).Execute()
 
@@ -64,7 +63,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService DeleteAMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId int32
 
@@ -77,7 +76,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService InviteAUserToAMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 
@@ -91,7 +90,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService ListMaintainerMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 
@@ -104,7 +103,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService ListMaintainerUsers", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId float32
 
@@ -118,7 +117,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService ListMaintainers", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		httpRes, err := apiClient.MaintainersAPI.ListMaintainers(context.Background()).Execute()
 
@@ -129,7 +128,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService ListMaintainersInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 
@@ -143,7 +142,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService MaintainerInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 		var invitationId string
@@ -158,7 +157,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService RemoveAUserFromMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId float32
 		var userId string
@@ -172,7 +171,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService RemoveMaintainerMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 		var metadataId string
@@ -186,7 +185,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService RetrieveAMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId int32
 
@@ -200,7 +199,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService SetMaintainerMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId string
 
@@ -213,7 +212,7 @@ func Test_management_MaintainersAPIService(t *testing.T) {
 
 	t.Run("Test MaintainersAPIService UpdateAMaintainer", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId int32
 

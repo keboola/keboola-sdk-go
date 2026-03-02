@@ -4,14 +4,86 @@ All URIs are relative to *https://connection.keboola.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**ActivateSnowflakeBackend**](SUPERStorageBackendsManagementAPI.md#ActivateSnowflakeBackend) | **Post** /manage/storage-backend/{backend_id}/activate | Activate Snowflake backend
 [**BackendDetail**](SUPERStorageBackendsManagementAPI.md#BackendDetail) | **Get** /manage/storage-backend/{backend_id} | Backend detail
 [**CreateANewBackend**](SUPERStorageBackendsManagementAPI.md#CreateANewBackend) | **Post** /manage/storage-backend | Create a new backend
 [**CreateANewBigQueryBackend**](SUPERStorageBackendsManagementAPI.md#CreateANewBigQueryBackend) | **Post** /manage/storage-backend/bigquery | Create a new BigQuery backend
+[**CreateSnowflakeBackendWithCert**](SUPERStorageBackendsManagementAPI.md#CreateSnowflakeBackendWithCert) | **Post** /manage/storage-backend/snowflake | Create a new Snowflake backend with certificate authentication
 [**DeleteBackend**](SUPERStorageBackendsManagementAPI.md#DeleteBackend) | **Delete** /manage/storage-backend/{backend_id} | Delete backend
 [**ListBackends**](SUPERStorageBackendsManagementAPI.md#ListBackends) | **Get** /manage/storage-backend | List backends
 [**UpdateBackend**](SUPERStorageBackendsManagementAPI.md#UpdateBackend) | **Patch** /manage/storage-backend/{backend_id} | Update backend
 [**UpdateBigQueryBackend**](SUPERStorageBackendsManagementAPI.md#UpdateBigQueryBackend) | **Patch** /manage/storage-backend/bigquery/{backend_id} | Update BigQuery backend
 
+
+
+## ActivateSnowflakeBackend
+
+> ActivateSnowflakeStorageBackendResponse ActivateSnowflakeBackend(ctx, backendId).Execute()
+
+Activate Snowflake backend
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	backendId := "backendId_example" // string | Id of storage backend
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.SUPERStorageBackendsManagementAPI.ActivateSnowflakeBackend(context.Background(), backendId).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `SUPERStorageBackendsManagementAPI.ActivateSnowflakeBackend``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `ActivateSnowflakeBackend`: ActivateSnowflakeStorageBackendResponse
+	fmt.Fprintf(os.Stdout, "Response from `SUPERStorageBackendsManagementAPI.ActivateSnowflakeBackend`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**backendId** | **string** | Id of storage backend | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiActivateSnowflakeBackendRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+
+### Return type
+
+[**ActivateSnowflakeStorageBackendResponse**](ActivateSnowflakeStorageBackendResponse.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
 
 ## BackendDetail
@@ -31,7 +103,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -101,7 +173,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -167,7 +239,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -216,6 +288,72 @@ Name | Type | Description  | Notes
 [[Back to README]](../README.md)
 
 
+## CreateSnowflakeBackendWithCert
+
+> CreateSnowflakeStorageBackendResponse CreateSnowflakeBackendWithCert(ctx).CreateSnowflakeBackendWithCertRequest(createSnowflakeBackendWithCertRequest).Execute()
+
+Create a new Snowflake backend with certificate authentication
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+	createSnowflakeBackendWithCertRequest := *openapiclient.NewCreateSnowflakeBackendWithCertRequest("demo.snowflakecomputing.com", "KEBOOLA", "us-east-1", "keboola", "keboola") // CreateSnowflakeBackendWithCertRequest |  (optional)
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.SUPERStorageBackendsManagementAPI.CreateSnowflakeBackendWithCert(context.Background()).CreateSnowflakeBackendWithCertRequest(createSnowflakeBackendWithCertRequest).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `SUPERStorageBackendsManagementAPI.CreateSnowflakeBackendWithCert``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `CreateSnowflakeBackendWithCert`: CreateSnowflakeStorageBackendResponse
+	fmt.Fprintf(os.Stdout, "Response from `SUPERStorageBackendsManagementAPI.CreateSnowflakeBackendWithCert`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiCreateSnowflakeBackendWithCertRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createSnowflakeBackendWithCertRequest** | [**CreateSnowflakeBackendWithCertRequest**](CreateSnowflakeBackendWithCertRequest.md) |  | 
+
+### Return type
+
+[**CreateSnowflakeStorageBackendResponse**](CreateSnowflakeStorageBackendResponse.md)
+
+### Authorization
+
+[ApiKeyAuth](../README.md#ApiKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## DeleteBackend
 
 > DeleteBackend(ctx, backendId).Execute()
@@ -233,7 +371,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -301,7 +439,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -362,7 +500,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {
@@ -434,7 +572,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func main() {

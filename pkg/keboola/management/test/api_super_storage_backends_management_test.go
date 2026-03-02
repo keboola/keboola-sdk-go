@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
@@ -23,9 +22,23 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
 
+	t.Run("Test SUPERStorageBackendsManagementAPIService ActivateSnowflakeBackend", func(t *testing.T) {
+
+		t.Skip("skip test")  // remove to run test
+
+		var backendId string
+
+		resp, httpRes, err := apiClient.SUPERStorageBackendsManagementAPI.ActivateSnowflakeBackend(context.Background(), backendId).Execute()
+
+		require.Nil(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 200, httpRes.StatusCode)
+
+	})
+
 	t.Run("Test SUPERStorageBackendsManagementAPIService BackendDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var backendId string
 
@@ -39,7 +52,7 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERStorageBackendsManagementAPIService CreateANewBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERStorageBackendsManagementAPI.CreateANewBackend(context.Background()).Execute()
 
@@ -51,7 +64,7 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERStorageBackendsManagementAPIService CreateANewBigQueryBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERStorageBackendsManagementAPI.CreateANewBigQueryBackend(context.Background()).Execute()
 
@@ -61,9 +74,21 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	})
 
+	t.Run("Test SUPERStorageBackendsManagementAPIService CreateSnowflakeBackendWithCert", func(t *testing.T) {
+
+		t.Skip("skip test")  // remove to run test
+
+		resp, httpRes, err := apiClient.SUPERStorageBackendsManagementAPI.CreateSnowflakeBackendWithCert(context.Background()).Execute()
+
+		require.Nil(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 200, httpRes.StatusCode)
+
+	})
+
 	t.Run("Test SUPERStorageBackendsManagementAPIService DeleteBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var backendId string
 
@@ -76,7 +101,7 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERStorageBackendsManagementAPIService ListBackends", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERStorageBackendsManagementAPI.ListBackends(context.Background()).Execute()
 
@@ -88,7 +113,7 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERStorageBackendsManagementAPIService UpdateBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var backendId string
 
@@ -102,7 +127,7 @@ func Test_management_SUPERStorageBackendsManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERStorageBackendsManagementAPIService UpdateBigQueryBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var backendId string
 

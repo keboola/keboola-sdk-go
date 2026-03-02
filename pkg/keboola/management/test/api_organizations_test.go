@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_OrganizationsAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService AddAUserToOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 
@@ -38,7 +37,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService CancelOrganizationInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 		var invitationId string
@@ -52,7 +51,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService CreateAnOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId float32
 
@@ -66,7 +65,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService DeleteAnOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 
@@ -79,7 +78,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService InviteAUserToAOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -93,7 +92,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService JoinAOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -106,7 +105,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService ListMaintainersOrganizations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var maintainerId float32
 
@@ -119,7 +118,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService ListOrganizationInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -133,7 +132,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService ListOrganizationMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -147,7 +146,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService ListOrganizationUsers", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 
@@ -161,7 +160,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService ListProjectUsersInOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 
@@ -175,7 +174,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService OrganizationInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 		var invitationId string
@@ -190,7 +189,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService RemoveAUserFromOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 		var userId string
@@ -204,7 +203,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService RemoveOrganizationMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 		var metadataId string
@@ -218,7 +217,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService RequireMultiFactorAuthentication", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -231,7 +230,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService RetrieveAnOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 
@@ -245,7 +244,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService SetOrganizationMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -259,7 +258,7 @@ func Test_management_OrganizationsAPIService(t *testing.T) {
 
 	t.Run("Test OrganizationsAPIService UpdateAnOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId float32
 

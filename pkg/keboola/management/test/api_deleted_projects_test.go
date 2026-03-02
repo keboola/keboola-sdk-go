@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_DeletedProjectsAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_DeletedProjectsAPIService(t *testing.T) {
 
 	t.Run("Test DeletedProjectsAPIService CancelProjectDeletion", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -38,7 +37,7 @@ func Test_management_DeletedProjectsAPIService(t *testing.T) {
 
 	t.Run("Test DeletedProjectsAPIService DeletedProjectDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -52,7 +51,7 @@ func Test_management_DeletedProjectsAPIService(t *testing.T) {
 
 	t.Run("Test DeletedProjectsAPIService ListDeletedProjects", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.DeletedProjectsAPI.ListDeletedProjects(context.Background()).Execute()
 
@@ -64,7 +63,7 @@ func Test_management_DeletedProjectsAPIService(t *testing.T) {
 
 	t.Run("Test DeletedProjectsAPIService PurgeDeletedProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 

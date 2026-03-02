@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_SUPERFeaturesAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService AddAFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var template string
 
@@ -38,7 +37,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService AddAProjectFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -52,7 +51,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService AddAUserFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -66,7 +65,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService CreateAFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFeaturesAPI.CreateAFeature(context.Background()).Execute()
 
@@ -78,7 +77,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService DeleteAFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id float32
 
@@ -91,7 +90,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService ListFeatures", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var template string
 
@@ -105,7 +104,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RemoveAFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var template string
 		var feature string
@@ -119,7 +118,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RemoveAProjectFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var feature string
@@ -133,7 +132,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RemoveAUserFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 		var feature string
@@ -148,7 +147,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RetrieveAllFeatures", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var type_ string
 
@@ -162,7 +161,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RetrieveFeatureProjects", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id float32
 
@@ -176,7 +175,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RetrieveFeatureUsers", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id float32
 
@@ -190,7 +189,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService RetrieveOneFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id float32
 
@@ -204,7 +203,7 @@ func Test_management_SUPERFeaturesAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFeaturesAPIService UpdateAFeature", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id float32
 

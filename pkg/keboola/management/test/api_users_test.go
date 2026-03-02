@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_UsersAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService DisableMFAForUser", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -38,7 +37,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService ListUserMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -52,7 +51,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService RemoveSuperAdminPrivilegeFromUser", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -66,7 +65,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService RemoveUser", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -79,7 +78,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService RemoveUserMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 		var metadataId string
@@ -93,7 +92,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService SetUserMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -107,7 +106,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService UpdateAUser", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
@@ -121,7 +120,7 @@ func Test_management_UsersAPIService(t *testing.T) {
 
 	t.Run("Test UsersAPIService UserDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var userIdOrEmail string
 
