@@ -59,6 +59,13 @@ func CleanProject(
 		err = multierror.Append(err, e)
 	}
 
+	// Clean notification subscriptions
+	if e := api.CleanAllNotificationSubscriptionsRequest().SendOrErr(ctx); e != nil {
+		m.Lock()
+		defer m.Unlock()
+		err = multierror.Append(err, e)
+	}
+
 	if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
 		m.Lock()
 		defer m.Unlock()
