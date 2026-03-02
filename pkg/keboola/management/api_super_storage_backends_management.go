@@ -23,6 +23,126 @@ import (
 // SUPERStorageBackendsManagementAPIService SUPERStorageBackendsManagementAPI service
 type SUPERStorageBackendsManagementAPIService service
 
+type ApiActivateSnowflakeBackendRequest struct {
+	ctx context.Context
+	ApiService *SUPERStorageBackendsManagementAPIService
+	backendId string
+}
+
+func (r ApiActivateSnowflakeBackendRequest) Execute() (*ActivateSnowflakeStorageBackendResponse, *http.Response, error) {
+	return r.ApiService.ActivateSnowflakeBackendExecute(r)
+}
+
+/*
+ActivateSnowflakeBackend Activate Snowflake backend
+
+Activate a Snowflake storage backend after the SQL template created via
+Create a new Snowflake backend with certificate authentication has been
+executed in Snowflake. This validates the backend configuration and enables
+it for use.
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param backendId Id of storage backend
+ @return ApiActivateSnowflakeBackendRequest
+*/
+func (a *SUPERStorageBackendsManagementAPIService) ActivateSnowflakeBackend(ctx context.Context, backendId string) ApiActivateSnowflakeBackendRequest {
+	return ApiActivateSnowflakeBackendRequest{
+		ApiService: a,
+		ctx: ctx,
+		backendId: backendId,
+	}
+}
+
+// Execute executes the request
+//  @return ActivateSnowflakeStorageBackendResponse
+func (a *SUPERStorageBackendsManagementAPIService) ActivateSnowflakeBackendExecute(r ApiActivateSnowflakeBackendRequest) (*ActivateSnowflakeStorageBackendResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *ActivateSnowflakeStorageBackendResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SUPERStorageBackendsManagementAPIService.ActivateSnowflakeBackend")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/manage/storage-backend/{backend_id}/activate"
+	localVarPath = strings.Replace(localVarPath, "{"+"backend_id"+"}", url.PathEscape(parameterValueToString(r.backendId, "backendId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if r.ctx != nil {
+		// API Key Authentication
+		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {
+			if apiKey, ok := auth["ApiKeyAuth"]; ok {
+				var key string
+				if apiKey.Prefix != "" {
+					key = apiKey.Prefix + " " + apiKey.Key
+				} else {
+					key = apiKey.Key
+				}
+				localVarHeaderParams["X-KBC-ManageApiToken"] = key
+			}
+		}
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiBackendDetailRequest struct {
 	ctx context.Context
 	ApiService *SUPERStorageBackendsManagementAPIService
@@ -337,247 +457,6 @@ func (a *SUPERStorageBackendsManagementAPIService) CreateANewBackendExecute(r Ap
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiCreateSnowflakeBackendWithCertRequest struct {
-	ctx context.Context
-	ApiService *SUPERStorageBackendsManagementAPIService
-	createSnowflakeBackendWithCertRequest *CreateSnowflakeBackendWithCertRequest
-}
-
-func (r ApiCreateSnowflakeBackendWithCertRequest) CreateSnowflakeBackendWithCertRequest(createSnowflakeBackendWithCertRequest CreateSnowflakeBackendWithCertRequest) ApiCreateSnowflakeBackendWithCertRequest {
-	r.createSnowflakeBackendWithCertRequest = &createSnowflakeBackendWithCertRequest
-	return r
-}
-
-func (r ApiCreateSnowflakeBackendWithCertRequest) Execute() (*CreateSnowflakeStorageBackendResponse, *http.Response, error) {
-	return r.ApiService.CreateSnowflakeBackendWithCertExecute(r)
-}
-
-/*
-CreateSnowflakeBackendWithCert Create a new Snowflake backend with certificate authentication
-
-Registers a new Snowflake storage backend using RSA certificate authentication.
-The response includes a userPublicKey that must be configured on the Snowflake user
-before activating the backend.
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateSnowflakeBackendWithCertRequest
-*/
-func (a *SUPERStorageBackendsManagementAPIService) CreateSnowflakeBackendWithCert(ctx context.Context) ApiCreateSnowflakeBackendWithCertRequest {
-	return ApiCreateSnowflakeBackendWithCertRequest{
-		ApiService: a,
-		ctx: ctx,
-	}
-}
-
-// Execute executes the request
-//  @return CreateSnowflakeStorageBackendResponse
-func (a *SUPERStorageBackendsManagementAPIService) CreateSnowflakeBackendWithCertExecute(r ApiCreateSnowflakeBackendWithCertRequest) (*CreateSnowflakeStorageBackendResponse, *http.Response, error) {
-	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *CreateSnowflakeStorageBackendResponse
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SUPERStorageBackendsManagementAPIService.CreateSnowflakeBackendWithCert")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/manage/storage-backend/snowflake"
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	// body params
-	localVarPostBody = r.createSnowflakeBackendWithCertRequest
-	if r.ctx != nil {
-		// API Key Authentication
-		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {
-			if apiKey, ok := auth["ApiKeyAuth"]; ok {
-				var key string
-				if apiKey.Prefix != "" {
-					key = apiKey.Prefix + " " + apiKey.Key
-				} else {
-					key = apiKey.Key
-				}
-				localVarHeaderParams["X-KBC-ManageApiToken"] = key
-			}
-		}
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
-type ApiActivateSnowflakeBackendRequest struct {
-	ctx context.Context
-	ApiService *SUPERStorageBackendsManagementAPIService
-	backendId string
-}
-
-func (r ApiActivateSnowflakeBackendRequest) Execute() (*ActivateSnowflakeStorageBackendResponse, *http.Response, error) {
-	return r.ApiService.ActivateSnowflakeBackendExecute(r)
-}
-
-/*
-ActivateSnowflakeBackend Activate a Snowflake backend
-
-Activates a Snowflake storage backend after the Snowflake user has been configured
-with the public key from the create response.
-
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param backendId Backend ID
- @return ApiActivateSnowflakeBackendRequest
-*/
-func (a *SUPERStorageBackendsManagementAPIService) ActivateSnowflakeBackend(ctx context.Context, backendId string) ApiActivateSnowflakeBackendRequest {
-	return ApiActivateSnowflakeBackendRequest{
-		ApiService: a,
-		ctx: ctx,
-		backendId: backendId,
-	}
-}
-
-// Execute executes the request
-//  @return ActivateSnowflakeStorageBackendResponse
-func (a *SUPERStorageBackendsManagementAPIService) ActivateSnowflakeBackendExecute(r ApiActivateSnowflakeBackendRequest) (*ActivateSnowflakeStorageBackendResponse, *http.Response, error) {
-	var (
-		localVarHTTPMethod   = http.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  *ActivateSnowflakeStorageBackendResponse
-	)
-
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SUPERStorageBackendsManagementAPIService.ActivateSnowflakeBackend")
-	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
-	}
-
-	localVarPath := localBasePath + "/manage/storage-backend/{backend_id}/activate"
-	localVarPath = strings.Replace(localVarPath, "{"+"backend_id"+"}", url.PathEscape(parameterValueToString(r.backendId, "backendId")), -1)
-
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
-	}
-	if r.ctx != nil {
-		// API Key Authentication
-		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {
-			if apiKey, ok := auth["ApiKeyAuth"]; ok {
-				var key string
-				if apiKey.Prefix != "" {
-					key = apiKey.Prefix + " " + apiKey.Key
-				} else {
-					key = apiKey.Key
-				}
-				localVarHeaderParams["X-KBC-ManageApiToken"] = key
-			}
-		}
-	}
-	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	if err != nil || localVarHTTPResponse == nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
-	if err != nil {
-		return localVarReturnValue, localVarHTTPResponse, err
-	}
-
-	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: localVarHTTPResponse.Status,
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-	if err != nil {
-		newErr := &GenericOpenAPIError{
-			body:  localVarBody,
-			error: err.Error(),
-		}
-		return localVarReturnValue, localVarHTTPResponse, newErr
-	}
-
-	return localVarReturnValue, localVarHTTPResponse, nil
-}
-
 type ApiCreateANewBigQueryBackendRequest struct {
 	ctx context.Context
 	ApiService *SUPERStorageBackendsManagementAPIService
@@ -651,6 +530,131 @@ func (a *SUPERStorageBackendsManagementAPIService) CreateANewBigQueryBackendExec
 	}
 	// body params
 	localVarPostBody = r.createANewBigQueryBackendRequest
+	if r.ctx != nil {
+		// API Key Authentication
+		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {
+			if apiKey, ok := auth["ApiKeyAuth"]; ok {
+				var key string
+				if apiKey.Prefix != "" {
+					key = apiKey.Prefix + " " + apiKey.Key
+				} else {
+					key = apiKey.Key
+				}
+				localVarHeaderParams["X-KBC-ManageApiToken"] = key
+			}
+		}
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiCreateSnowflakeBackendWithCertRequest struct {
+	ctx context.Context
+	ApiService *SUPERStorageBackendsManagementAPIService
+	createSnowflakeBackendWithCertRequest *CreateSnowflakeBackendWithCertRequest
+}
+
+func (r ApiCreateSnowflakeBackendWithCertRequest) CreateSnowflakeBackendWithCertRequest(createSnowflakeBackendWithCertRequest CreateSnowflakeBackendWithCertRequest) ApiCreateSnowflakeBackendWithCertRequest {
+	r.createSnowflakeBackendWithCertRequest = &createSnowflakeBackendWithCertRequest
+	return r
+}
+
+func (r ApiCreateSnowflakeBackendWithCertRequest) Execute() (*CreateSnowflakeStorageBackendResponse, *http.Response, error) {
+	return r.ApiService.CreateSnowflakeBackendWithCertExecute(r)
+}
+
+/*
+CreateSnowflakeBackendWithCert Create a new Snowflake backend with certificate authentication
+
+Create a new Snowflake storage backend with RSA certificate authentication.
+The backend is created as disabled and returns an SQL template for setting up
+Snowflake roles and users, along with the public keys. After running the
+generated query, you can activate the backend using the Activate Snowflake
+Storage Backend endpoint.
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiCreateSnowflakeBackendWithCertRequest
+*/
+func (a *SUPERStorageBackendsManagementAPIService) CreateSnowflakeBackendWithCert(ctx context.Context) ApiCreateSnowflakeBackendWithCertRequest {
+	return ApiCreateSnowflakeBackendWithCertRequest{
+		ApiService: a,
+		ctx: ctx,
+	}
+}
+
+// Execute executes the request
+//  @return CreateSnowflakeStorageBackendResponse
+func (a *SUPERStorageBackendsManagementAPIService) CreateSnowflakeBackendWithCertExecute(r ApiCreateSnowflakeBackendWithCertRequest) (*CreateSnowflakeStorageBackendResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *CreateSnowflakeStorageBackendResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SUPERStorageBackendsManagementAPIService.CreateSnowflakeBackendWithCert")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/manage/storage-backend/snowflake"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.createSnowflakeBackendWithCertRequest
 	if r.ctx != nil {
 		// API Key Authentication
 		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {

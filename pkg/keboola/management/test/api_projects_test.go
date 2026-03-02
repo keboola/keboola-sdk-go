@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_ProjectsAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService AddAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -39,7 +38,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService AddAUserToAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -52,7 +51,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ApproveJoinRequest", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var joinRequestId string
@@ -66,7 +65,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService AssignProjectFileStorage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -80,7 +79,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService AssignProjectStorageBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -94,7 +93,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService CancelProjectInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var invitationId string
@@ -108,7 +107,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ChangeProjectDisabledStatus", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -122,7 +121,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ChangeRoleOfAUserInAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var userId string
@@ -137,7 +136,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService CreateStorageToken", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -151,7 +150,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService DeleteAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -164,7 +163,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService DeleteAUserFromAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var userId string
@@ -178,7 +177,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService GiveCredits", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -192,7 +191,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService InviteAUserToAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -206,7 +205,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService JoinAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -219,7 +218,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService JoinRequestDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var joinRequestId string
@@ -234,7 +233,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListJoinRequests", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -248,7 +247,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListProjectInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -262,7 +261,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListProjectMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -276,7 +275,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListProjectUsers", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -290,7 +289,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListProjectsForAnOrganization", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var organizationId string
 
@@ -304,7 +303,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ListTemplates", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.ProjectsAPI.ListTemplates(context.Background()).Execute()
 
@@ -316,7 +315,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService MoveAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -330,7 +329,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ProjectDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -344,7 +343,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ProjectInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var invitationId string
@@ -359,7 +358,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService ProjectTemplateDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var templateStringId string
 
@@ -373,7 +372,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService RejectJoinRequest", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var joinRequestId string
@@ -387,7 +386,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService RemoveProjectLimit", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var limitName string
@@ -401,7 +400,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService RemoveProjectMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var metadataId string
@@ -415,7 +414,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService RemoveProjectStorageBackend", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 		var storageBackendId string
@@ -430,7 +429,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService RequestAccessToAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -444,7 +443,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService SetProjectLimits", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -458,7 +457,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService SetProjectMetadata", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 
@@ -472,7 +471,7 @@ func Test_management_ProjectsAPIService(t *testing.T) {
 
 	t.Run("Test ProjectsAPIService UpdateAProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var projectId string
 

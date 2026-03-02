@@ -163,6 +163,10 @@ func typeCheckParameter(obj interface{}, expected string, name string) error {
 
 func parameterValueToString( obj interface{}, key string ) string {
 	if reflect.TypeOf(obj).Kind() != reflect.Ptr {
+		if actualObj, ok := obj.(interface{ GetActualInstanceValue() interface{} }); ok {
+			return fmt.Sprintf("%v", actualObj.GetActualInstanceValue())
+		}
+
 		return fmt.Sprintf("%v", obj)
 	}
 	var param,ok = obj.(MappedNullable)
@@ -178,7 +182,7 @@ func parameterValueToString( obj interface{}, key string ) string {
 
 // parameterAddToHeaderOrQuery adds the provided object to the request header or url query
 // supporting deep object syntax
-func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix string, obj interface{}, collectionType string) {
+func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix string, obj interface{}, style string, collectionType string) {
 	var v = reflect.ValueOf(obj)
 	var value = ""
 	if v == reflect.ValueOf(nil) {
@@ -194,11 +198,11 @@ func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix stri
 					if err != nil {
 						return
 					}
-					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, dataMap, collectionType)
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, dataMap, style, collectionType)
 					return
 				}
 				if t, ok := obj.(time.Time); ok {
-					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, t.Format(time.RFC3339), collectionType)
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, t.Format(time.RFC3339Nano), style, collectionType)
 					return
 				}
 				value = v.Type().String() + " value"
@@ -210,7 +214,11 @@ func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix stri
 				var lenIndValue = indValue.Len()
 				for i:=0;i<lenIndValue;i++ {
 					var arrayValue = indValue.Index(i)
-					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, arrayValue.Interface(), collectionType)
+					var keyPrefixForCollectionType = keyPrefix
+					if style == "deepObject" {
+						keyPrefixForCollectionType = keyPrefix + "[" + strconv.Itoa(i) + "]"
+					}
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefixForCollectionType, arrayValue.Interface(), style, collectionType)
 				}
 				return
 
@@ -222,14 +230,14 @@ func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix stri
 				iter := indValue.MapRange()
 				for iter.Next() {
 					k,v := iter.Key(), iter.Value()
-					parameterAddToHeaderOrQuery(headerOrQueryParams, fmt.Sprintf("%s[%s]", keyPrefix, k.String()), v.Interface(), collectionType)
+					parameterAddToHeaderOrQuery(headerOrQueryParams, fmt.Sprintf("%s[%s]", keyPrefix, k.String()), v.Interface(), style, collectionType)
 				}
 				return
 
 			case reflect.Interface:
 				fallthrough
 			case reflect.Ptr:
-				parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, v.Elem().Interface(), collectionType)
+				parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, v.Elem().Interface(), style, collectionType)
 				return
 
 			case reflect.Int, reflect.Int8, reflect.Int16,
@@ -273,15 +281,12 @@ func parameterToJson(obj interface{}) (string, error) {
 }
 
 // redactSensitiveData removes sensitive information from HTTP request/response dumps.
-// This function protects against leaking authentication tokens, API keys, and other
-// sensitive data in debug logs while preserving the structure for debugging purposes.
 func redactSensitiveData(dump []byte) []byte {
 	content := string(dump)
-	
-	// Headers that commonly contain sensitive data
+
 	sensitiveHeaders := []string{
 		"Authorization",
-		"X-StorageApi-Token", 
+		"X-StorageApi-Token",
 		"X-KBC-ManageApiToken",
 		"X-Api-Key",
 		"Cookie",
@@ -290,27 +295,23 @@ func redactSensitiveData(dump []byte) []byte {
 		"WWW-Authenticate",
 		"Authentication-Info",
 	}
-	
-	// Redact sensitive headers (case-insensitive)
+
 	for _, header := range sensitiveHeaders {
-		// Match header: value pattern (handles both request and response format)
 		headerPattern := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(header) + `:\s*[^\r\n]+`)
-		content = headerPattern.ReplaceAllString(content, header + ": [REDACTED]")
+		content = headerPattern.ReplaceAllString(content, header+": [REDACTED]")
 	}
-	
-	// Redact common sensitive JSON fields in request/response bodies
+
 	jsonSensitiveFields := []string{
-		"token", "password", "secret", "key", "apiKey", "api_key", 
+		"token", "password", "secret", "key", "apiKey", "api_key",
 		"accessToken", "access_token", "refreshToken", "refresh_token",
 		"clientSecret", "client_secret", "privateKey", "private_key",
 	}
-	
+
 	for _, field := range jsonSensitiveFields {
-		// Match JSON field patterns: "field": "value" or "field":"value"
 		jsonPattern := regexp.MustCompile(`"` + regexp.QuoteMeta(field) + `"\s*:\s*"[^"]*"`)
 		content = jsonPattern.ReplaceAllString(content, `"`+field+`": "[REDACTED]"`)
 	}
-	
+
 	return []byte(content)
 }
 
@@ -557,10 +558,7 @@ func addFile(w *multipart.Writer, fieldName, path string) error {
 	if err != nil {
 		return err
 	}
-	err = file.Close()
-	if err != nil {
-		return err
-	}
+	defer file.Close()
 
 	part, err := w.CreateFormFile(fieldName, filepath.Base(path))
 	if err != nil {
@@ -569,18 +567,6 @@ func addFile(w *multipart.Writer, fieldName, path string) error {
 	_, err = io.Copy(part, file)
 
 	return err
-}
-
-// Prevent trying to import "fmt"
-func reportError(format string, a ...interface{}) error {
-	return fmt.Errorf(format, a...)
-}
-
-// A wrapper for strict JSON decoding
-func newStrictDecoder(data []byte) *json.Decoder {
-	dec := json.NewDecoder(bytes.NewBuffer(data))
-	dec.DisallowUnknownFields()
-	return dec
 }
 
 // Set request body from an interface{}

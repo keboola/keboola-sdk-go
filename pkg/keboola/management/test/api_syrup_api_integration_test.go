@@ -1,7 +1,7 @@
 /*
 Manage API
 
-Testing SUPERCommandsAPIService
+Testing SyrupAPIIntegrationAPIService
 
 */
 
@@ -17,19 +17,18 @@ import (
 	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
-func Test_management_SUPERCommandsAPIService(t *testing.T) {
+func Test_management_SyrupAPIIntegrationAPIService(t *testing.T) {
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
 
-	t.Run("Test SUPERCommandsAPIService RunCommand", func(t *testing.T) {
+	t.Run("Test SyrupAPIIntegrationAPIService GetWorkers", func(t *testing.T) {
 
 		t.Skip("skip test")  // remove to run test
 
-		resp, httpRes, err := apiClient.SUPERCommandsAPI.RunCommand(context.Background()).Execute()
+		httpRes, err := apiClient.SyrupAPIIntegrationAPI.GetWorkers(context.Background()).Execute()
 
 		require.Nil(t, err)
-		require.NotNil(t, resp)
 		assert.Equal(t, 200, httpRes.StatusCode)
 
 	})

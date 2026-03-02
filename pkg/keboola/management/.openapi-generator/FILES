@@ -14,7 +14,6 @@ api_super_features.go
 api_super_file_storage_management.go
 api_super_storage_backends_management.go
 api_superui_management.go
-api_syrup_api_integration.go
 api_token_verification.go
 api_users.go
 client.go
@@ -24,6 +23,7 @@ docs/ABSCreate.md
 docs/ABSCreated.md
 docs/ABSCreatedAllOfCreator.md
 docs/ABSDefault.md
+docs/ActivateSnowflakeStorageBackendResponse.md
 docs/AddAProjectFeatureRequest.md
 docs/AddAProjectRequest.md
 docs/AddAUserFeature200Response.md
@@ -62,6 +62,8 @@ docs/CreateNewPromoCodesRequest.md
 docs/CreateProject201Response.md
 docs/CreateProject201ResponseLimits.md
 docs/CreateProjectRequest.md
+docs/CreateSnowflakeBackendWithCertRequest.md
+docs/CreateSnowflakeStorageBackendResponse.md
 docs/CreateStorageToken201Response.md
 docs/CreateStorageTokenRequest.md
 docs/CreateStorageTokenRequestBucketPermissions.md
@@ -155,7 +157,6 @@ docs/StorageBackendListSnowflakeAllOfSaml2Configuration.md
 docs/StorageBackendListSynapse.md
 docs/StorageBackendListTeradata.md
 docs/StorageBackendUpdate.md
-docs/SyrupAPIIntegrationAPI.md
 docs/TokenVerification200Response.md
 docs/TokenVerification200ResponseCreator.md
 docs/TokenVerification200ResponseUser.md
@@ -175,6 +176,7 @@ model_abs_create.go
 model_abs_created.go
 model_abs_created_all_of_creator.go
 model_abs_default.go
+model_activate_snowflake_storage_backend_response.go
 model_add_a_project_feature_request.go
 model_add_a_project_request.go
 model_add_a_user_feature_200_response.go
@@ -213,6 +215,8 @@ model_create_new_promo_codes_request.go
 model_create_project_201_response.go
 model_create_project_201_response_limits.go
 model_create_project_request.go
+model_create_snowflake_backend_with_cert_request.go
+model_create_snowflake_storage_backend_response.go
 model_create_storage_token_201_response.go
 model_create_storage_token_request.go
 model_create_storage_token_request_bucket_permissions.go
@@ -316,7 +320,6 @@ test/api_super_features_test.go
 test/api_super_file_storage_management_test.go
 test/api_super_storage_backends_management_test.go
 test/api_superui_management_test.go
-test/api_syrup_api_integration_test.go
 test/api_token_verification_test.go
 test/api_users_test.go
 utils.go

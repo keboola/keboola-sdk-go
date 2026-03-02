@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService CreateNewAWSS3Storage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.CreateNewAWSS3Storage(context.Background()).Execute()
 
@@ -37,7 +36,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService CreateNewAzureBlobStorage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.CreateNewAzureBlobStorage(context.Background()).Execute()
 
@@ -49,7 +48,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService CreateNewGoogleCloudStorage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.CreateNewGoogleCloudStorage(context.Background()).Execute()
 
@@ -61,7 +60,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService ListAzureBlobStorage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.ListAzureBlobStorage(context.Background()).Execute()
 
@@ -73,7 +72,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService ListGoogleCloudStorage", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.ListGoogleCloudStorage(context.Background()).Execute()
 
@@ -85,7 +84,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService ListStorages", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERFileStorageManagementAPI.ListStorages(context.Background()).Execute()
 
@@ -97,7 +96,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService SetBlobStorageAsDefault", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var fileStorageId string
 
@@ -111,7 +110,7 @@ func Test_management_SUPERFileStorageManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERFileStorageManagementAPIService SetS3StorageAsDefault", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var fileStorageId string
 

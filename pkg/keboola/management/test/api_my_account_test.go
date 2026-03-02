@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_MyAccountAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService AcceptAMaintainerInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -38,7 +37,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService AcceptAProjectInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -51,7 +50,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService AcceptAnOrganizationInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -64,7 +63,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService CancelAJoinRequest", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var joinRequestId int32
 
@@ -77,7 +76,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService CreateProject", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.CreateProject(context.Background()).Execute()
 
@@ -89,7 +88,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService DeclineAInvitation", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -102,7 +101,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService ListMyJoinRequests", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.ListMyJoinRequests(context.Background()).Execute()
 
@@ -114,7 +113,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService ListMyMaintainerInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.ListMyMaintainerInvitations(context.Background()).Execute()
 
@@ -126,7 +125,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService ListMyOrganizationInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.ListMyOrganizationInvitations(context.Background()).Execute()
 
@@ -138,7 +137,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService ListMyProjectInvitations", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.ListMyProjectInvitations(context.Background()).Execute()
 
@@ -150,7 +149,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService ListUsedPromoCodes", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.MyAccountAPI.ListUsedPromoCodes(context.Background()).Execute()
 
@@ -162,7 +161,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService MyJoinRequestDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var joinRequestId int32
 
@@ -176,7 +175,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService MyMaintainerInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -190,7 +189,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService MyOrganizationInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 
@@ -204,7 +203,7 @@ func Test_management_MyAccountAPIService(t *testing.T) {
 
 	t.Run("Test MyAccountAPIService MyProjectInvitationDetail", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var invitationId float32
 

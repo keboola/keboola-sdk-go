@@ -80,7 +80,7 @@ func (o *CreateStorageToken201Response) HasId() bool {
 	return false
 }
 
-// SetId gets a reference to the given float32 and assigns it to the Id field.
+// SetId gets a reference to the given string and assigns it to the Id field.
 func (o *CreateStorageToken201Response) SetId(v string) {
 	o.Id = &v
 }

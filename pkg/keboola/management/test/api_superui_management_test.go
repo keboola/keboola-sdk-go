@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_SUPERUIManagementAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_SUPERUIManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERUIManagementAPIService DeleteApplication", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		var id string
 
@@ -38,7 +37,7 @@ func Test_management_SUPERUIManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERUIManagementAPIService ListApplications", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERUIManagementAPI.ListApplications(context.Background()).Execute()
 
@@ -50,7 +49,7 @@ func Test_management_SUPERUIManagementAPIService(t *testing.T) {
 
 	t.Run("Test SUPERUIManagementAPIService RegisterNewApplicationVersion", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.SUPERUIManagementAPI.RegisterNewApplicationVersion(context.Background()).Execute()
 

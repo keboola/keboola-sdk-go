@@ -280,7 +280,6 @@ func (o *CreateStorageTokenRequest) GetComponentAccess() []string {
 		var ret []string
 		return ret
 	}
-
 	return o.ComponentAccess
 }
 
@@ -302,7 +301,7 @@ func (o *CreateStorageTokenRequest) HasComponentAccess() bool {
 	return false
 }
 
-// SetComponentAccess gets a reference to the given string and assigns it to the ComponentAccess field.
+// SetComponentAccess gets a reference to the given []string and assigns it to the ComponentAccess field.
 func (o *CreateStorageTokenRequest) SetComponentAccess(v []string) {
 	o.ComponentAccess = v
 }

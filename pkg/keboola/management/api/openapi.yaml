@@ -90,16 +90,6 @@ tags:
   name: SUPER - Storage Backends Management
 - name: SUPER - Commands
 - name: SUPER - UI Management
-- description: |-
-    This is an example of an API call returning all running worker processes and their state. This resource is accessible for tokens of the type `super` with `super_monitoring` scope.
-    `Super` tokens can be created only by super admins.
-
-    ## Authentication
-
-    Syrup API will receive a management token in its header and will use it to call the `Verify token` API call.
-    Details about the token will be returned, scopes associated to the token are present in the response.
-    If the scope is `super_monitoring` and the token type is `super`, Syrup will return the workers in the response, otherwise `403` is returned.
-  name: Syrup API Integration
 paths:
   /manage/tokens/verify:
     get:
@@ -133,7 +123,7 @@ paths:
                   canAccessLogs: true
                   isSuperAdmin: true
               schema:
-                $ref: '#/components/schemas/Token_Verification_200_response'
+                $ref: "#/components/schemas/Token_Verification_200_response"
           description: OK
       summary: Token Verification
       tags:
@@ -168,7 +158,7 @@ paths:
               defaultFileStorageId: "456"
               zendeskUrl: https://keboola.zendesk.com
             schema:
-              $ref: '#/components/schemas/Create_a_maintainer_request'
+              $ref: "#/components/schemas/Create_a_maintainer_request"
       responses:
         "201":
           content:
@@ -186,7 +176,7 @@ paths:
                 defaultFileStorageId: 456
                 zendeskUrl: https://some.url.com
               schema:
-                $ref: '#/components/schemas/MaintainerModel'
+                $ref: "#/components/schemas/MaintainerModel"
           description: Created
       summary: Create a maintainer
       tags:
@@ -242,7 +232,7 @@ paths:
                 defaultFileStorageId: 456
                 zendeskUrl: https://some.url.com
               schema:
-                $ref: '#/components/schemas/MaintainerModel'
+                $ref: "#/components/schemas/MaintainerModel"
           description: OK
       summary: Retrieve a maintainer
       tags:
@@ -273,7 +263,7 @@ paths:
               defaultFileStorageId: "456"
               zendeskUrl: https://keboola.zendesk.com
             schema:
-              $ref: '#/components/schemas/Update_a_maintainer_request'
+              $ref: "#/components/schemas/Update_a_maintainer_request"
       responses:
         "200":
           content:
@@ -291,7 +281,7 @@ paths:
                 defaultFileStorageId: 456
                 zendeskUrl: https://some.url.com
               schema:
-                $ref: '#/components/schemas/MaintainerModel'
+                $ref: "#/components/schemas/MaintainerModel"
           description: OK
       summary: Update a maintainer
       tags:
@@ -336,7 +326,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List maintainers invitations
@@ -361,7 +351,7 @@ paths:
             example:
               email: martin@keboola.com
             schema:
-              $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_request'
+              $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_request"
       responses:
         "201":
           content:
@@ -378,7 +368,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_201_response"
           description: Created
       summary: Invite a user to a maintainer
       tags:
@@ -447,7 +437,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_201_response"
           description: OK
       summary: Maintainer invitation detail
       tags:
@@ -476,7 +466,7 @@ paths:
                 email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+                  $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
                 type: array
           description: OK
       summary: List maintainer users
@@ -504,7 +494,7 @@ paths:
               id: "7234"
               email: martin@keboola.com
             schema:
-              $ref: '#/components/schemas/Add_a_User_to_maintainer_request'
+              $ref: "#/components/schemas/Add_a_User_to_maintainer_request"
       responses:
         "204":
           content: {}
@@ -588,7 +578,7 @@ paths:
               - key: someMetadataKey
                 value: Some value
             schema:
-              $ref: '#/components/schemas/Set_maintainer_metadata_request'
+              $ref: "#/components/schemas/Set_maintainer_metadata_request"
       responses:
         "201":
           content: {}
@@ -677,7 +667,7 @@ paths:
                   name: Demo
                   created: 2014-11-11T08:40:51.620Z
               schema:
-                $ref: '#/components/schemas/Retrieve_an_organization_200_response'
+                $ref: "#/components/schemas/Retrieve_an_organization_200_response"
           description: OK
       summary: Retrieve an organization
       tags:
@@ -706,7 +696,7 @@ paths:
               activityCenterProjectId: "123"
               mfaRequired: ""
             schema:
-              $ref: '#/components/schemas/Update_an_organization_request'
+              $ref: "#/components/schemas/Update_an_organization_request"
       responses:
         "200":
           content:
@@ -724,7 +714,7 @@ paths:
                   name: Demo
                   created: 2014-11-11T08:40:51.620Z
               schema:
-                $ref: '#/components/schemas/Retrieve_an_organization_200_response'
+                $ref: "#/components/schemas/Retrieve_an_organization_200_response"
           description: OK
       summary: Update an organization
       tags:
@@ -772,7 +762,7 @@ paths:
               name: POC
               crmId: "234"
             schema:
-              $ref: '#/components/schemas/Create_an_organization_request'
+              $ref: "#/components/schemas/Create_an_organization_request"
       responses:
         "201":
           content:
@@ -790,7 +780,7 @@ paths:
                   name: Demo
                   created: 2014-11-11T08:40:51.620Z
               schema:
-                $ref: '#/components/schemas/OrganizationModel'
+                $ref: "#/components/schemas/OrganizationModel"
           description: Created
       summary: Create an organization
       tags:
@@ -835,7 +825,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List organization invitations
@@ -859,7 +849,7 @@ paths:
             example:
               email: martin@keboola.com
             schema:
-              $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_request'
+              $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_request"
       responses:
         "201":
           content:
@@ -876,7 +866,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_201_response"
           description: Created
       summary: Invite a user to a organization
       tags:
@@ -945,7 +935,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_maintainer_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_maintainer_201_response"
           description: OK
       summary: Organization invitation detail
       tags:
@@ -974,7 +964,7 @@ paths:
                 email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+                  $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
                 type: array
           description: OK
       summary: List organization users
@@ -1002,7 +992,7 @@ paths:
               id: "7234"
               email: martin@keboola.com
             schema:
-              $ref: '#/components/schemas/Add_a_User_to_maintainer_request'
+              $ref: "#/components/schemas/Add_a_User_to_maintainer_request"
       responses:
         "204":
           content: {}
@@ -1068,7 +1058,7 @@ paths:
                 email: spam@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_project_users_in_organization_200_response_inner'
+                  $ref: "#/components/schemas/List_project_users_in_organization_200_response_inner"
                 type: array
           description: OK
       summary: List project users in organization
@@ -1150,7 +1140,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: OK
       summary: List organization Metadata
@@ -1182,7 +1172,7 @@ paths:
               - key: someMetadataKey
                 value: Some value
             schema:
-              $ref: '#/components/schemas/Set_maintainer_metadata_request'
+              $ref: "#/components/schemas/Set_maintainer_metadata_request"
       responses:
         "201":
           content:
@@ -1200,7 +1190,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: Created
       summary: Set organization metadata
@@ -1361,7 +1351,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -1379,7 +1369,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Project detail
       tags:
@@ -1407,7 +1397,7 @@ paths:
               billedMonthlyPrice: 2000
               dataRetentionTimeInDays: 20
             schema:
-              $ref: '#/components/schemas/Update_a_project_request'
+              $ref: "#/components/schemas/Update_a_project_request"
       responses:
         "200":
           content:
@@ -1492,7 +1482,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -1510,7 +1500,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Update a project
       tags:
@@ -1561,7 +1551,7 @@ paths:
                 dataRetentionTimeInDays: 1
                 fileStorageProvider: aws
               schema:
-                $ref: '#/components/schemas/List_projects_for_an_organization_200_response'
+                $ref: "#/components/schemas/List_projects_for_an_organization_200_response"
           description: OK
       summary: List projects for an organization
       tags:
@@ -1587,7 +1577,7 @@ paths:
               defaultBackend: snowflake
               dataRetentionTimeInDays: "7"
             schema:
-              $ref: '#/components/schemas/Add_a_project_request'
+              $ref: "#/components/schemas/Add_a_project_request"
       responses:
         "201":
           content:
@@ -1672,7 +1662,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -1690,7 +1680,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: Created
       summary: Add a project
       tags:
@@ -1714,7 +1704,7 @@ paths:
             example:
               organizationId: "523"
             schema:
-              $ref: '#/components/schemas/Move_a_project_request'
+              $ref: "#/components/schemas/Move_a_project_request"
       responses:
         "200":
           content:
@@ -1799,7 +1789,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -1817,7 +1807,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Move a project
       tags:
@@ -1841,7 +1831,7 @@ paths:
             example:
               storageBackendId: "32"
             schema:
-              $ref: '#/components/schemas/Assign_project_Storage_backend_request'
+              $ref: "#/components/schemas/Assign_project_Storage_backend_request"
       responses:
         "200":
           content:
@@ -1926,7 +1916,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -1944,7 +1934,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Assign project Storage backend
       tags:
@@ -2055,7 +2045,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -2073,7 +2063,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Remove project Storage backend
       tags:
@@ -2097,7 +2087,7 @@ paths:
             example:
               fileStorageId: "32"
             schema:
-              $ref: '#/components/schemas/Assign_project_file_Storage_request'
+              $ref: "#/components/schemas/Assign_project_file_Storage_request"
       responses:
         "200":
           content:
@@ -2182,7 +2172,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -2200,7 +2190,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Assign project file Storage
       tags:
@@ -2226,7 +2216,7 @@ paths:
               - name: goodData.usersCount
                 value: 23
             schema:
-              $ref: '#/components/schemas/Set_project_limits_request'
+              $ref: "#/components/schemas/Set_project_limits_request"
       responses:
         "200":
           content:
@@ -2311,7 +2301,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -2329,7 +2319,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Set project limits
       tags:
@@ -2393,7 +2383,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: OK
       summary: List project Metadata
@@ -2425,7 +2415,7 @@ paths:
               - key: someMetadataKey
                 value: Some value
             schema:
-              $ref: '#/components/schemas/Set_maintainer_metadata_request'
+              $ref: "#/components/schemas/Set_maintainer_metadata_request"
       responses:
         "201":
           content:
@@ -2443,7 +2433,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: Created
       summary: Set project metadata
@@ -2521,7 +2511,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_project_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_project_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List project invitations
@@ -2551,7 +2541,7 @@ paths:
               expirationSeconds: 3600
               reason: Help with component configuration
             schema:
-              $ref: '#/components/schemas/Invite_a_user_to_a_project_request'
+              $ref: "#/components/schemas/Invite_a_user_to_a_project_request"
       responses:
         "201":
           content:
@@ -2571,7 +2561,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_project_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_project_201_response"
           description: Created
       summary: Invite a user to a project
       tags:
@@ -2644,7 +2634,7 @@ paths:
                   name: test user
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/Invite_a_user_to_a_project_201_response'
+                $ref: "#/components/schemas/Invite_a_user_to_a_project_201_response"
           description: OK
       summary: Project invitation detail
       tags:
@@ -2697,7 +2687,7 @@ paths:
                   email: dev@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_project_users_200_response_inner'
+                  $ref: "#/components/schemas/List_project_users_200_response_inner"
                 type: array
           description: OK
       summary: List project users
@@ -2726,7 +2716,7 @@ paths:
               role: admin
               expirationSeconds: 3600
             schema:
-              $ref: '#/components/schemas/Add_a_user_to_a_project_request'
+              $ref: "#/components/schemas/Add_a_user_to_a_project_request"
       responses:
         "204":
           content: {}
@@ -2760,7 +2750,7 @@ paths:
                 defaultBackend: snowflake
               schema:
                 items:
-                  $ref: '#/components/schemas/List_templates_200_response_inner'
+                  $ref: "#/components/schemas/List_templates_200_response_inner"
                 type: array
           description: OK
       summary: List templates
@@ -2792,7 +2782,7 @@ paths:
                 hasTryModeOn: false
                 defaultBackend: snowflake
               schema:
-                $ref: '#/components/schemas/Project_template_detail_200_response'
+                $ref: "#/components/schemas/Project_template_detail_200_response"
           description: OK
       summary: Project template detail
       tags:
@@ -2851,7 +2841,7 @@ paths:
             example:
               role: admin
             schema:
-              $ref: '#/components/schemas/Change_role_of_a_user_in_a_project_request'
+              $ref: "#/components/schemas/Change_role_of_a_user_in_a_project_request"
       responses:
         "200":
           content:
@@ -2872,7 +2862,7 @@ paths:
                   email: spam@keboola.com
                 approver: null
               schema:
-                $ref: '#/components/schemas/Change_role_of_a_user_in_a_project_200_response'
+                $ref: "#/components/schemas/Change_role_of_a_user_in_a_project_200_response"
           description: OK
       summary: Change role of a user in a project
       tags:
@@ -2900,7 +2890,7 @@ paths:
               reason: temporary test
               expirationSeconds: 3600
             schema:
-              $ref: '#/components/schemas/Join_a_project_request'
+              $ref: "#/components/schemas/Join_a_project_request"
       responses:
         "204":
           content: {}
@@ -2931,7 +2921,7 @@ paths:
               reason: temporary test
               expirationSeconds: 3600
             schema:
-              $ref: '#/components/schemas/Join_a_project_request'
+              $ref: "#/components/schemas/Join_a_project_request"
       responses:
         "201":
           content:
@@ -2945,7 +2935,7 @@ paths:
                   id: 324
                   name: Main project
               schema:
-                $ref: '#/components/schemas/Request_access_to_a_project_201_response'
+                $ref: "#/components/schemas/Request_access_to_a_project_201_response"
           description: Created
       summary: Request access to a project
       tags:
@@ -2986,7 +2976,7 @@ paths:
                   email: spam@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_join_requests_200_response_inner'
+                  $ref: "#/components/schemas/List_join_requests_200_response_inner"
                 type: array
           description: OK
       summary: List join requests
@@ -3054,7 +3044,7 @@ paths:
                   name: test user 2
                   email: spam@keboola.com
               schema:
-                $ref: '#/components/schemas/Join_request_detail_200_response'
+                $ref: "#/components/schemas/Join_request_detail_200_response"
           description: OK
       summary: Join request detail
       tags:
@@ -3110,7 +3100,7 @@ paths:
               disableReason: Project maintenance
               estimatedEndTime: +1 hour
             schema:
-              $ref: '#/components/schemas/Change_project_disabled_status_request'
+              $ref: "#/components/schemas/Change_project_disabled_status_request"
       responses:
         "200":
           content:
@@ -3195,7 +3185,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -3213,7 +3203,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Change project disabled status
       tags:
@@ -3246,7 +3236,7 @@ paths:
               bucketPermissions:
                 in.c: ""
             schema:
-              $ref: '#/components/schemas/Create_Storage_token_request'
+              $ref: "#/components/schemas/Create_Storage_token_request"
       responses:
         "201":
           content:
@@ -3268,7 +3258,7 @@ paths:
                 dailyCapacity: 0
                 bucketPermissions: {}
               schema:
-                $ref: '#/components/schemas/Create_Storage_token_201_response'
+                $ref: "#/components/schemas/Create_Storage_token_201_response"
           description: Created
       summary: Create Storage token
       tags:
@@ -3296,7 +3286,7 @@ paths:
               amount: 10
               description: Promo credits
             schema:
-              $ref: '#/components/schemas/Give_credits_request'
+              $ref: "#/components/schemas/Give_credits_request"
       responses:
         "201":
           content:
@@ -3309,7 +3299,7 @@ paths:
                 description: Promo credits
                 created: 2019-06-17T15:07:48+01:00
               schema:
-                $ref: '#/components/schemas/Give_credits_201_response'
+                $ref: "#/components/schemas/Give_credits_201_response"
           description: Created
       summary: Give credits
       tags:
@@ -3390,7 +3380,7 @@ paths:
                 deletedTime: 2018-02-11T14:25:15+0100
                 purgedTime: null
               schema:
-                $ref: '#/components/schemas/Deleted_project_detail_200_response'
+                $ref: "#/components/schemas/Deleted_project_detail_200_response"
           description: OK
       summary: Deleted project detail
       tags:
@@ -3415,7 +3405,7 @@ paths:
             example:
               ignoreBackendErrors: false
             schema:
-              $ref: '#/components/schemas/Purge_deleted_project_request'
+              $ref: "#/components/schemas/Purge_deleted_project_request"
       responses:
         "200":
           content:
@@ -3423,7 +3413,7 @@ paths:
               example:
                 commandExecutionId: 123-abcd
               schema:
-                $ref: '#/components/schemas/Purge_deleted_project_200_response'
+                $ref: "#/components/schemas/Purge_deleted_project_200_response"
           description: OK
       summary: Purge deleted project
       tags:
@@ -3517,7 +3507,7 @@ paths:
                   allowAutoJoin: true
               schema:
                 items:
-                  $ref: '#/components/schemas/List_deleted_projects_200_response_inner'
+                  $ref: "#/components/schemas/List_deleted_projects_200_response_inner"
                 type: array
           description: OK
       summary: List deleted projects
@@ -3571,7 +3561,7 @@ paths:
                 canAccessLogs: true
                 isSuperAdmin: true
               schema:
-                $ref: '#/components/schemas/User_detail_200_response'
+                $ref: "#/components/schemas/User_detail_200_response"
           description: OK
       summary: User detail
       tags:
@@ -3594,7 +3584,7 @@ paths:
             example:
               name: Martin
             schema:
-              $ref: '#/components/schemas/Update_a_user_request'
+              $ref: "#/components/schemas/Update_a_user_request"
       responses:
         "200":
           content:
@@ -3609,7 +3599,7 @@ paths:
                 canAccessLogs: true
                 isSuperAdmin: true
               schema:
-                $ref: '#/components/schemas/User_detail_200_response'
+                $ref: "#/components/schemas/User_detail_200_response"
           description: OK
       summary: Update a user
       tags:
@@ -3661,7 +3651,7 @@ paths:
                 canAccessLogs: false
                 isSuperAdmin: false
               schema:
-                $ref: '#/components/schemas/User_detail_200_response'
+                $ref: "#/components/schemas/User_detail_200_response"
           description: OK
       summary: Remove super admin privilege from User
       tags:
@@ -3697,7 +3687,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: OK
       summary: List user Metadata
@@ -3729,7 +3719,7 @@ paths:
               - key: someMetadataKey
                 value: Some value
             schema:
-              $ref: '#/components/schemas/Set_maintainer_metadata_request'
+              $ref: "#/components/schemas/Set_maintainer_metadata_request"
       responses:
         "201":
           content:
@@ -3747,7 +3737,7 @@ paths:
                 value: Some value
               schema:
                 items:
-                  $ref: '#/components/schemas/List_organization_Metadata_200_response_inner'
+                  $ref: "#/components/schemas/List_organization_Metadata_200_response_inner"
                 type: array
           description: Created
       summary: Set user metadata
@@ -3803,7 +3793,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_my_maintainer_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_my_maintainer_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List my maintainer invitations
@@ -3837,7 +3827,7 @@ paths:
                   name: Martin Halamicek
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/List_my_maintainer_invitations_200_response_inner'
+                $ref: "#/components/schemas/List_my_maintainer_invitations_200_response_inner"
           description: OK
       summary: My maintainer invitation detail
       tags:
@@ -3883,7 +3873,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_my_organization_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_my_organization_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List my organization invitations
@@ -3917,7 +3907,7 @@ paths:
                   name: Martin Halamicek
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/List_my_organization_invitations_200_response_inner'
+                $ref: "#/components/schemas/List_my_organization_invitations_200_response_inner"
           description: OK
       summary: My organization invitation detail
       tags:
@@ -3968,7 +3958,7 @@ paths:
                   name: Development
               schema:
                 items:
-                  $ref: '#/components/schemas/List_my_join_requests_200_response_inner'
+                  $ref: "#/components/schemas/List_my_join_requests_200_response_inner"
                 type: array
           description: OK
       summary: List my join requests
@@ -4021,7 +4011,7 @@ paths:
                   id: 324
                   name: Main project
               schema:
-                $ref: '#/components/schemas/Request_access_to_a_project_201_response'
+                $ref: "#/components/schemas/Request_access_to_a_project_201_response"
           description: OK
       summary: My join request detail
       tags:
@@ -4050,7 +4040,7 @@ paths:
                   email: martin@keboola.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_my_project_invitations_200_response_inner'
+                  $ref: "#/components/schemas/List_my_project_invitations_200_response_inner"
                 type: array
           description: OK
       summary: List my project invitations
@@ -4106,7 +4096,7 @@ paths:
                   name: Martin Halamicek
                   email: martin@keboola.com
               schema:
-                $ref: '#/components/schemas/List_my_project_invitations_200_response_inner'
+                $ref: "#/components/schemas/List_my_project_invitations_200_response_inner"
           description: OK
       summary: My project invitation detail
       tags:
@@ -4153,7 +4143,7 @@ paths:
                   name: dev user (TEST-1568723853)
               schema:
                 items:
-                  $ref: '#/components/schemas/List_used_promo_codes_200_response_inner'
+                  $ref: "#/components/schemas/List_used_promo_codes_200_response_inner"
                 type: array
           description: OK
       summary: List used promo codes
@@ -4169,7 +4159,7 @@ paths:
             example:
               code: TEST1568723795
             schema:
-              $ref: '#/components/schemas/Create_project_request'
+              $ref: "#/components/schemas/Create_project_request"
       responses:
         "201":
           content:
@@ -4231,7 +4221,7 @@ paths:
                 billedMonthlyPrice: null
                 dataRetentionTimeInDays: 1
               schema:
-                $ref: '#/components/schemas/Create_project_201_response'
+                $ref: "#/components/schemas/Create_project_201_response"
           description: Created
       summary: Create project
       tags:
@@ -4293,7 +4283,7 @@ paths:
                   defaultBackend: snowflake
               schema:
                 items:
-                  $ref: '#/components/schemas/Retrieve_all_promo_codes_200_response_inner'
+                  $ref: "#/components/schemas/Retrieve_all_promo_codes_200_response_inner"
                 type: array
           description: OK
       summary: Retrieve all promo codes
@@ -4322,7 +4312,7 @@ paths:
               organizationId: 1
               projectTemplateStringId: poc15DaysGuideMode
             schema:
-              $ref: '#/components/schemas/Create_new_promo_codes_request'
+              $ref: "#/components/schemas/Create_new_promo_codes_request"
       responses:
         "201":
           content:
@@ -4347,7 +4337,7 @@ paths:
                   hasTryModeOn: true
                   defaultBackend: snowflake
               schema:
-                $ref: '#/components/schemas/Create_new_promo_codes_201_response'
+                $ref: "#/components/schemas/Create_new_promo_codes_201_response"
           description: Created
       summary: Create new promo codes
       tags:
@@ -4384,7 +4374,7 @@ paths:
                 created: 2016-04-28T15:24:51.620Z
               schema:
                 items:
-                  $ref: '#/components/schemas/Retrieve_all_features_200_response_inner'
+                  $ref: "#/components/schemas/Retrieve_all_features_200_response_inner"
                 type: array
           description: OK
       summary: Retrieve all features
@@ -4439,7 +4429,7 @@ paths:
                 description: Users with this feature will see new UI
                 created: 2016-04-28T15:24:51.620Z
               schema:
-                $ref: '#/components/schemas/Retrieve_all_features_200_response_inner'
+                $ref: "#/components/schemas/Retrieve_all_features_200_response_inner"
           description: OK
       summary: Retrieve one feature
       tags:
@@ -4466,7 +4456,7 @@ paths:
               canBeManageByAdmin: false
               canBeManagedViaAPI: true
             schema:
-              $ref: '#/components/schemas/Update_a_feature_request'
+              $ref: "#/components/schemas/Update_a_feature_request"
       responses:
         "200":
           content: {}
@@ -4497,7 +4487,7 @@ paths:
                 name: Test project
               schema:
                 items:
-                  $ref: '#/components/schemas/Token_Verification_200_response_creator'
+                  $ref: "#/components/schemas/Token_Verification_200_response_creator"
                 type: array
           description: OK
       summary: Retrieve feature projects
@@ -4527,7 +4517,7 @@ paths:
                 email: test@example.com
               schema:
                 items:
-                  $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+                  $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
                 type: array
           description: OK
       summary: Retrieve feature users
@@ -4558,7 +4548,7 @@ paths:
               canBeManageByAdmin: false
               canBeManagedViaAPI: true
             schema:
-              $ref: '#/components/schemas/Create_a_feature_request'
+              $ref: "#/components/schemas/Create_a_feature_request"
       responses:
         "201":
           content:
@@ -4573,7 +4563,7 @@ paths:
                 canBeManagedViaAPI: true
                 created: 2016-04-28T15:24:51.620Z
               schema:
-                $ref: '#/components/schemas/Create_a_feature_201_response'
+                $ref: "#/components/schemas/Create_a_feature_201_response"
           description: Created
       summary: Create a feature
       tags:
@@ -4605,7 +4595,7 @@ paths:
             example:
               feature: show-new-design
             schema:
-              $ref: '#/components/schemas/Add_a_project_feature_request'
+              $ref: "#/components/schemas/Add_a_project_feature_request"
       responses:
         "200":
           content:
@@ -4690,7 +4680,7 @@ paths:
                   allowAutoJoin: true
                 fileStorage:
                   id: 2
-                  awsKey: 
+                  awsKey: null
                   region: us-east-1
                   filesBucket: kbc-sapi-files
                   owner: keboola
@@ -4708,7 +4698,7 @@ paths:
                 payAsYouGo:
                   purchasedCredits: 123
               schema:
-                $ref: '#/components/schemas/ProjectModel'
+                $ref: "#/components/schemas/ProjectModel"
           description: OK
       summary: Add a project feature
       tags:
@@ -4774,7 +4764,7 @@ paths:
             example:
               feature: show-new-design
             schema:
-              $ref: '#/components/schemas/Add_a_project_feature_request'
+              $ref: "#/components/schemas/Add_a_project_feature_request"
       responses:
         "200":
           content:
@@ -4786,7 +4776,7 @@ paths:
                 features:
                 - inline-manual
               schema:
-                $ref: '#/components/schemas/Add_a_user_feature_200_response'
+                $ref: "#/components/schemas/Add_a_user_feature_200_response"
           description: OK
       summary: Add a user feature
       tags:
@@ -4829,7 +4819,7 @@ paths:
                 features:
                 - inline-manual
               schema:
-                $ref: '#/components/schemas/Add_a_user_feature_200_response'
+                $ref: "#/components/schemas/Add_a_user_feature_200_response"
           description: OK
       summary: Remove a user feature
       tags:
@@ -4860,7 +4850,7 @@ paths:
                 created: 2018-04-12T21:46:37+0200
               schema:
                 items:
-                  $ref: '#/components/schemas/Retrieve_all_features_200_response_inner'
+                  $ref: "#/components/schemas/Retrieve_all_features_200_response_inner"
                 type: array
           description: OK
       summary: List features
@@ -4885,7 +4875,7 @@ paths:
             example:
               feature: show-new-design
             schema:
-              $ref: '#/components/schemas/Add_a_project_feature_request'
+              $ref: "#/components/schemas/Add_a_project_feature_request"
       responses:
         "201":
           content: {}
@@ -4968,7 +4958,7 @@ paths:
               owner: keboola
               awsSecret: xxxx
             schema:
-              $ref: '#/components/schemas/Create_new_AWS_S3_Storage_request'
+              $ref: "#/components/schemas/Create_new_AWS_S3_Storage_request"
       responses:
         "201":
           content:
@@ -4986,7 +4976,7 @@ paths:
                   id: "123"
                   name: name
               schema:
-                $ref: '#/components/schemas/Create_new_AWS_S3_Storage_201_response'
+                $ref: "#/components/schemas/Create_new_AWS_S3_Storage_201_response"
           description: Created
       summary: Create new AWS S3 Storage
       tags:
@@ -5021,7 +5011,7 @@ paths:
                   id: "123"
                   name: name
               schema:
-                $ref: '#/components/schemas/Create_new_AWS_S3_Storage_201_response'
+                $ref: "#/components/schemas/Create_new_AWS_S3_Storage_201_response"
           description: Created
       summary: Set S3 Storage as default
       tags:
@@ -5090,7 +5080,7 @@ paths:
               owner: keboola
               region: europe-west1
             schema:
-              $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_request'
+              $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_request"
       responses:
         "201":
           content:
@@ -5117,7 +5107,7 @@ paths:
                 gcsSnowflakeIntegrationName: KEBOOLA_123_GCS
                 filesBucket: my-bucket
               schema:
-                $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_201_response'
+                $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_201_response"
           description: Created
       summary: Create new Google Cloud Storage
       tags:
@@ -5165,7 +5155,7 @@ paths:
               owner: keboola
               accountKey: TTASDASASDfasdf==
             schema:
-              $ref: '#/components/schemas/Create_new_Azure_Blob_Storage_request'
+              $ref: "#/components/schemas/Create_new_Azure_Blob_Storage_request"
       responses:
         "201":
           content:
@@ -5182,7 +5172,7 @@ paths:
                   id: "123"
                   name: name
               schema:
-                $ref: '#/components/schemas/Create_new_Azure_Blob_Storage_201_response'
+                $ref: "#/components/schemas/Create_new_Azure_Blob_Storage_201_response"
           description: Created
       summary: Create new Azure Blob Storage
       tags:
@@ -5211,7 +5201,7 @@ paths:
                 id: "123"
                 isDefault: "true"
               schema:
-                $ref: '#/components/schemas/Set_Blob_Storage_as_default_200_response'
+                $ref: "#/components/schemas/Set_Blob_Storage_as_default_200_response"
           description: OK
       summary: Set Blob Storage as default
       tags:
@@ -5333,7 +5323,7 @@ paths:
               useSynapseManagedIdentity: "true"
               useDynamicBackends: false
             schema:
-              $ref: '#/components/schemas/Create_a_new_backend_request'
+              $ref: "#/components/schemas/Create_a_new_backend_request"
       responses:
         "201":
           content:
@@ -5344,7 +5334,7 @@ paths:
                 backend: redshift
                 region: us
               schema:
-                $ref: '#/components/schemas/Create_a_new_backend_201_response'
+                $ref: "#/components/schemas/Create_a_new_backend_201_response"
           description: Created
       summary: Create a new backend
       tags:
@@ -5436,7 +5426,7 @@ paths:
               password: "1234"
               useDynamicBackends: false
             schema:
-              $ref: '#/components/schemas/StorageBackendUpdate'
+              $ref: "#/components/schemas/StorageBackendUpdate"
       responses:
         "201":
           content:
@@ -5447,7 +5437,7 @@ paths:
                 backend: redshift
                 region: us
               schema:
-                $ref: '#/components/schemas/Create_a_new_backend_201_response'
+                $ref: "#/components/schemas/Create_a_new_backend_201_response"
           description: Created
       summary: Update backend
       tags:
@@ -5481,7 +5471,7 @@ paths:
                 auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
                 client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/something
             schema:
-              $ref: '#/components/schemas/Create_a_new_BigQuery_backend_request'
+              $ref: "#/components/schemas/Create_a_new_BigQuery_backend_request"
       responses:
         "201":
           content:
@@ -5502,7 +5492,7 @@ paths:
                   client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/something
                 folderId: 123
               schema:
-                $ref: '#/components/schemas/Create_a_new_BigQuery_backend_201_response'
+                $ref: "#/components/schemas/Create_a_new_BigQuery_backend_201_response"
           description: Created
       summary: Create a new BigQuery backend
       tags:
@@ -5537,7 +5527,7 @@ paths:
                 auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
                 client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/something
             schema:
-              $ref: '#/components/schemas/BigQueryStorageBackendUpdate'
+              $ref: "#/components/schemas/BigQueryStorageBackendUpdate"
       responses:
         "201":
           content:
@@ -5558,9 +5548,118 @@ paths:
                   client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/something
                 folderId: 123
               schema:
-                $ref: '#/components/schemas/Create_a_new_BigQuery_backend_201_response'
+                $ref: "#/components/schemas/Create_a_new_BigQuery_backend_201_response"
           description: Created
       summary: Update BigQuery backend
+      tags:
+      - SUPER - Storage Backends Management
+  /manage/storage-backend/snowflake:
+    post:
+      description: |-
+        Create a new Snowflake storage backend with RSA certificate authentication.
+        The backend is created as disabled and returns an SQL template for setting up
+        Snowflake roles and users, along with the public keys. After running the
+        generated query, you can activate the backend using the Activate Snowflake
+        Storage Backend endpoint.
+      operationId: Create Snowflake backend with cert
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            example:
+              host: demo.snowflakecomputing.com
+              warehouse: KEBOOLA
+              username: KEBOOLA_STORAGE
+              region: us-east-1
+              owner: keboola
+              technicalOwner: keboola
+              technicalOwnerContactEmails:
+              - devel@keboola.com
+              useDynamicBackends: false
+              useNetworkPolicies: false
+              useSso: false
+              edition: standard
+            schema:
+              $ref: "#/components/schemas/CreateSnowflakeBackendWithCertRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 123
+                host: demo.snowflakecomputing.com
+                warehouse: KEBOOLA
+                username: KEBOOLA_STORAGE
+                owner: keboola
+                technicalOwner: keboola
+                technicalOwnerContactEmails:
+                - devel@keboola.com
+                region: us-east-1
+                created: 2024-01-15T10:30:00Z
+                creatorName: John Doe
+                creatorId: 123
+                isMaintenance: false
+                useDynamicBackends: false
+                useNetworkPolicies: false
+                useSso: false
+                isSsoEnabled: false
+                isSsoConfigured: false
+                edition: standard
+                sqlTemplate: CREATE ROLE "KEBOOLA_STORAGE";...
+                isEnabled: false
+                userPublicKey: MIIBIjANBgkqhki...
+                securityIntegrationKey: MIIBIjANBgkqhki...
+              schema:
+                $ref: "#/components/schemas/CreateSnowflakeStorageBackendResponse"
+          description: OK
+      summary: Create a new Snowflake backend with certificate authentication
+      tags:
+      - SUPER - Storage Backends Management
+  /manage/storage-backend/{backend_id}/activate:
+    post:
+      description: |-
+        Activate a Snowflake storage backend after the SQL template created via
+        Create a new Snowflake backend with certificate authentication has been
+        executed in Snowflake. This validates the backend configuration and enables
+        it for use.
+      operationId: Activate Snowflake backend
+      parameters:
+      - description: Id of storage backend
+        explode: false
+        in: path
+        name: backend_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: 123
+                host: demo.snowflakecomputing.com
+                warehouse: KEBOOLA
+                username: KEBOOLA_STORAGE
+                owner: keboola
+                technicalOwner: keboola
+                technicalOwnerContactEmails:
+                - devel@keboola.com
+                region: us-east-1
+                created: 2024-01-15T10:30:00Z
+                creatorName: John Doe
+                creatorId: 123
+                isMaintenance: false
+                useDynamicBackends: false
+                useNetworkPolicies: false
+                useSso: false
+                isSsoEnabled: false
+                isSsoConfigured: false
+                isEnabled: true
+              schema:
+                $ref: "#/components/schemas/ActivateSnowflakeStorageBackendResponse"
+          description: OK
+      summary: Activate Snowflake backend
       tags:
       - SUPER - Storage Backends Management
   /manage/commands:
@@ -5579,7 +5678,7 @@ paths:
               - --help
               - "23"
             schema:
-              $ref: '#/components/schemas/Run_Command_request'
+              $ref: "#/components/schemas/Run_Command_request"
       responses:
         "201":
           content:
@@ -5587,7 +5686,7 @@ paths:
               example:
                 commandExecutionId: 123-abcd
               schema:
-                $ref: '#/components/schemas/Purge_deleted_project_200_response'
+                $ref: "#/components/schemas/Purge_deleted_project_200_response"
           description: Created
       summary: Run Command
       tags:
@@ -5615,7 +5714,7 @@ paths:
                 isCritical: false
               schema:
                 items:
-                  $ref: '#/components/schemas/List_Applications_200_response_inner'
+                  $ref: "#/components/schemas/List_Applications_200_response_inner"
                 type: array
           description: OK
       summary: List Applications
@@ -5631,7 +5730,7 @@ paths:
             example:
               manifest_url: ""
             schema:
-              $ref: '#/components/schemas/Register_New_Application_Version_request'
+              $ref: "#/components/schemas/Register_New_Application_Version_request"
       responses:
         "201":
           content:
@@ -5649,7 +5748,7 @@ paths:
                   isActive: true
                   isCritical: false
               schema:
-                $ref: '#/components/schemas/Register_New_Application_Version_201_response'
+                $ref: "#/components/schemas/Register_New_Application_Version_201_response"
           description: Created
       summary: Register New Application/Version
       tags:
@@ -5674,21 +5773,6 @@ paths:
       summary: Delete Application
       tags:
       - SUPER - UI Management
-  /queue/workers:
-    get:
-      description: |-
-        Endpoint should be: https://syrup.keboola.com/queue/workers
-
-        This API resource can be used, for example, by Hubot script for listing running workers.
-      operationId: Get Workers
-      parameters: []
-      responses:
-        "200":
-          content: {}
-          description: OK
-      summary: Get Workers
-      tags:
-      - Syrup API Integration
 components:
   schemas:
     MaintainerModel:
@@ -5761,7 +5845,7 @@ components:
           type: boolean
         projects:
           items:
-            $ref: '#/components/schemas/Retrieve_an_organization_200_response_projects_inner'
+            $ref: "#/components/schemas/Retrieve_an_organization_200_response_projects_inner"
           type: array
       type: object
     ProjectModel:
@@ -5901,9 +5985,9 @@ components:
         hasTryModeOn:
           type: string
         limits:
-          $ref: '#/components/schemas/ProjectModel_limits'
+          $ref: "#/components/schemas/ProjectModel_limits"
         metrics:
-          $ref: '#/components/schemas/ProjectModel_metrics'
+          $ref: "#/components/schemas/ProjectModel_metrics"
         isDisabled:
           type: boolean
         billedMonthlyPrice:
@@ -5911,13 +5995,13 @@ components:
         dataRetentionTimeInDays:
           type: number
         organization:
-          $ref: '#/components/schemas/ProjectModel_organization'
+          $ref: "#/components/schemas/ProjectModel_organization"
         fileStorage:
-          $ref: '#/components/schemas/ProjectModel_fileStorage'
+          $ref: "#/components/schemas/ProjectModel_fileStorage"
         backends:
-          $ref: '#/components/schemas/ProjectModel_backends'
+          $ref: "#/components/schemas/ProjectModel_backends"
         payAsYouGo:
-          $ref: '#/components/schemas/ProjectModel_payAsYouGo'
+          $ref: "#/components/schemas/ProjectModel_payAsYouGo"
       type: object
     GCPCredentials:
       example:
@@ -6017,7 +6101,7 @@ components:
     GCSCreate:
       properties:
         gcsCredentials:
-          $ref: '#/components/schemas/GCPCredentials'
+          $ref: "#/components/schemas/GCPCredentials"
         filesBucket:
           description: name of the bucket
           example: my-bucket
@@ -6053,9 +6137,9 @@ components:
           example: 2019-06-17T15:07:48+01:00
           type: string
         creator:
-          $ref: '#/components/schemas/AdminIdAndName'
+          $ref: "#/components/schemas/AdminIdAndName"
         gcsCredentials:
-          $ref: '#/components/schemas/GCPCredentialsNoPK'
+          $ref: "#/components/schemas/GCPCredentialsNoPK"
         gcsSnowflakeIntegrationName:
           example: KEBOOLA_123_GCS
           type: string
@@ -6067,7 +6151,7 @@ components:
     GCSRotate:
       properties:
         credentials:
-          $ref: '#/components/schemas/GCPCredentials'
+          $ref: "#/components/schemas/GCPCredentials"
       type: object
     AdminIdAndName:
       properties:
@@ -6096,7 +6180,7 @@ components:
       type: object
     ABSCreate:
       allOf:
-      - $ref: '#/components/schemas/ABSBase'
+      - $ref: "#/components/schemas/ABSBase"
       - properties:
           accountKey:
             description: new key to be rotated to
@@ -6107,7 +6191,7 @@ components:
         type: object
     ABSCreated:
       allOf:
-      - $ref: '#/components/schemas/ABSBase'
+      - $ref: "#/components/schemas/ABSBase"
       - properties:
           id:
             example: "123"
@@ -6123,11 +6207,11 @@ components:
             example: "2019"
             type: string
           creator:
-            $ref: '#/components/schemas/ABSCreated_allOf_creator'
+            $ref: "#/components/schemas/ABSCreated_allOf_creator"
         type: object
     ABSDefault:
       allOf:
-      - $ref: '#/components/schemas/ABSBase'
+      - $ref: "#/components/schemas/ABSBase"
       - properties:
           id:
             example: "123"
@@ -6159,7 +6243,7 @@ components:
       type: object
     S3FileStorage:
       allOf:
-      - $ref: '#/components/schemas/S3FileStorageBase'
+      - $ref: "#/components/schemas/S3FileStorageBase"
       - properties:
           id:
             example: "123"
@@ -6175,13 +6259,13 @@ components:
             example: "2019"
             type: string
           creator:
-            $ref: '#/components/schemas/ABSCreated_allOf_creator'
+            $ref: "#/components/schemas/ABSCreated_allOf_creator"
         required:
         - id
         type: object
     S3FileStorageRequest:
       allOf:
-      - $ref: '#/components/schemas/S3FileStorageBase'
+      - $ref: "#/components/schemas/S3FileStorageBase"
       - properties:
           awsSecret:
             example: xxxx
@@ -6249,7 +6333,7 @@ components:
           example: us-east-1
           type: string
         credentials:
-          $ref: '#/components/schemas/GCPCredentials'
+          $ref: "#/components/schemas/GCPCredentials"
       required:
       - folderId
       - owner
@@ -6267,7 +6351,7 @@ components:
           example: bigquery
           type: string
         credentials:
-          $ref: '#/components/schemas/GCPCredentialsNoPK'
+          $ref: "#/components/schemas/GCPCredentialsNoPK"
         folderId:
           example: 123
           type: number
@@ -6290,7 +6374,7 @@ components:
           client_id: "123456789"
       properties:
         credentials:
-          $ref: '#/components/schemas/GCPCredentials'
+          $ref: "#/components/schemas/GCPCredentials"
       type: object
     StorageBackendUpdate:
       example:
@@ -6345,13 +6429,13 @@ components:
           example: username
           type: string
         stats:
-          $ref: '#/components/schemas/StorageBackendListBase_stats'
+          $ref: "#/components/schemas/StorageBackendListBase_stats"
         created:
           description: The datetime (ISO8601 format) 'Y-m-d\TH:i:sO'
           example: 2020-05-11T15:30:00Z
           type: string
         creator:
-          $ref: '#/components/schemas/StorageBackendListBase_creator'
+          $ref: "#/components/schemas/StorageBackendListBase_creator"
       required:
       - created
       - id
@@ -6359,7 +6443,7 @@ components:
       type: object
     StorageBackendListRedshift:
       allOf:
-      - $ref: '#/components/schemas/StorageBackendListBase'
+      - $ref: "#/components/schemas/StorageBackendListBase"
       - properties:
           host:
             description: east-1.redshift.amazonaws.com (required)
@@ -6373,7 +6457,7 @@ components:
         type: object
     StorageBackendListSnowflake:
       allOf:
-      - $ref: '#/components/schemas/StorageBackendListBase'
+      - $ref: "#/components/schemas/StorageBackendListBase"
       - properties:
           host:
             example: demo.snowflakecomputing.com
@@ -6385,14 +6469,14 @@ components:
             example: keboola
             type: string
           saml2Configuration:
-            $ref: '#/components/schemas/StorageBackendListSnowflake_allOf_saml2Configuration'
+            $ref: "#/components/schemas/StorageBackendListSnowflake_allOf_saml2Configuration"
         required:
         - backend
         - host
         type: object
     StorageBackendListSynapse:
       allOf:
-      - $ref: '#/components/schemas/StorageBackendListBase'
+      - $ref: "#/components/schemas/StorageBackendListBase"
       - properties:
           host:
             description: synapse.database.windows.net (required)
@@ -6412,7 +6496,7 @@ components:
         type: object
     StorageBackendListExasol:
       allOf:
-      - $ref: '#/components/schemas/StorageBackendListBase'
+      - $ref: "#/components/schemas/StorageBackendListBase"
       - properties:
           host:
             example: database.exasol.com
@@ -6426,7 +6510,7 @@ components:
         type: object
     StorageBackendListTeradata:
       allOf:
-      - $ref: '#/components/schemas/StorageBackendListBase'
+      - $ref: "#/components/schemas/StorageBackendListBase"
       - properties:
           host:
             example: database.teradata.com
@@ -6552,9 +6636,9 @@ components:
         type:
           type: string
         creator:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         user:
-          $ref: '#/components/schemas/Token_Verification_200_response_user'
+          $ref: "#/components/schemas/Token_Verification_200_response_user"
       type: object
     Create_a_maintainer_request:
       properties:
@@ -6657,9 +6741,9 @@ components:
         created:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       required:
       - created
       - creator
@@ -6693,9 +6777,9 @@ components:
         created:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     Add_a_User_to_maintainer_request:
       properties:
@@ -6769,7 +6853,7 @@ components:
           type: boolean
         projects:
           items:
-            $ref: '#/components/schemas/Retrieve_an_organization_200_response_projects_inner'
+            $ref: "#/components/schemas/Retrieve_an_organization_200_response_projects_inner"
           type: array
       type: object
     Update_an_organization_request:
@@ -6899,7 +6983,7 @@ components:
           value: 5.962133916683182
       properties:
         limitName:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
       type: object
     List_projects_for_an_organization_200_response:
       example:
@@ -6969,7 +7053,7 @@ components:
         hasTryModeOn:
           type: string
         limits:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits"
         metrics:
           properties: {}
           type: object
@@ -7036,7 +7120,7 @@ components:
       properties:
         limits:
           items:
-            $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+            $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
           type: array
       type: object
     List_project_invitations_200_response_inner:
@@ -7064,9 +7148,9 @@ components:
         reason:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       required:
       - created
       - creator
@@ -7128,9 +7212,9 @@ components:
         role:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     List_project_users_200_response_inner_invitor:
       example:
@@ -7189,9 +7273,9 @@ components:
         status:
           type: string
         invitor:
-          $ref: '#/components/schemas/List_project_users_200_response_inner_invitor'
+          $ref: "#/components/schemas/List_project_users_200_response_inner_invitor"
         approver:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       required:
       - approver
       - created
@@ -7334,7 +7418,7 @@ components:
         status:
           type: string
         invitor:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
         approver:
           nullable: true
       type: object
@@ -7368,7 +7452,7 @@ components:
         reason:
           type: string
         project:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
       type: object
     List_join_requests_200_response_inner:
       example:
@@ -7391,7 +7475,7 @@ components:
         reason:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       required:
       - created
       - expires
@@ -7419,7 +7503,7 @@ components:
         reason:
           type: string
         user:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     Change_project_disabled_status_request:
       properties:
@@ -7469,7 +7553,7 @@ components:
           example: 60
           type: number
         bucketPermissions:
-          $ref: '#/components/schemas/Create_Storage_token_request_bucketPermissions'
+          $ref: "#/components/schemas/Create_Storage_token_request_bucketPermissions"
         componentAccess[]:
           description: "Grants access for component configurations. Allowed values\
             \ are [valid component IDs](https://components.keboola.com/components)."
@@ -7776,7 +7860,7 @@ components:
         purgedTime:
           nullable: true
         organization:
-          $ref: '#/components/schemas/List_deleted_projects_200_response_inner_organization'
+          $ref: "#/components/schemas/List_deleted_projects_200_response_inner_organization"
       required:
       - billedMonthlyPrice
       - created
@@ -7859,9 +7943,9 @@ components:
         created:
           type: string
         maintainer:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     List_my_organization_invitations_200_response_inner:
       example:
@@ -7880,9 +7964,9 @@ components:
         created:
           type: string
         organization:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     List_my_join_requests_200_response_inner:
       example:
@@ -7905,7 +7989,7 @@ components:
         reason:
           type: string
         project:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         crated:
           type: string
       required:
@@ -7940,9 +8024,9 @@ components:
         role:
           type: string
         project:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         creator:
-          $ref: '#/components/schemas/List_maintainers_invitations_200_response_inner_user'
+          $ref: "#/components/schemas/List_maintainers_invitations_200_response_inner_user"
       type: object
     List_used_promo_codes_200_response_inner:
       example:
@@ -7957,7 +8041,7 @@ components:
         usedAt:
           type: string
         project:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
       required:
       - code
       - project
@@ -8009,27 +8093,27 @@ components:
           value: 5.962133916683182
       properties:
         components.jobsParallelism:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.dataSizeBytes:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.demoTokenEnabled:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.prodTokenEnabled:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.usersCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.adminsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.extractorsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.writersCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         orchestrations.count:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.dataSizeBytes:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.jobsParallelism:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
       type: object
     Create_project_201_response:
       example:
@@ -8127,7 +8211,7 @@ components:
         hasTryModeOn:
           type: string
         limits:
-          $ref: '#/components/schemas/Create_project_201_response_limits'
+          $ref: "#/components/schemas/Create_project_201_response_limits"
         metrics:
           properties: {}
           type: object
@@ -8214,9 +8298,9 @@ components:
         expires:
           type: string
         organization:
-          $ref: '#/components/schemas/Retrieve_all_promo_codes_200_response_inner_organization'
+          $ref: "#/components/schemas/Retrieve_all_promo_codes_200_response_inner_organization"
         projectTemplate:
-          $ref: '#/components/schemas/Retrieve_all_promo_codes_200_response_inner_projectTemplate'
+          $ref: "#/components/schemas/Retrieve_all_promo_codes_200_response_inner_projectTemplate"
       required:
       - code
       - expires
@@ -8273,9 +8357,9 @@ components:
         expires:
           type: string
         organization:
-          $ref: '#/components/schemas/Retrieve_all_promo_codes_200_response_inner_organization'
+          $ref: "#/components/schemas/Retrieve_all_promo_codes_200_response_inner_organization"
         projectTemplate:
-          $ref: '#/components/schemas/Retrieve_all_promo_codes_200_response_inner_projectTemplate'
+          $ref: "#/components/schemas/Retrieve_all_promo_codes_200_response_inner_projectTemplate"
       type: object
     Retrieve_all_features_200_response_inner:
       example:
@@ -8473,7 +8557,7 @@ components:
           description: 06-17T15:07:48+01:00
           type: string
         creator:
-          $ref: '#/components/schemas/Create_new_AWS_S3_Storage_201_response_creator'
+          $ref: "#/components/schemas/Create_new_AWS_S3_Storage_201_response_creator"
       required:
       - awsKey
       - filesBucket
@@ -8518,7 +8602,7 @@ components:
     Create_new_Google_Cloud_Storage_request:
       properties:
         gcsCredentials:
-          $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_request_gcsCredentials'
+          $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_request_gcsCredentials"
         filesBucket:
           description: name of the bucket
           type: string
@@ -8610,9 +8694,9 @@ components:
           description: (ISO8601 format) `Y-m-d\TH:i:sO`
           type: string
         creator:
-          $ref: '#/components/schemas/Token_Verification_200_response_creator'
+          $ref: "#/components/schemas/Token_Verification_200_response_creator"
         gcsCredentials:
-          $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_201_response_gcsCredentials'
+          $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_201_response_gcsCredentials"
         gcsSnowflakeIntegrationName:
           type: string
         filesBucket:
@@ -8666,7 +8750,7 @@ components:
           description: 06-17T15:07:48+01:00
           type: string
         creator:
-          $ref: '#/components/schemas/Create_new_AWS_S3_Storage_201_response_creator'
+          $ref: "#/components/schemas/Create_new_AWS_S3_Storage_201_response_creator"
       required:
       - accountName
       - owner
@@ -8763,7 +8847,7 @@ components:
         region:
           type: string
         credentials:
-          $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_request_gcsCredentials'
+          $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_request_gcsCredentials"
       required:
       - folderId
       - owner
@@ -8793,11 +8877,212 @@ components:
         backend:
           type: string
         credentials:
-          $ref: '#/components/schemas/Create_new_Google_Cloud_Storage_201_response_gcsCredentials'
+          $ref: "#/components/schemas/Create_new_Google_Cloud_Storage_201_response_gcsCredentials"
         folderId:
           type: number
       required:
       - region
+      type: object
+    CreateSnowflakeBackendWithCertRequest:
+      example:
+        owner: keboola
+        useSso: true
+        useDynamicBackends: true
+        useNetworkPolicies: true
+        host: demo.snowflakecomputing.com
+        technicalOwnerContactEmails:
+        - devel@keboola.com
+        edition: standard
+        warehouse: KEBOOLA
+        region: us-east-1
+        username: KEBOOLA_STORAGE
+        technicalOwner: keboola
+      properties:
+        host:
+          description: Snowflake host name
+          example: demo.snowflakecomputing.com
+          type: string
+        warehouse:
+          description: Snowflake warehouse name
+          example: KEBOOLA
+          type: string
+        username:
+          description: Snowflake username
+          example: KEBOOLA_STORAGE
+          type: string
+        region:
+          description: Backend region
+          example: us-east-1
+          type: string
+        owner:
+          description: "Associated legal owner (string, mostly: keboola, client-<name>)"
+          example: keboola
+          type: string
+        technicalOwner:
+          description: "Associated technical owner. Enum: keboola, internal, kbdb,\
+            \ byodb"
+          example: keboola
+          type: string
+        technicalOwnerContactEmails:
+          description: Array of technical owner contact emails
+          example:
+          - devel@keboola.com
+          items:
+            type: string
+          type: array
+        useDynamicBackends:
+          description: Enable dynamic backends
+          type: boolean
+        useNetworkPolicies:
+          description: Enable network policies
+          type: boolean
+        useSso:
+          description: Enable SSO
+          type: boolean
+        edition:
+          description: "Snowflake edition type. Enum: enterprise, standard"
+          example: standard
+          type: string
+      required:
+      - host
+      - owner
+      - region
+      - technicalOwner
+      - warehouse
+      type: object
+    CreateSnowflakeStorageBackendResponse:
+      example:
+        id: 123
+        host: demo.snowflakecomputing.com
+        warehouse: KEBOOLA
+        username: KEBOOLA_STORAGE
+        owner: keboola
+        technicalOwner: keboola
+        technicalOwnerContactEmails:
+        - devel@keboola.com
+        region: us-east-1
+        created: 2024-01-15T10:30:00Z
+        creatorName: John Doe
+        creatorId: 123
+        isMaintenance: false
+        useDynamicBackends: false
+        useNetworkPolicies: false
+        useSso: false
+        isSsoEnabled: false
+        isSsoConfigured: false
+        edition: standard
+        sqlTemplate: CREATE ROLE "KEBOOLA_STORAGE";...
+        isEnabled: false
+        userPublicKey: MIIBIjANBgkqhki...
+        securityIntegrationKey: MIIBIjANBgkqhki...
+      properties:
+        id:
+          type: number
+        host:
+          type: string
+        warehouse:
+          type: string
+        username:
+          type: string
+        owner:
+          type: string
+        technicalOwner:
+          type: string
+        technicalOwnerContactEmails:
+          items:
+            type: string
+          type: array
+        region:
+          type: string
+        created:
+          type: string
+        creatorName:
+          type: string
+        creatorId:
+          type: number
+        isMaintenance:
+          type: boolean
+        useDynamicBackends:
+          type: boolean
+        useNetworkPolicies:
+          type: boolean
+        useSso:
+          type: boolean
+        isSsoEnabled:
+          type: boolean
+        isSsoConfigured:
+          type: boolean
+        edition:
+          type: string
+        sqlTemplate:
+          type: string
+        isEnabled:
+          type: boolean
+        userPublicKey:
+          type: string
+        securityIntegrationKey:
+          type: string
+      type: object
+    ActivateSnowflakeStorageBackendResponse:
+      example:
+        id: 123
+        host: demo.snowflakecomputing.com
+        warehouse: KEBOOLA
+        username: KEBOOLA_STORAGE
+        owner: keboola
+        technicalOwner: keboola
+        technicalOwnerContactEmails:
+        - devel@keboola.com
+        region: us-east-1
+        created: 2024-01-15T10:30:00Z
+        creatorName: John Doe
+        creatorId: 123
+        isMaintenance: false
+        useDynamicBackends: false
+        useNetworkPolicies: false
+        useSso: false
+        isSsoEnabled: false
+        isSsoConfigured: false
+        isEnabled: true
+      properties:
+        id:
+          type: number
+        host:
+          type: string
+        warehouse:
+          type: string
+        username:
+          type: string
+        owner:
+          type: string
+        technicalOwner:
+          type: string
+        technicalOwnerContactEmails:
+          items:
+            type: string
+          type: array
+        region:
+          type: string
+        created:
+          type: string
+        creatorName:
+          type: string
+        creatorId:
+          type: number
+        isMaintenance:
+          type: boolean
+        useDynamicBackends:
+          type: boolean
+        useNetworkPolicies:
+          type: boolean
+        useSso:
+          type: boolean
+        isSsoEnabled:
+          type: boolean
+        isSsoConfigured:
+          type: boolean
+        isEnabled:
+          type: boolean
       type: object
     Run_Command_request:
       properties:
@@ -8905,9 +9190,9 @@ components:
           version: version
       properties:
         app:
-          $ref: '#/components/schemas/Register_New_Application_Version_201_response_app'
+          $ref: "#/components/schemas/Register_New_Application_Version_201_response_app"
         verion:
-          $ref: '#/components/schemas/Register_New_Application_Version_201_response_verion'
+          $ref: "#/components/schemas/Register_New_Application_Version_201_response_verion"
       type: object
     ProjectModel_limits:
       example:
@@ -8949,29 +9234,29 @@ components:
           value: 5.962133916683182
       properties:
         components.jobsParallelism:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.dataSizeBytes:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.demoTokenEnabled:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.prodTokenEnabled:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         goodData.usersCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.adminsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.extractorsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.monthlyProjectPowerLimit:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         kbc.writersCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         orchestrations.count:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.dataSizeBytes:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.jobsParallelism:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
       type: object
     ProjectModel_metrics:
       example:
@@ -8989,13 +9274,13 @@ components:
           value: 5.962133916683182
       properties:
         kbc.adminsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         orchestrations.count:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.dataSizeBytes:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
         storage.rowsCount:
-          $ref: '#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName'
+          $ref: "#/components/schemas/List_projects_for_an_organization_200_response_limits_limitName"
       type: object
     ProjectModel_organization:
       example:
@@ -9057,7 +9342,7 @@ components:
         created:
           type: string
         creator:
-          $ref: '#/components/schemas/ProjectModel_fileStorage_creator'
+          $ref: "#/components/schemas/ProjectModel_fileStorage_creator"
       type: object
     ProjectModel_backends_snowflake:
       example:
@@ -9084,7 +9369,7 @@ components:
           region: region
       properties:
         snowflake:
-          $ref: '#/components/schemas/ProjectModel_backends_snowflake'
+          $ref: "#/components/schemas/ProjectModel_backends_snowflake"
       type: object
     ProjectModel_payAsYouGo:
       example:

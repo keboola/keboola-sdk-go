@@ -80,7 +80,7 @@ func (a *DeletedProjectsAPIService) CancelProjectDeletionExecute(r ApiCancelProj
 	localVarFormParams := url.Values{}
 
 	if r.expirationDays != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "expirationDays", r.expirationDays, "")
+		parameterAddToHeaderOrQuery(localVarQueryParams, "expirationDays", r.expirationDays, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

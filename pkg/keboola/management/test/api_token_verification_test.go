@@ -11,11 +11,10 @@ package management
 
 import (
 	"context"
-	"testing"
-
-	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
+	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
 )
 
 func Test_management_TokenVerificationAPIService(t *testing.T) {
@@ -25,7 +24,7 @@ func Test_management_TokenVerificationAPIService(t *testing.T) {
 
 	t.Run("Test TokenVerificationAPIService TokenVerification", func(t *testing.T) {
 
-		t.Skip("skip test") // remove to run test
+		t.Skip("skip test")  // remove to run test
 
 		resp, httpRes, err := apiClient.TokenVerificationAPI.TokenVerification(context.Background()).Execute()
 
