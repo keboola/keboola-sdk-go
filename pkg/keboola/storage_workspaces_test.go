@@ -230,13 +230,9 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create workspace
-	networkPolicy := "user"
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
-		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
-		NetworkPolicy: &networkPolicy,
-		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		Backend:   keboola.StorageWorkspaceBackendSnowflake,
+		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
