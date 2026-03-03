@@ -242,31 +242,15 @@ type WorkspaceUnloadPayload struct {
 	Only bool `json:"only"`
 }
 
-// StorageWorkspaceUnloadRequestAsync https://keboola.docs.apiary.io/#reference/workspaces/unload-workspace/unload-workspace-data
-// Unloads workspace data back to Storage asynchronously and returns a storage job.
+// StorageWorkspaceUnloadRequest https://keboola.docs.apiary.io/#reference/workspaces/unload-workspace/unload-workspace-data
+// Unloads workspace data back to Storage synchronously.
 // When only is true the workspace is preserved; when false the workspace is also deleted after unload.
-func (a *AuthorizedAPI) StorageWorkspaceUnloadRequestAsync(branchID BranchID, workspaceID uint64, only bool) request.APIRequest[*StorageJob] {
-	result := &StorageJob{}
+func (a *AuthorizedAPI) StorageWorkspaceUnloadRequest(branchID BranchID, workspaceID uint64, only bool) request.APIRequest[request.NoResult] {
 	req := a.
 		newRequest(StorageAPI).
-		WithResult(result).
 		WithPost("branch/{branchId}/workspaces/{workspaceId}/unload").
 		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
 		WithJSONBody(request.StructToMap(&WorkspaceUnloadPayload{Only: only}, nil))
-	return request.NewAPIRequest(result, req)
-}
-
-// StorageWorkspaceUnloadRequest https://keboola.docs.apiary.io/#reference/workspaces/unload-workspace/unload-workspace-data
-// Unloads workspace data back to Storage and waits for the operation to complete.
-// When only is true the workspace is preserved; when false the workspace is also deleted after unload.
-func (a *AuthorizedAPI) StorageWorkspaceUnloadRequest(branchID BranchID, workspaceID uint64, only bool) request.APIRequest[request.NoResult] {
-	req := a.
-		StorageWorkspaceUnloadRequestAsync(branchID, workspaceID, only).
-		WithOnSuccess(func(ctx context.Context, job *StorageJob) error {
-			waitCtx, waitCancelFn := context.WithTimeout(ctx, a.onSuccessTimeout)
-			defer waitCancelFn()
-			return a.WaitForStorageJob(waitCtx, job)
-		})
 	return request.NewAPIRequest(request.NoResult{}, req)
 }
