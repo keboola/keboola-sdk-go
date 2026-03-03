@@ -218,6 +218,43 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	assert.Equal(t, "success", job.Status)
 }
 
+func TestStorageWorkspaceUnload(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
+
+	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
+	defer cancelFn()
+
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create workspace
+	networkPolicy := "user"
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
+		Backend:       keboola.StorageWorkspaceBackendSnowflake,
+		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		NetworkPolicy: &networkPolicy,
+		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+	}).Send(ctx)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
+	})
+
+	// Unload with only=true (workspace should remain after unload)
+	err = api.StorageWorkspaceUnloadRequest(defBranch.ID, createdWorkspace.ID, true).SendOrErr(ctx)
+	require.NoError(t, err)
+
+	// Workspace should still exist
+	ws, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, createdWorkspace.ID, ws.ID)
+}
+
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	t.Parallel()
 	t.Skip("Skipping BigQuery test until we have a way to create a project with BigQuery backend")
