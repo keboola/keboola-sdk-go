@@ -247,10 +247,29 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, jobs)
 
-	// Workspace should still exist
+	// Workspace should still exist after only=true unload
 	ws, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
 	require.NoError(t, err)
 	assert.Equal(t, createdWorkspace.ID, ws.ID)
+
+	// Create a second workspace to test only=false.
+	// When only=false the workspace is dropped after unload, but only when there are jobs to run
+	// (i.e. the workspace has an associated configuration with output mapping).
+	// Without a configuration the API skips the drop and returns an empty job list.
+	workspace2, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
+		Backend:   keboola.StorageWorkspaceBackendSnowflake,
+		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+	}).Send(ctx)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, workspace2.ID).SendOrErr(cleanupCtx)
+	})
+
+	jobs2, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, workspace2.ID, false).Send(ctx)
+	require.NoError(t, err)
+	assert.NotNil(t, jobs2)
 }
 
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {

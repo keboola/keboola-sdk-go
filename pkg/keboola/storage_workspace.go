@@ -239,7 +239,7 @@ func (a *AuthorizedAPI) StorageWorkspaceLoadDataRequest(branchID BranchID, works
 type WorkspaceUnloadPayload struct {
 	// Only when true: unload data back to Storage but keep the workspace.
 	// When false (or omitted): unload data and also delete the workspace.
-	Only bool `json:"only"`
+	Only bool `json:"only" writeoptional:"true"`
 }
 
 // StorageWorkspaceUnloadRequest https://keboola.docs.apiary.io/#reference/workspaces/unload-workspace/unload-workspace-data
