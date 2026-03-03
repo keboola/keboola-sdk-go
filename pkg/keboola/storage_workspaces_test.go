@@ -241,9 +241,11 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
 	})
 
-	// Unload with only=true (workspace should remain after unload)
-	err = api.StorageWorkspaceUnloadRequest(defBranch.ID, createdWorkspace.ID, true).SendOrErr(ctx)
+	// Unload with only=true (workspace should remain after unload).
+	// Jobs slice is empty because the workspace has no associated configuration.
+	jobs, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, createdWorkspace.ID, true).Send(ctx)
 	require.NoError(t, err)
+	assert.NotNil(t, jobs)
 
 	// Workspace should still exist
 	ws, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)

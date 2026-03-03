@@ -243,14 +243,17 @@ type WorkspaceUnloadPayload struct {
 }
 
 // StorageWorkspaceUnloadRequest https://keboola.docs.apiary.io/#reference/workspaces/unload-workspace/unload-workspace-data
-// Unloads workspace data back to Storage synchronously.
+// Unloads workspace data back to Storage and returns the enqueued storage jobs.
+// The slice is empty when the workspace has no associated configuration (no output mapping to write back).
 // When only is true the workspace is preserved; when false the workspace is also deleted after unload.
-func (a *AuthorizedAPI) StorageWorkspaceUnloadRequest(branchID BranchID, workspaceID uint64, only bool) request.APIRequest[request.NoResult] {
+func (a *AuthorizedAPI) StorageWorkspaceUnloadRequest(branchID BranchID, workspaceID uint64, only bool) request.APIRequest[*[]*StorageJob] {
+	result := make([]*StorageJob, 0)
 	req := a.
 		newRequest(StorageAPI).
+		WithResult(&result).
 		WithPost("branch/{branchId}/workspaces/{workspaceId}/unload").
 		AndPathParam("branchId", branchID.String()).
 		AndPathParam("workspaceId", strconv.FormatUint(workspaceID, 10)).
 		WithJSONBody(request.StructToMap(&WorkspaceUnloadPayload{Only: only}, nil))
-	return request.NewAPIRequest(request.NoResult{}, req)
+	return request.NewAPIRequest(&result, req)
 }
