@@ -245,7 +245,7 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	// Jobs slice is empty because the workspace has no associated configuration.
 	jobs, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, createdWorkspace.ID, true).Send(ctx)
 	require.NoError(t, err)
-	assert.NotNil(t, jobs)
+	assert.Len(t, *jobs, 0, "Jobs slice should be empty when workspace has no associated configuration")
 
 	// Workspace should still exist after only=true unload
 	ws, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
@@ -269,7 +269,7 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 
 	jobs2, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, workspace2.ID, false).Send(ctx)
 	require.NoError(t, err)
-	assert.NotNil(t, jobs2)
+	assert.Len(t, *jobs2, 0, "Jobs slice should be empty when workspace has no associated configuration")
 }
 
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
