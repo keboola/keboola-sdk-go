@@ -218,6 +218,60 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	assert.Equal(t, "success", job.Status)
 }
 
+func TestStorageWorkspaceUnload(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
+
+	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
+	defer cancelFn()
+
+	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+
+	// Create workspace
+	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
+		Backend:   keboola.StorageWorkspaceBackendSnowflake,
+		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+	}).Send(ctx)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, createdWorkspace.ID).SendOrErr(cleanupCtx)
+	})
+
+	// Unload with only=true (workspace should remain after unload).
+	// Jobs slice is empty because the workspace has no associated configuration.
+	jobs, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, createdWorkspace.ID, true).Send(ctx)
+	require.NoError(t, err)
+	assert.Len(t, *jobs, 0, "Jobs slice should be empty when workspace has no associated configuration")
+
+	// Workspace should still exist after only=true unload
+	ws, err := api.StorageWorkspaceDetailRequest(defBranch.ID, createdWorkspace.ID).Send(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, createdWorkspace.ID, ws.ID)
+
+	// Create a second workspace to test only=false.
+	// When only=false the workspace is dropped after unload, but only when there are jobs to run
+	// (i.e. the workspace has an associated configuration with output mapping).
+	// Without a configuration the API skips the drop and returns an empty job list.
+	workspace2, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
+		Backend:   keboola.StorageWorkspaceBackendSnowflake,
+		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+	}).Send(ctx)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = api.StorageWorkspaceDeleteRequest(defBranch.ID, workspace2.ID).SendOrErr(cleanupCtx)
+	})
+
+	jobs2, err := api.StorageWorkspaceUnloadRequest(defBranch.ID, workspace2.ID, false).Send(ctx)
+	require.NoError(t, err)
+	assert.Len(t, *jobs2, 0, "Jobs slice should be empty when workspace has no associated configuration")
+}
+
 func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	t.Parallel()
 	t.Skip("Skipping BigQuery test until we have a way to create a project with BigQuery backend")
