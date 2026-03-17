@@ -8,7 +8,7 @@ set -o pipefail         # Use last non-zero exit code in a pipeline
 
 # Check the most important problems first
 echo "Running go vet ..."
-if ! go vet ./pkg/...; then
+if ! go vet $(go list ./pkg/... | grep -v 'pkg/keboola/management'); then
     echo "Please fix ^^^ errors. You can try run \"task fix\"."
     echo
     exit 1

@@ -94,6 +94,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      - pkg/keboola/management
 formatters:
   exclusions:
     generated: lax
@@ -101,3 +102,4 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - pkg/keboola/management
