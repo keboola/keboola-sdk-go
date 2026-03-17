@@ -1,4 +1,4 @@
-package keboola
+package upload
 
 import (
 	"context"
@@ -10,37 +10,45 @@ import (
 
 	"gocloud.dev/blob"
 
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
+	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
+	cores3 "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/upload/abs"
+	"github.com/keboola/keboola-sdk-go/v2/upload/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/upload/s3"
 )
 
 type downloadConfig struct {
 	transport http.RoundTripper
 }
 
+// DownloadOption configures download behaviour.
 type DownloadOption func(c *downloadConfig)
 
+// WithDownloadTransport overrides the HTTP transport used for download requests.
 func WithDownloadTransport(transport http.RoundTripper) DownloadOption {
 	return func(c *downloadConfig) {
 		c.transport = transport
 	}
 }
 
-func Download(ctx context.Context, file *FileDownloadCredentials) ([]byte, error) {
+// Download downloads the entire file content.
+func Download(ctx context.Context, file *keboola.FileDownloadCredentials) ([]byte, error) {
 	if file.IsSliced {
 		return nil, fmt.Errorf("cannot download a sliced file as a whole file")
 	}
 	return DownloadSlice(ctx, file, "")
 }
 
-func DownloadManifest(ctx context.Context, file *FileDownloadCredentials) (SlicesList, error) {
-	rawManifest, err := DownloadSlice(ctx, file, ManifestFileName)
+// DownloadManifest downloads and parses the manifest for a sliced file, returning the list of slice names.
+func DownloadManifest(ctx context.Context, file *keboola.FileDownloadCredentials) (keboola.SlicesList, error) {
+	rawManifest, err := DownloadSlice(ctx, file, keboola.ManifestFileName)
 	if err != nil {
 		return nil, fmt.Errorf("cannot download manifest: %w", err)
 	}
 
-	manifest := &SlicedFileManifest{}
+	manifest := &keboola.SlicedFileManifest{}
 	err = json.Unmarshal(rawManifest, manifest)
 	if err != nil {
 		return nil, fmt.Errorf("cannot map file contents to manifest: %w", err)
@@ -50,7 +58,7 @@ func DownloadManifest(ctx context.Context, file *FileDownloadCredentials) (Slice
 	if err != nil {
 		return nil, err
 	}
-	res := SlicesList{}
+	res := keboola.SlicesList{}
 	for _, slice := range manifest.Entries {
 		if !strings.HasPrefix(slice.URL, dstURL) {
 			return nil, fmt.Errorf(`slice URL "%s" seems wrong: %w`, slice.URL, err)
@@ -60,7 +68,8 @@ func DownloadManifest(ctx context.Context, file *FileDownloadCredentials) (Slice
 	return res, nil
 }
 
-func DownloadSlice(ctx context.Context, file *FileDownloadCredentials, slice string) (out []byte, err error) {
+// DownloadSlice downloads a single slice (or the whole file if slice is "").
+func DownloadSlice(ctx context.Context, file *keboola.FileDownloadCredentials, slice string) (out []byte, err error) {
 	reader, err := DownloadSliceReader(ctx, file, slice)
 	if err != nil {
 		return nil, err
@@ -75,32 +84,36 @@ func DownloadSlice(ctx context.Context, file *FileDownloadCredentials, slice str
 	return out, nil
 }
 
-func DownloadReader(ctx context.Context, file *FileDownloadCredentials) (io.ReadCloser, error) {
+// DownloadReader returns an io.ReadCloser for the whole file (non-sliced).
+func DownloadReader(ctx context.Context, file *keboola.FileDownloadCredentials) (io.ReadCloser, error) {
 	return DownloadSliceReader(ctx, file, "")
 }
 
-func DownloadManifestReader(ctx context.Context, file *FileDownloadCredentials) (io.ReadCloser, error) {
-	return DownloadSliceReader(ctx, file, ManifestFileName)
+// DownloadManifestReader returns an io.ReadCloser for the manifest file.
+func DownloadManifestReader(ctx context.Context, file *keboola.FileDownloadCredentials) (io.ReadCloser, error) {
+	return DownloadSliceReader(ctx, file, keboola.ManifestFileName)
 }
 
-func DownloadSliceReader(ctx context.Context, file *FileDownloadCredentials, slice string, opts ...DownloadOption) (io.ReadCloser, error) {
+// DownloadSliceReader returns an io.ReadCloser for the given slice.
+func DownloadSliceReader(ctx context.Context, file *keboola.FileDownloadCredentials, slice string, opts ...DownloadOption) (io.ReadCloser, error) {
 	c := downloadConfig{}
 	for _, opt := range opts {
 		opt(&c)
 	}
 	switch file.Provider {
-	case abs.Provider:
+	case coreabs.Provider:
 		return abs.NewDownloadReader(ctx, file.ABSDownloadParams, slice, c.transport)
-	case gcs.Provider:
+	case coregcs.Provider:
 		return gcs.NewDownloadReader(ctx, file.GCSDownloadParams, slice, c.transport)
-	case s3.Provider:
+	case cores3.Provider:
 		return s3.NewDownloadReader(ctx, file.S3DownloadParams, file.Region, slice, c.transport)
 	default:
 		return nil, fmt.Errorf(`unsupported provider "%s"`, file.Provider)
 	}
 }
 
-func GetFileAttributes(ctx context.Context, file *FileDownloadCredentials, slice string, opts ...DownloadOption) (*FileAttributes, error) {
+// GetFileAttributes returns metadata (size, content-type, mod time) for the given slice.
+func GetFileAttributes(ctx context.Context, file *keboola.FileDownloadCredentials, slice string, opts ...DownloadOption) (*keboola.FileAttributes, error) {
 	c := downloadConfig{}
 	for _, opt := range opts {
 		opt(&c)
@@ -108,11 +121,11 @@ func GetFileAttributes(ctx context.Context, file *FileDownloadCredentials, slice
 	var attrs *blob.Attributes
 	var err error
 	switch file.Provider {
-	case abs.Provider:
+	case coreabs.Provider:
 		attrs, err = abs.GetFileAttributes(ctx, file.ABSDownloadParams, slice, c.transport)
-	case gcs.Provider:
+	case coregcs.Provider:
 		attrs, err = gcs.GetFileAttributes(ctx, file.GCSDownloadParams, slice, c.transport)
-	case s3.Provider:
+	case cores3.Provider:
 		attrs, err = s3.GetFileAttributes(ctx, file.S3DownloadParams, file.Region, slice, c.transport)
 	default:
 		return nil, fmt.Errorf(`unsupported provider "%s"`, file.Provider)
@@ -120,7 +133,7 @@ func GetFileAttributes(ctx context.Context, file *FileDownloadCredentials, slice
 	if err != nil {
 		return nil, err
 	}
-	return &FileAttributes{
+	return &keboola.FileAttributes{
 		ContentType: attrs.ContentType,
 		ModTime:     attrs.ModTime,
 		Size:        attrs.Size,

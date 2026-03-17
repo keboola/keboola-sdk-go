@@ -17,6 +17,10 @@ tasks:
     cmds:
       - go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race -coverprofile=/tmp/profile.out ./pkg/...
 
+  upload-tests:
+    cmds:
+      - cd upload && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
+
   godoc:
     cmds:
       - go tool godoc -http=0.0.0.0:6060

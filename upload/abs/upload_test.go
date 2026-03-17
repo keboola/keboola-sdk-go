@@ -10,8 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/testdata"
+	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	"github.com/keboola/keboola-sdk-go/v2/upload/abs"
+	"github.com/keboola/keboola-sdk-go/v2/upload/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {
@@ -28,7 +29,7 @@ func TestCreateImportManifest(t *testing.T) {
 		File: keboola.File{
 			Provider: "azure",
 		},
-		ABSUploadParams: &abs.UploadParams{
+		ABSUploadParams: &coreabs.UploadParams{
 			BlobName:    "test1",
 			AccountName: "kbcfshc7chguaeh2km",
 			Container:   "exp-15-files-4516-27298008-2022-11-08",
@@ -52,11 +53,11 @@ func TestTransportRetry(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("PUT", `https://example.com/container/blob`, httpmock.NewStringResponder(504, "test"))
 
-	params := &abs.UploadParams{
+	params := &coreabs.UploadParams{
 		BlobName:    "blob",
 		AccountName: "account",
 		Container:   "container",
-		Credentials: abs.Credentials{
+		Credentials: coreabs.Credentials{
 			SASConnectionString: "BlobEndpoint=https://example.com;SharedAccessSignature=sas",
 			Expiration:          iso8601.Time{},
 		},

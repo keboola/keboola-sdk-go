@@ -1,34 +1,12 @@
 package keboola
 
 import (
-	"bytes"
 	"context"
-	"encoding/csv"
 	jsonLib "encoding/json"
 	"fmt"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
-
-// CreateTableRequest creates an empty table with given columns.
-func (a *AuthorizedAPI) CreateTableRequest(k TableKey, columns []string, opts ...CreateTableOption) request.APIRequest[*Table] {
-	table := &Table{}
-	fileName := fmt.Sprintf("create-table-%s", k.TableID.String())
-	req := a.
-		CreateFileResourceRequest(k.BranchID, fileName).
-		WithOnSuccess(func(ctx context.Context, file *FileUploadCredentials) error {
-			// Upload file with the header
-			if err := writeHeaderToCSV(ctx, file, columns); err != nil {
-				return fmt.Errorf("error writing header to csv: %w", err)
-			}
-
-			// Create the table from the header file
-			res, err := a.CreateTableFromFileRequest(k, file.FileKey, opts...).Send(ctx)
-			*table = *res
-			return err
-		})
-	return request.NewAPIRequest(table, req)
-}
 
 // CreateTableFromFileRequest https://keboola.docs.apiary.io/#reference/tables/create-table-asynchronously/create-new-table-from-csv-file-asynchronously
 func (a *AuthorizedAPI) CreateTableFromFileRequest(tableKey TableKey, fileKey FileKey, opts ...CreateTableOption) request.APIRequest[*Table] {
@@ -78,39 +56,6 @@ func (a *AuthorizedAPI) CreateTableFromFileRequest(tableKey TableKey, fileKey Fi
 	return request.NewAPIRequest(table, req)
 }
 
-func writeHeaderToCSV(ctx context.Context, file *FileUploadCredentials, columns []string) (err error) {
-	// Upload file with the header
-	bw, err := NewUploadWriter(ctx, file)
-	if err != nil {
-		return fmt.Errorf("connecting to the bucket failed: %w", err)
-	}
-	defer func() {
-		if closeErr := bw.Close(); closeErr != nil && err == nil {
-			err = fmt.Errorf("cannot close bucket writer: %w", closeErr)
-		}
-	}()
-
-	header, err := columnsToCSVHeader(columns)
-	if err != nil {
-		return err
-	}
-
-	_, err = bw.Write(header)
-	return err
-}
-
-func columnsToCSVHeader(columns []string) ([]byte, error) {
-	var str bytes.Buffer
-	cw := csv.NewWriter(&str)
-	if err := cw.Write(columns); err != nil {
-		return nil, fmt.Errorf("error writing header to csv: %w", err)
-	}
-	cw.Flush()
-	if err := cw.Error(); err != nil {
-		return nil, fmt.Errorf("error writing header to csv: %w", err)
-	}
-	return str.Bytes(), nil
-}
 
 type CreateTableRequest struct {
 	TableDefinition
