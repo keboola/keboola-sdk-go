@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -216,7 +217,7 @@ func TestTableCreateLoadDataFromFile(t *testing.T) {
 	assert.Equal(t, bucket, resBucket)
 
 	// Create file
-	fileName1 := fmt.Sprintf("file_%d", rnd.Int())
+	fileName1 := fmt.Sprintf("file_%d", rand.Int()) //nolint:gosec
 	file1, err := api.CreateFileResourceRequest(defBranch.ID, fileName1).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, file1.FileID)
@@ -232,7 +233,7 @@ func TestTableCreateLoadDataFromFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create file
-	fileName2 := fmt.Sprintf("file_%d", rnd.Int())
+	fileName2 := fmt.Sprintf("file_%d", rand.Int()) //nolint:gosec
 	file2, err := api.CreateFileResourceRequest(defBranch.ID, fileName2).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, file2.FileID)
@@ -347,7 +348,7 @@ func TestTableCreateFromFileOtherOptions(t *testing.T) {
 	assert.Equal(t, bucket, resBucket)
 
 	// Create file
-	fileName1 := fmt.Sprintf("file_%d", rnd.Int())
+	fileName1 := fmt.Sprintf("file_%d", rand.Int()) //nolint:gosec
 	file1, err := api.CreateFileResourceRequest(defBranch.ID, fileName1).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, file1.FileID)
@@ -385,7 +386,7 @@ func TestTableUnloadRequest(t *testing.T) {
 	assert.Equal(t, bucket, resBucket)
 
 	// Create file
-	fileName1 := fmt.Sprintf("file_%d", rnd.Int())
+	fileName1 := fmt.Sprintf("file_%d", rand.Int()) //nolint:gosec
 	inputFile, err := api.CreateFileResourceRequest(defBranch.ID, fileName1).Send(ctx)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, inputFile.FileID)

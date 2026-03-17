@@ -3,14 +3,11 @@ package upload_test
 import (
 	"fmt"
 	"math/rand"
-	"time"
 
 	"github.com/relvacode/iso8601"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
-
-var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func createBucketAndTableKey(branch *keboola.Branch) (*keboola.Bucket, keboola.TableKey) {
 	bucket := &keboola.Bucket{
@@ -18,7 +15,7 @@ func createBucketAndTableKey(branch *keboola.Branch) (*keboola.Bucket, keboola.T
 			BranchID: branch.ID,
 			BucketID: keboola.BucketID{
 				Stage:      keboola.BucketStageIn,
-				BucketName: fmt.Sprintf("c-test_%d", rnd.Int()),
+				BucketName: fmt.Sprintf("c-test_%d", rand.Int()), //nolint:gosec
 			},
 		},
 	}
@@ -26,7 +23,7 @@ func createBucketAndTableKey(branch *keboola.Branch) (*keboola.Bucket, keboola.T
 		BranchID: branch.ID,
 		TableID: keboola.TableID{
 			BucketID:  bucket.BucketID,
-			TableName: fmt.Sprintf("test_%d", rnd.Int()),
+			TableName: fmt.Sprintf("test_%d", rand.Int()), //nolint:gosec
 		},
 	}
 	return bucket, tableKey

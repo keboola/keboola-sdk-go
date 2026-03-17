@@ -29,8 +29,12 @@ type Credentials struct {
 type UploadParams struct {
 	Path
 	Credentials Credentials `json:"credentials"`
-	ACL         string      `json:"acl"`
-	Encryption  string      `json:"x-amz-server-side-encryption"`
+	// ACL is the S3 canned ACL for the uploaded object (e.g. "private", "public-read").
+	// Corresponds to the former s3types.ObjectCannedACL enum from the AWS SDK.
+	ACL string `json:"acl"`
+	// Encryption is the server-side encryption algorithm (e.g. "AES256", "aws:kms").
+	// Corresponds to the former s3types.ServerSideEncryption enum from the AWS SDK.
+	Encryption string `json:"x-amz-server-side-encryption"`
 }
 
 type DownloadParams struct {
