@@ -36,7 +36,7 @@ fi
 
 # --- upload module ---
 echo "Running go vet (upload) ..."
-if ! (cd upload && GOWORK=off go vet ./...); then
+if ! (cd upload && go vet ./...); then
     echo "Please fix ^^^ errors."
     exit 1
 fi
@@ -48,7 +48,7 @@ git diff --exit-code -- upload/go.mod upload/go.sum
 echo "Ok. upload/go.mod and upload/go.sum are valid."
 
 echo "Running golangci-lint (upload) ..."
-if (cd upload && GOWORK=off golangci-lint run -c "../build/ci/golangci.yml"); then
+if (cd upload && golangci-lint run -c "../build/ci/golangci.yml"); then
     echo "Ok. Upload module looks good."
 else
     echo "Please fix ^^^ errors. You can try run \"task upload-fix\"."

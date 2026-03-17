@@ -36,6 +36,6 @@ fi
 (cd upload && GOWORK=off go mod tidy)
 
 echo "Running golangci-lint --fix (upload) ..."
-if (cd upload && GOWORK=off golangci-lint run --fix -c "../build/ci/golangci.yml"); then
+if (cd upload && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
     echo "Ok. Upload module looks good."
 fi
