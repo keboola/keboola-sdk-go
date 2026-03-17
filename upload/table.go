@@ -13,7 +13,7 @@ import (
 // It creates a temporary file resource, uploads a CSV with just the header row,
 // then creates the table from that file.
 func CreateTable(ctx context.Context, api *keboola.AuthorizedAPI, k keboola.TableKey, columns []string, opts ...keboola.CreateTableOption) (*keboola.Table, error) {
-	file, err := api.CreateFileResourceRequest(k.BranchID, "table_header").Send(ctx)
+	file, err := api.CreateFileResourceRequest(k.BranchID, fmt.Sprintf("table_header_%s", k.TableID.String())).Send(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create file resource: %w", err)
 	}

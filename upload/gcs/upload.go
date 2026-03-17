@@ -34,14 +34,13 @@ func NewUploadWriter(ctx context.Context, params *coregcs.UploadParams, slice st
 	}
 
 	var gcsClient *googlestorage.Client
-	if b.As(&gcsClient) {
-		gcsClient.SetRetry(
-			googlestorage.WithBackoff(gax.Backoff{}),
-			googlestorage.WithPolicy(googlestorage.RetryIdempotent),
-		)
-	} else {
-		panic("Unable to access storage.Client through Bucket.As")
+	if !b.As(&gcsClient) {
+		return nil, fmt.Errorf("cannot access *storage.Client through Bucket.As for bucket %q", params.Bucket)
 	}
+	gcsClient.SetRetry(
+		googlestorage.WithBackoff(gax.Backoff{}),
+		googlestorage.WithPolicy(googlestorage.RetryIdempotent),
+	)
 
 	// Smaller buffer size for better progress reporting
 	opts := &blob.WriterOptions{BufferSize: 512000}
@@ -95,14 +94,13 @@ func openBucketForDownload(ctx context.Context, params *coregcs.DownloadParams, 
 	}
 
 	var gcsClient *googlestorage.Client
-	if b.As(&gcsClient) {
-		gcsClient.SetRetry(
-			googlestorage.WithBackoff(gax.Backoff{}),
-			googlestorage.WithPolicy(googlestorage.RetryIdempotent),
-		)
-	} else {
-		panic("Unable to access storage.Client through Bucket.As")
+	if !b.As(&gcsClient) {
+		return nil, fmt.Errorf("cannot access *storage.Client through Bucket.As for bucket %q", params.Path.Bucket)
 	}
+	gcsClient.SetRetry(
+		googlestorage.WithBackoff(gax.Backoff{}),
+		googlestorage.WithPolicy(googlestorage.RetryIdempotent),
+	)
 
 	return b, nil
 }
