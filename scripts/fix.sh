@@ -14,8 +14,8 @@ if ! go vet ./pkg/...; then
 fi
 
 # Fix modules
-go mod tidy
-go mod vendor
+GOWORK=off go mod tidy
+GOWORK=off go mod vendor
 
 # Run all analyzers with -fix
 # https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md#modernize-simplify-code-by-using-modern-constructs
@@ -30,4 +30,12 @@ else
     echo "Some errors ^^^ cannot be fixed. Please fix them manually."
     echo
     exit 1
+fi
+
+# --- upload module ---
+(cd upload && GOWORK=off go mod tidy)
+
+echo "Running golangci-lint --fix (upload) ..."
+if (cd upload && GOWORK=off golangci-lint run --fix -c "../build/ci/golangci.yml"); then
+    echo "Ok. Upload module looks good."
 fi
