@@ -142,7 +142,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	assert.Len(t, *workspacesAfter, initialLen, "Workspace count should not increase when creation fails")
 }
 
-// TestStorageWorkspaceLoadData is in upload/storage_workspaces_test.go as it requires upload.Upload.
+// TestStorageWorkspaceLoadData is in transfer/storage_workspaces_test.go as it requires transfer.Upload.
 
 func TestStorageWorkspaceUnload(t *testing.T) {
 	t.Parallel()

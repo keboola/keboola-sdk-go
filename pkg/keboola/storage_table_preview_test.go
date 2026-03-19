@@ -193,4 +193,4 @@ func TestPreviewTable_ParseCompareOp(t *testing.T) {
 	}
 }
 
-// TestPreviewTableRequest is in upload/storage_table_preview_test.go as it requires upload.Upload.
+// TestPreviewTableRequest is in transfer/storage_table_preview_test.go as it requires transfer.Upload.

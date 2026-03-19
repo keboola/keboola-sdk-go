@@ -11,7 +11,7 @@ import (
 )
 
 // createTestTableWithEvents, TestListTableEvents, TestListTableEventsWithLimit are in
-// upload/storage_events_test.go as they require upload.Upload.
+// transfer/storage_events_test.go as they require transfer.Upload.
 
 func TestSendEvent(t *testing.T) {
 	t.Parallel()

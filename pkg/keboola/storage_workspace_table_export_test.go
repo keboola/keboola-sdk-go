@@ -12,8 +12,8 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
-// TestWorkspaceTableExportSuccess is in upload/storage_workspace_export_test.go
-// as it requires upload.Upload.
+// TestWorkspaceTableExportSuccess is in transfer/storage_workspace_export_test.go
+// as it requires transfer.Upload.
 
 func TestWorkspaceTableExport(t *testing.T) {
 	t.Skip()

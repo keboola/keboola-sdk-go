@@ -61,8 +61,8 @@ func TestListTablesRequest(t *testing.T) {
 }
 
 // TestTableApiCalls, TestTableCreateLoadDataFromFile, TestTableCreateFromSlicedFile,
-// TestTableCreateFromFileOtherOptions, TestTableUnloadRequest are in upload/storage_table_test.go
-// as they require upload.Upload or upload.CreateTable.
+// TestTableCreateFromFileOtherOptions, TestTableUnloadRequest are in transfer/storage_table_test.go
+// as they require transfer.Upload or transfer.CreateTable.
 
 func TestCreateTableDefinition(t *testing.T) {
 	t.Parallel()
