@@ -36,8 +36,8 @@ tasks:
   update-deps:
     desc: Tidy go.mod for each module and sync the workspace
     cmds:
-      - GOWORK=off go mod tidy
-      - GOWORK=off go mod vendor
+      - go mod tidy
+      - go mod vendor
       - cd upload && GOWORK=off go mod tidy
       - go work sync
 

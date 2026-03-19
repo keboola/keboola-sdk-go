@@ -14,8 +14,8 @@ if ! go vet ./pkg/...; then
 fi
 
 # Fix modules
-GOWORK=off go mod tidy
-GOWORK=off go mod vendor
+go mod tidy
+go mod vendor
 
 # Run all analyzers with -fix
 # https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md#modernize-simplify-code-by-using-modern-constructs

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPreviewTableRequestOptions(t *testing.T) {
@@ -128,7 +129,7 @@ func TestPreviewTable_ParseColumnOrder(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseColumnOrder(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
@@ -154,7 +155,7 @@ func TestPreviewTable_ParseDataType(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseDataType(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
@@ -187,7 +188,7 @@ func TestPreviewTable_ParseCompareOp(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseCompareOp(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
