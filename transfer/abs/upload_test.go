@@ -11,8 +11,8 @@ import (
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/testdata"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/abs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {

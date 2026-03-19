@@ -10,8 +10,8 @@ import (
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/testdata"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {

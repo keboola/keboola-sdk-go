@@ -32,10 +32,10 @@ else
     exit 1
 fi
 
-# --- upload module ---
-(cd upload && GOWORK=off go mod tidy)
+# --- transfer module ---
+(cd transfer && GOWORK=off go mod tidy)
 
-echo "Running golangci-lint --fix (upload) ..."
-if (cd upload && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
-    echo "Ok. Upload module looks good."
+echo "Running golangci-lint --fix (transfer) ..."
+if (cd transfer && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
+    echo "Ok. Transfer module looks good."
 fi

@@ -1,4 +1,4 @@
-package upload_test
+package transfer_test
 
 import (
 	"fmt"

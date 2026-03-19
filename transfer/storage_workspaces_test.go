@@ -1,4 +1,4 @@
-package upload_test
+package transfer_test
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/upload"
+	"github.com/keboola/keboola-sdk-go/v2/transfer"
 )
 
 func TestStorageWorkspaceLoadData(t *testing.T) {
@@ -40,7 +40,7 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 
 	// Upload file
 	content := []byte("col1,col2\nval1,val2\nval3,val4\n")
-	_, err = upload.Upload(ctx, file, bytes.NewReader(content))
+	_, err = transfer.Upload(ctx, file, bytes.NewReader(content))
 	require.NoError(t, err)
 
 	// Create table from file

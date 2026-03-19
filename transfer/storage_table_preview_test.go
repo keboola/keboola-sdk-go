@@ -1,4 +1,4 @@
-package upload_test
+package transfer_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/upload"
+	"github.com/keboola/keboola-sdk-go/v2/transfer"
 )
 
 func TestPreviewTableRequest(t *testing.T) {
@@ -58,7 +58,7 @@ func TestPreviewTableRequest(t *testing.T) {
 	for i := range 100 {
 		content = append(content, fmt.Sprintf("%d,%d\n", i, i)...)
 	}
-	written, err := upload.Upload(ctx, file1, bytes.NewReader(content))
+	written, err := transfer.Upload(ctx, file1, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 

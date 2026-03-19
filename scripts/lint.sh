@@ -34,23 +34,23 @@ else
     exit 1
 fi
 
-# --- upload module ---
-echo "Running go vet (upload) ..."
-if ! (cd upload && go vet ./...); then
+# --- transfer module ---
+echo "Running go vet (transfer) ..."
+if ! (cd transfer && go vet ./...); then
     echo "Please fix ^^^ errors."
     exit 1
 fi
 
-echo "Running go mod tidy/verify (upload) ..."
-(cd upload && GOWORK=off go mod tidy)
-git diff --exit-code -- upload/go.mod upload/go.sum
-(cd upload && GOWORK=off go mod verify)
-echo "Ok. upload/go.mod and upload/go.sum are valid."
+echo "Running go mod tidy/verify (transfer) ..."
+(cd transfer && GOWORK=off go mod tidy)
+git diff --exit-code -- transfer/go.mod transfer/go.sum
+(cd transfer && GOWORK=off go mod verify)
+echo "Ok. transfer/go.mod and transfer/go.sum are valid."
 
-echo "Running golangci-lint (upload) ..."
-if (cd upload && golangci-lint run -c "../build/ci/golangci.yml"); then
-    echo "Ok. Upload module looks good."
+echo "Running golangci-lint (transfer) ..."
+if (cd transfer && golangci-lint run -c "../build/ci/golangci.yml"); then
+    echo "Ok. Transfer module looks good."
 else
-    echo "Please fix ^^^ errors. You can try run \"task upload-fix\"."
+    echo "Please fix ^^^ errors. You can try run \"task transfer-fix\"."
     exit 1
 fi

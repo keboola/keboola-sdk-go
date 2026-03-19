@@ -36,5 +36,5 @@ jobs:
         run: |
           task lint
           task tests
-          task upload-tests
+          task transfer-tests
 

@@ -17,28 +17,28 @@ tasks:
     cmds:
       - go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race -coverprofile=/tmp/profile.out ./pkg/...
 
-  upload-tests:
+  transfer-tests:
     cmds:
-      - cd upload && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
+      - cd transfer && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
 
   godoc:
     cmds:
       - go tool godoc -http=0.0.0.0:6060
 
-  upload-lint:
+  transfer-lint:
     cmds:
-      - (cd upload && golangci-lint run -c "../build/ci/golangci.yml")
+      - (cd transfer && golangci-lint run -c "../build/ci/golangci.yml")
 
-  upload-fix:
+  transfer-fix:
     cmds:
-      - (cd upload && golangci-lint run --fix -c "../build/ci/golangci.yml")
+      - (cd transfer && golangci-lint run --fix -c "../build/ci/golangci.yml")
 
   update-deps:
     desc: Tidy go.mod for each module and sync the workspace
     cmds:
       - go mod tidy
       - go mod vendor
-      - cd upload && GOWORK=off go mod tidy
+      - cd transfer && GOWORK=off go mod tidy
       - go work sync
 
   update:

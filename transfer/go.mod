@@ -1,4 +1,4 @@
-module github.com/keboola/keboola-sdk-go/v2/upload
+module github.com/keboola/keboola-sdk-go/v2/transfer
 
 go 1.25.2
 

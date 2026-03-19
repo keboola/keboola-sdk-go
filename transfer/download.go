@@ -1,4 +1,4 @@
-package upload
+package transfer
 
 import (
 	"context"
@@ -14,9 +14,9 @@ import (
 	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
 	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
 	cores3 "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
-	"github.com/keboola/keboola-sdk-go/v2/upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/abs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/s3"
 )
 
 type downloadConfig struct {

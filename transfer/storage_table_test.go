@@ -1,4 +1,4 @@
-package upload_test
+package transfer_test
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/upload"
+	"github.com/keboola/keboola-sdk-go/v2/transfer"
 )
 
 func TestTableApiCalls(t *testing.T) {
@@ -42,7 +42,7 @@ func TestTableApiCalls(t *testing.T) {
 	}
 
 	// Create table
-	res, err := upload.CreateTable(ctx, api, tableKey, table.Columns)
+	res, err := transfer.CreateTable(ctx, api, tableKey, table.Columns)
 	assert.NoError(t, err)
 	assert.Equal(t, table.Name, res.Name)
 
@@ -224,7 +224,7 @@ func TestTableCreateLoadDataFromFile(t *testing.T) {
 
 	// Upload file
 	content := []byte("col1,col2\nval1,val2\n")
-	written, err := upload.Upload(ctx, file1, bytes.NewReader(content))
+	written, err := transfer.Upload(ctx, file1, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 
@@ -245,7 +245,7 @@ func TestTableCreateLoadDataFromFile(t *testing.T) {
 
 	// Upload file
 	content = []byte("val2,val3\nval3,val4\nval4,val5\n")
-	written, err = upload.Upload(ctx, file2, bytes.NewReader(content))
+	written, err = transfer.Upload(ctx, file2, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 
@@ -285,7 +285,7 @@ func TestTableCreateFromSlicedFile(t *testing.T) {
 
 	// Upload file
 	content := []byte("col1,col2\nval1,val2\n")
-	written, err := upload.Upload(ctx, wholeFile, bytes.NewReader(content))
+	written, err := transfer.Upload(ctx, wholeFile, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 
@@ -306,16 +306,16 @@ func TestTableCreateFromSlicedFile(t *testing.T) {
 
 	// Upload slice 1 file
 	content = []byte("val3,val4\nval5,val6\n")
-	_, err = upload.UploadSlice(ctx, slicedFile, "slice1", bytes.NewReader(content))
+	_, err = transfer.UploadSlice(ctx, slicedFile, "slice1", bytes.NewReader(content))
 	assert.NoError(t, err)
 
 	// Upload slice 2 file
 	content = []byte("val7,val8\nval9,val10\n")
-	_, err = upload.UploadSlice(ctx, slicedFile, "slice2", bytes.NewReader(content))
+	_, err = transfer.UploadSlice(ctx, slicedFile, "slice2", bytes.NewReader(content))
 	assert.NoError(t, err)
 
 	// Upload manifest
-	_, err = upload.UploadSlicedFileManifest(ctx, slicedFile, []string{"slice1", "slice2"})
+	_, err = transfer.UploadSlicedFileManifest(ctx, slicedFile, []string{"slice1", "slice2"})
 	assert.NoError(t, err)
 
 	// Load data to table
@@ -355,7 +355,7 @@ func TestTableCreateFromFileOtherOptions(t *testing.T) {
 
 	// Upload file
 	content := []byte("'col1'&'col2'\n'val1'&'val2'\n")
-	written, err := upload.Upload(ctx, file1, bytes.NewReader(content))
+	written, err := transfer.Upload(ctx, file1, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 
@@ -393,7 +393,7 @@ func TestTableUnloadRequest(t *testing.T) {
 
 	// Upload file
 	content := []byte("col1,col2\nval1,val2\n")
-	written, err := upload.Upload(ctx, inputFile, bytes.NewReader(content))
+	written, err := transfer.Upload(ctx, inputFile, bytes.NewReader(content))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(len(content)), written)
 
@@ -431,13 +431,13 @@ func downloadAllSlices(ctx context.Context, file *keboola.FileDownloadCredential
 
 	out := []byte{}
 
-	slices, err := upload.DownloadManifest(ctx, file)
+	slices, err := transfer.DownloadManifest(ctx, file)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, slice := range slices {
-		data, err := upload.DownloadSlice(ctx, file, slice)
+		data, err := transfer.DownloadSlice(ctx, file, slice)
 		if err != nil {
 			return nil, err
 		}
