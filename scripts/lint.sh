@@ -16,9 +16,9 @@ fi
 
 # Check modules
 echo "Running go mod tidy/verify ..."
-GOWORK=off go mod tidy
+go mod tidy
 git diff --exit-code -- go.mod go.sum
-GOWORK=off go mod verify
+go mod verify
 echo "Ok. go.mod and go.sum are valid."
 echo
 
@@ -42,9 +42,9 @@ if ! (cd transfer && go vet ./...); then
 fi
 
 echo "Running go mod tidy/verify (transfer) ..."
-(cd transfer && GOWORK=off go mod tidy)
+(cd transfer && go mod tidy)
 git diff --exit-code -- transfer/go.mod transfer/go.sum
-(cd transfer && GOWORK=off go mod verify)
+(cd transfer && go mod verify)
 echo "Ok. transfer/go.mod and transfer/go.sum are valid."
 
 echo "Running golangci-lint (transfer) ..."
