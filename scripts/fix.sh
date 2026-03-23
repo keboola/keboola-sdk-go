@@ -33,9 +33,9 @@ else
 fi
 
 # --- transfer module ---
-(cd transfer && go mod tidy)
+(cd v2/transfer && go mod tidy)
 
 echo "Running golangci-lint --fix (transfer) ..."
-if (cd transfer && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
+if (cd v2/transfer && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
     echo "Ok. Transfer module looks good."
 fi

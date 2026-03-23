@@ -19,7 +19,7 @@ tasks:
 
   transfer-tests:
     cmds:
-      - cd transfer && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
+      - cd v2/transfer && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
 
   godoc:
     cmds:
@@ -27,18 +27,18 @@ tasks:
 
   transfer-lint:
     cmds:
-      - (cd transfer && golangci-lint run -c "../build/ci/golangci.yml")
+      - (cd v2/transfer && golangci-lint run -c "../build/ci/golangci.yml")
 
   transfer-fix:
     cmds:
-      - (cd transfer && golangci-lint run --fix -c "../build/ci/golangci.yml")
+      - (cd v2/transfer && golangci-lint run --fix -c "../build/ci/golangci.yml")
 
   update-deps:
     desc: Tidy go.mod for each module and sync the workspace
     cmds:
       - go mod tidy
       - go mod vendor
-      - cd transfer && go mod tidy
+      - cd v2/transfer && go mod tidy
       - go work sync
 
   update:
