@@ -5,18 +5,19 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
+	cores3 "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/transfer"
 )
 
 type UploadTestCase struct {
@@ -84,19 +85,19 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 
 		// Assert provider specific fields
 		switch file.Provider {
-		case abs.Provider:
+		case coreabs.Provider:
 			assert.Equal(t, true, file.IsEncrypted)
 			assert.NotEmpty(t, file.ABSUploadParams)
 			assert.NotEmpty(t, file.ABSUploadParams.BlobName)
 			assert.NotEmpty(t, file.ABSUploadParams.Credentials.SASConnectionString)
-		case gcs.Provider:
+		case coregcs.Provider:
 			assert.Equal(t, true, file.IsEncrypted)
 			assert.NotEmpty(t, file.GCSUploadParams)
 			assert.NotEmpty(t, file.GCSUploadParams.AccessToken)
 			assert.NotEmpty(t, file.GCSUploadParams.Bucket)
 			assert.NotEmpty(t, file.GCSUploadParams.Key)
 			assert.NotEmpty(t, file.GCSUploadParams.TokenType)
-		case s3.Provider:
+		case cores3.Provider:
 			assert.Equal(t, tc.Encrypted, file.IsEncrypted)
 			assert.NotEmpty(t, file.S3UploadParams)
 			assert.NotEmpty(t, file.S3UploadParams.Bucket)
@@ -112,9 +113,9 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 			var bw *blob.Writer
 			var err error
 			if tc.Sliced {
-				bw, err = keboola.NewUploadSliceWriter(ctx, file, "slice1")
+				bw, err = transfer.NewUploadSliceWriter(ctx, file, "slice1")
 			} else {
-				bw, err = keboola.NewUploadWriter(ctx, file)
+				bw, err = transfer.NewUploadWriter(ctx, file)
 			}
 			require.NoError(t, err)
 
@@ -132,9 +133,9 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 			var written int64
 			var err error
 			if tc.Sliced {
-				written, err = keboola.UploadSlice(ctx, file, "slice1", bytes.NewReader(content))
+				written, err = transfer.UploadSlice(ctx, file, "slice1", bytes.NewReader(content))
 			} else {
-				written, err = keboola.Upload(ctx, file, bytes.NewReader(content))
+				written, err = transfer.Upload(ctx, file, bytes.NewReader(content))
 			}
 			require.NoError(t, err)
 			assert.Equal(t, int64(len(content)), written)
@@ -142,7 +143,7 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 
 		// Upload manifest
 		if tc.Sliced {
-			_, err := keboola.UploadSlicedFileManifest(ctx, file, []string{"slice1"})
+			_, err := transfer.UploadSlicedFileManifest(ctx, file, []string{"slice1"})
 			require.NoError(t, err)
 		}
 
@@ -153,13 +154,13 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 		// Request file content
 		if tc.Sliced {
 			// Check manifest content
-			slicesList, err := keboola.DownloadManifest(ctx, credentials)
+			slicesList, err := transfer.DownloadManifest(ctx, credentials)
 			require.NoError(t, err)
 			assert.Len(t, slicesList, 1)
 			assert.Equal(t, "slice1", slicesList[0])
 
 			// Check slice attributes
-			attrs, err := keboola.GetFileAttributes(ctx, credentials, "slice1")
+			attrs, err := transfer.GetFileAttributes(ctx, credentials, "slice1")
 			require.NoError(t, err)
 			assert.NotEmpty(t, attrs.ModTime)
 			if tc.Gzipped {
@@ -171,7 +172,7 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 
 			// Read slice
 			var reader io.ReadCloser
-			sliceReader, err := keboola.DownloadSliceReader(ctx, credentials, "slice1")
+			sliceReader, err := transfer.DownloadSliceReader(ctx, credentials, "slice1")
 			require.NoError(t, err)
 			defer func() {
 				assert.NoError(t, sliceReader.Close())
@@ -195,7 +196,7 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 			assert.Equal(t, content, fileContent)
 		} else {
 			// Check attributes
-			attrs, err := keboola.GetFileAttributes(ctx, credentials, "")
+			attrs, err := transfer.GetFileAttributes(ctx, credentials, "")
 			require.NoError(t, err)
 			assert.NotEmpty(t, attrs.ModTime)
 			if tc.Gzipped {
@@ -206,7 +207,7 @@ func (tc UploadTestCase) Run(t *testing.T, api *keboola.AuthorizedAPI) {
 			assert.NotZero(t, attrs.Size)
 
 			var reader io.ReadCloser
-			fileReader, err := keboola.DownloadReader(ctx, credentials)
+			fileReader, err := transfer.DownloadReader(ctx, credentials)
 			require.NoError(t, err)
 			defer func() {
 				assert.NoError(t, fileReader.Close())

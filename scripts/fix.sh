@@ -31,3 +31,11 @@ else
     echo
     exit 1
 fi
+
+# --- transfer module ---
+(cd transfer && go mod tidy)
+
+echo "Running golangci-lint --fix (transfer) ..."
+if (cd transfer && golangci-lint run --fix -c "../build/ci/golangci.yml"); then
+    echo "Ok. Transfer module looks good."
+fi

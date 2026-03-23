@@ -1,4 +1,4 @@
-package keboola
+package transfer
 
 import (
 	"bytes"
@@ -10,17 +10,23 @@ import (
 
 	"gocloud.dev/blob"
 
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
+	coreabs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/abs"
+	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
+	cores3 "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/abs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/s3"
 )
 
 type uploadConfig struct {
 	transport http.RoundTripper
 }
 
+// UploadOption configures upload behaviour.
 type UploadOption func(c *uploadConfig)
 
+// WithUploadTransport overrides the HTTP transport used for upload requests.
 func WithUploadTransport(transport http.RoundTripper) UploadOption {
 	return func(c *uploadConfig) {
 		c.transport = transport
@@ -28,22 +34,22 @@ func WithUploadTransport(transport http.RoundTripper) UploadOption {
 }
 
 // NewUploadWriter instantiates a Writer to the Storage given by cloud provider specified in the File resource.
-func NewUploadWriter(ctx context.Context, file *FileUploadCredentials, opts ...UploadOption) (*blob.Writer, error) {
+func NewUploadWriter(ctx context.Context, file *keboola.FileUploadCredentials, opts ...UploadOption) (*blob.Writer, error) {
 	return NewUploadSliceWriter(ctx, file, "", opts...)
 }
 
 // NewUploadSliceWriter instantiates a Writer to the Storage given by cloud provider specified in the File resource and to the specified slice.
-func NewUploadSliceWriter(ctx context.Context, file *FileUploadCredentials, slice string, opts ...UploadOption) (*blob.Writer, error) {
+func NewUploadSliceWriter(ctx context.Context, file *keboola.FileUploadCredentials, slice string, opts ...UploadOption) (*blob.Writer, error) {
 	c := uploadConfig{}
 	for _, opt := range opts {
 		opt(&c)
 	}
 	switch file.Provider {
-	case abs.Provider:
+	case coreabs.Provider:
 		return abs.NewUploadWriter(ctx, file.ABSUploadParams, slice, c.transport)
-	case gcs.Provider:
+	case coregcs.Provider:
 		return gcs.NewUploadWriter(ctx, file.GCSUploadParams, slice, c.transport)
-	case s3.Provider:
+	case cores3.Provider:
 		return s3.NewUploadWriter(ctx, file.S3UploadParams, file.Region, slice, c.transport)
 	default:
 		return nil, fmt.Errorf(`unsupported provider "%s"`, file.Provider)
@@ -52,13 +58,13 @@ func NewUploadSliceWriter(ctx context.Context, file *FileUploadCredentials, slic
 
 // Upload instantiates a Writer to the Storage given by cloud provider specified in the File resource and writes there
 // content of the reader.
-func Upload(ctx context.Context, file *FileUploadCredentials, fr io.Reader) (written int64, err error) {
+func Upload(ctx context.Context, file *keboola.FileUploadCredentials, fr io.Reader) (written int64, err error) {
 	return UploadSlice(ctx, file, "", fr)
 }
 
 // UploadSlice instantiates a Writer to the Storage given by cloud provider specified in the File resource and writes
 // content of the reader to the specified slice.
-func UploadSlice(ctx context.Context, file *FileUploadCredentials, slice string, fr io.Reader) (written int64, err error) {
+func UploadSlice(ctx context.Context, file *keboola.FileUploadCredentials, slice string, fr io.Reader) (written int64, err error) {
 	bw, err := NewUploadSliceWriter(ctx, file, slice)
 	if err != nil {
 		return 0, fmt.Errorf("cannot open bucket writer: %w", err)
@@ -75,8 +81,8 @@ func UploadSlice(ctx context.Context, file *FileUploadCredentials, slice string,
 
 // UploadSlicedFileManifest instantiates a Writer to the Storage given by cloud provider specified in the File resource and writes
 // content of the reader to the specified slice manifest.
-func UploadSlicedFileManifest(ctx context.Context, file *FileUploadCredentials, slices []string) (written int64, err error) {
-	manifest, err := NewSlicedFileManifest(file, slices)
+func UploadSlicedFileManifest(ctx context.Context, file *keboola.FileUploadCredentials, slices []string) (written int64, err error) {
+	manifest, err := keboola.NewSlicedFileManifest(file, slices)
 	if err != nil {
 		return 0, err
 	}
@@ -85,5 +91,5 @@ func UploadSlicedFileManifest(ctx context.Context, file *FileUploadCredentials, 
 		return 0, err
 	}
 
-	return UploadSlice(ctx, file, ManifestFileName, bytes.NewReader(marshaledManifest))
+	return UploadSlice(ctx, file, keboola.ManifestFileName, bytes.NewReader(marshaledManifest))
 }

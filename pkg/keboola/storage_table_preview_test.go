@@ -1,10 +1,6 @@
 package keboola
 
 import (
-	"bytes"
-	"context"
-	"fmt"
-	"math/rand"
 	"net/url"
 	"testing"
 
@@ -133,7 +129,7 @@ func TestPreviewTable_ParseColumnOrder(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseColumnOrder(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
@@ -159,7 +155,7 @@ func TestPreviewTable_ParseDataType(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseDataType(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
@@ -192,82 +188,9 @@ func TestPreviewTable_ParseCompareOp(t *testing.T) {
 
 	for _, c := range cases {
 		actual, err := ParseCompareOp(c.input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, c.expected, actual)
 	}
 }
 
-func TestPreviewTableRequest(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	_, api := APIClientForAnEmptyProject(t, ctx)
-
-	// Get default branch
-	defBranch, err := api.GetDefaultBranchRequest().Send(ctx)
-	require.NoError(t, err)
-
-	bucketID := BucketID{
-		Stage:      BucketStageIn,
-		BucketName: fmt.Sprintf("c-bucket_%d", rand.Int()),
-	}
-	bucket := &Bucket{
-		BucketKey: BucketKey{
-			BranchID: defBranch.ID,
-			BucketID: bucketID,
-		},
-	}
-
-	tableKey := TableKey{
-		BranchID: defBranch.ID,
-		TableID: TableID{
-			BucketID:  bucketID,
-			TableName: fmt.Sprintf("table_%d", rand.Int()),
-		},
-	}
-
-	// Create bucket
-	resBucket, err := api.CreateBucketRequest(bucket).Send(ctx)
-	assert.NoError(t, err)
-	assert.Equal(t, bucket, resBucket)
-
-	// Create file
-	fileName1 := fmt.Sprintf("file_%d", rand.Int())
-	file1, err := api.CreateFileResourceRequest(defBranch.ID, fileName1).Send(ctx)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, file1.FileID)
-
-	// Upload file
-	content := []byte("id,value\n")
-	for i := range 100 {
-		content = append(content, fmt.Sprintf("%d,%d\n", i, i)...)
-	}
-	written, err := Upload(ctx, file1, bytes.NewReader(content))
-	assert.NoError(t, err)
-	assert.Equal(t, int64(len(content)), written)
-
-	// Create table
-	_, err = api.CreateTableFromFileRequest(tableKey, file1.FileKey, WithPrimaryKey([]string{"id"})).Send(ctx)
-	assert.NoError(t, err)
-
-	// Preview table
-	preview, err := api.PreviewTableRequest(tableKey,
-		WithWhere("value", "ge", []int{10}, TypeInteger),
-		WithWhere("value", CompareLe, []int{15}, TypeInteger),
-		WithOrderBy("value", OrderDesc, TypeInteger),
-	).Send(ctx)
-	assert.NoError(t, err)
-	assert.Equal(t,
-		&TablePreview{
-			Columns: []string{"id", "value"},
-			Rows: [][]string{
-				{"15", "15"},
-				{"14", "14"},
-				{"13", "13"},
-				{"12", "12"},
-				{"11", "11"},
-				{"10", "10"},
-			},
-		},
-		preview,
-	)
-}
+// TestPreviewTableRequest is in transfer/storage_table_preview_test.go as it requires transfer.Upload.

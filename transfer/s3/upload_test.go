@@ -10,8 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/testdata"
+	cores3 "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/s3"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/s3"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {
@@ -29,8 +30,8 @@ func TestCreateImportManifest(t *testing.T) {
 		File: keboola.File{
 			Provider: "aws",
 		},
-		S3UploadParams: &s3.UploadParams{
-			Path: s3.Path{
+		S3UploadParams: &cores3.UploadParams{
+			Path: cores3.Path{
 				Key:    "exp-15-files-4516-27298008-2022-11-08.test1",
 				Bucket: "kbc-sapi-files",
 			},
@@ -54,12 +55,12 @@ func TestTransportRetry(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("PUT", `https://bucket.s3.us-east-1.amazonaws.com/key`, httpmock.NewStringResponder(504, "test"))
 
-	params := &s3.UploadParams{
-		Path: s3.Path{
+	params := &cores3.UploadParams{
+		Path: cores3.Path{
 			Key:    "key",
 			Bucket: "bucket",
 		},
-		Credentials: s3.Credentials{
+		Credentials: cores3.Credentials{
 			AccessKeyID:     "accessKeyId",
 			SecretAccessKey: "secretAccessKey",
 			SessionToken:    "sessionToken",

@@ -9,8 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
-	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/testdata"
+	coregcs "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/storage_file_upload/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/gcs"
+	"github.com/keboola/keboola-sdk-go/v2/transfer/testdata"
 )
 
 func TestUploadAndDownload(t *testing.T) {
@@ -28,8 +29,8 @@ func TestCreateImportManifest(t *testing.T) {
 		File: keboola.File{
 			Provider: "gcp",
 		},
-		GCSUploadParams: &gcs.UploadParams{
-			Path: gcs.Path{
+		GCSUploadParams: &coregcs.UploadParams{
+			Path: coregcs.Path{
 				Key:    "exp-15-files-4516-27298008-2022-11-08.test1",
 				Bucket: "kbc-sapi-files",
 			},
@@ -53,12 +54,12 @@ func TestTransportRetry(t *testing.T) {
 	transport := httpmock.NewMockTransport()
 	transport.RegisterResponder("POST", `https://storage.googleapis.com/upload/storage/v1/b/bucket/o`, httpmock.NewStringResponder(504, "test"))
 
-	params := &gcs.UploadParams{
-		Path: gcs.Path{
+	params := &coregcs.UploadParams{
+		Path: coregcs.Path{
 			Key:    "key",
 			Bucket: "bucket",
 		},
-		Credentials: gcs.Credentials{
+		Credentials: coregcs.Credentials{
 			ProjectID:   "project",
 			AccessToken: "token",
 			TokenType:   "Bearer",
