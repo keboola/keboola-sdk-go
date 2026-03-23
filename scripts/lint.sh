@@ -45,7 +45,7 @@ echo "Running go mod tidy/verify (transfer) ..."
 (cd v2/transfer && go mod tidy)
 git diff --exit-code -- v2/transfer/go.mod v2/transfer/go.sum
 (cd v2/transfer && go mod verify)
-echo "Ok. transfer/go.mod and transfer/go.sum are valid."
+echo "Ok. v2/transfer/go.mod and v2/transfer/go.sum are valid."
 
 echo "Running golangci-lint (transfer) ..."
 if (cd v2/transfer && golangci-lint run -c "../../build/ci/golangci.yml"); then
