@@ -48,7 +48,7 @@ git diff --exit-code -- v2/transfer/go.mod v2/transfer/go.sum
 echo "Ok. transfer/go.mod and transfer/go.sum are valid."
 
 echo "Running golangci-lint (transfer) ..."
-if (cd v2/transfer && golangci-lint run -c "../build/ci/golangci.yml"); then
+if (cd v2/transfer && golangci-lint run -c "../../build/ci/golangci.yml"); then
     echo "Ok. Transfer module looks good."
 else
     echo "Please fix ^^^ errors. You can try run \"task transfer-fix\"."

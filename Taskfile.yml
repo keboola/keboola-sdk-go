@@ -27,11 +27,11 @@ tasks:
 
   transfer-lint:
     cmds:
-      - (cd v2/transfer && golangci-lint run -c "../build/ci/golangci.yml")
+      - (cd v2/transfer && golangci-lint run -c "../../build/ci/golangci.yml")
 
   transfer-fix:
     cmds:
-      - (cd v2/transfer && golangci-lint run --fix -c "../build/ci/golangci.yml")
+      - (cd v2/transfer && golangci-lint run --fix -c "../../build/ci/golangci.yml")
 
   update-deps:
     desc: Tidy go.mod for each module and sync the workspace
