@@ -23,6 +23,7 @@ type workspaceTableExportConfig struct {
 	TableName string `json:"tableName"`
 	FileName  string `json:"fileName"`
 	FileType  string `json:"fileType"`
+	Gzip      bool   `json:"gzip"`
 }
 
 // NewWorkspaceTableExportRequest creates a new workspace table export request builder.
@@ -107,5 +108,12 @@ func (b *WorkspaceTableExportRequestBuilder) WithFileName(fileName string) *Work
 // WithFileType sets the file type for the exported table, such as "csv" or "json".
 func (b *WorkspaceTableExportRequestBuilder) WithFileType(fileType string) *WorkspaceTableExportRequestBuilder {
 	b.config.FileType = fileType
+	return b
+}
+
+// WithGzip enables gzip compression for the exported file.
+// When true, the exported file will be gzip-compressed and the file path will include the .gz extension.
+func (b *WorkspaceTableExportRequestBuilder) WithGzip(gzip bool) *WorkspaceTableExportRequestBuilder {
+	b.config.Gzip = gzip
 	return b
 }
