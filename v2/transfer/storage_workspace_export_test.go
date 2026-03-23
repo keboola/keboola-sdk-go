@@ -215,15 +215,15 @@ func TestWorkspaceTableExportGzip(t *testing.T) {
 	// Download and concatenate all slices
 	var rawData []byte
 	if fileCreds.IsSliced {
-		slices, sliceErr := keboola.DownloadManifest(ctx, fileCreds)
+		slices, sliceErr := transfer.DownloadManifest(ctx, fileCreds)
 		require.NoError(t, sliceErr)
 		for _, slice := range slices {
-			sliceData, dlErr := keboola.DownloadSlice(ctx, fileCreds, slice)
+			sliceData, dlErr := transfer.DownloadSlice(ctx, fileCreds, slice)
 			require.NoError(t, dlErr)
 			rawData = append(rawData, sliceData...)
 		}
 	} else {
-		rawData, err = keboola.Download(ctx, fileCreds)
+		rawData, err = transfer.Download(ctx, fileCreds)
 		require.NoError(t, err)
 	}
 	require.NotEmpty(t, rawData, "exported file should not be empty")
