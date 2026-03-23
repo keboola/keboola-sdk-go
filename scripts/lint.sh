@@ -36,19 +36,19 @@ fi
 
 # --- transfer module ---
 echo "Running go vet (transfer) ..."
-if ! (cd transfer && go vet ./...); then
+if ! (cd v2/transfer && go vet ./...); then
     echo "Please fix ^^^ errors."
     exit 1
 fi
 
 echo "Running go mod tidy/verify (transfer) ..."
-(cd transfer && go mod tidy)
-git diff --exit-code -- transfer/go.mod transfer/go.sum
-(cd transfer && go mod verify)
-echo "Ok. transfer/go.mod and transfer/go.sum are valid."
+(cd v2/transfer && go mod tidy)
+git diff --exit-code -- v2/transfer/go.mod v2/transfer/go.sum
+(cd v2/transfer && go mod verify)
+echo "Ok. v2/transfer/go.mod and v2/transfer/go.sum are valid."
 
 echo "Running golangci-lint (transfer) ..."
-if (cd transfer && golangci-lint run -c "../build/ci/golangci.yml"); then
+if (cd v2/transfer && golangci-lint run -c "../../build/ci/golangci.yml"); then
     echo "Ok. Transfer module looks good."
 else
     echo "Please fix ^^^ errors. You can try run \"task transfer-fix\"."
