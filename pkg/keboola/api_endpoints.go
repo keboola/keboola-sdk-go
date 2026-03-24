@@ -22,6 +22,10 @@ const (
 	SchedulerAPIConfigSchedules = "configurations/{configurationId}"
 	SchedulerAPIRefreshToken    = "schedules/{scheduleId}/refreshToken"
 
+	// Endpoints for triggers (Storage API).
+	StorageAPITriggers = "triggers"
+	StorageAPITrigger  = "triggers/{triggerId}"
+
 	// Endpoints for workspaces API.
 	WorkspacesAPISandboxes = "sandboxes"
 	WorkspacesAPISandbox   = "sandboxes/{sandboxId}"

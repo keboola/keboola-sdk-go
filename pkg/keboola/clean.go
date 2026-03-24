@@ -52,7 +52,14 @@ func CleanProject(
 	m := &sync.Mutex{}
 	var err error
 
-	// Clean schedules first
+	// Clean triggers first (they reference configs, so must be removed before configs)
+	if e := api.CleanAllTriggersRequest().SendOrErr(ctx); e != nil {
+		m.Lock()
+		defer m.Unlock()
+		err = multierror.Append(err, e)
+	}
+
+	// Clean schedules
 	if e := api.CleanAllSchedulesRequest().SendOrErr(ctx); e != nil {
 		m.Lock()
 		defer m.Unlock()
