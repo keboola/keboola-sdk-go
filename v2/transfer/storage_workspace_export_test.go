@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"io"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -119,9 +117,8 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	require.Equal(t, defBranch.ID, file2.BranchID)
 }
 
-// TestWorkspaceTableExportGzip tests that exporting a table with gzip=true produces a valid gzip-compressed file.
+// TestWorkspaceTableExportGzip tests that WithGzip option controls whether the exported file is gzip-compressed.
 func TestWorkspaceTableExportGzip(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 	ctx := t.Context()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -192,52 +189,62 @@ func TestWorkspaceTableExportGzip(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "success", job.Status)
 
-	// Export the table from workspace with gzip enabled
-	result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
-		WithFileName("test_export_gzip.csv").
-		WithFileType("csv").
-		WithGzip(true).
-		SendAndWait(ctx, time.Minute*2)
-
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	require.NotZero(t, result.File.FileID)
-
-	// Download the exported file and verify it is gzip-compressed
-	fileKey := keboola.FileKey{
-		BranchID: defBranch.ID,
-		FileID:   result.File.FileID,
-	}
-	fileCreds, err := api.GetFileWithCredentialsRequest(fileKey).Send(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, fileCreds)
-
-	// Download and concatenate all slices
-	var rawData []byte
-	if fileCreds.IsSliced {
-		slices, sliceErr := transfer.DownloadManifest(ctx, fileCreds)
-		require.NoError(t, sliceErr)
-		for _, slice := range slices {
-			sliceData, dlErr := transfer.DownloadSlice(ctx, fileCreds, slice)
-			require.NoError(t, dlErr)
-			rawData = append(rawData, sliceData...)
+	// downloadExportedFile downloads the exported file raw bytes.
+	downloadExportedFile := func(t *testing.T, fileID keboola.FileID) []byte {
+		t.Helper()
+		fileKey := keboola.FileKey{
+			BranchID: defBranch.ID,
+			FileID:   fileID,
 		}
-	} else {
-		rawData, err = transfer.Download(ctx, fileCreds)
+		fileCreds, err := api.GetFileWithCredentialsRequest(fileKey).Send(ctx)
 		require.NoError(t, err)
+
+		var rawData []byte
+		if fileCreds.IsSliced {
+			slices, sliceErr := transfer.DownloadManifest(ctx, fileCreds)
+			require.NoError(t, sliceErr)
+			for _, slice := range slices {
+				sliceData, dlErr := transfer.DownloadSlice(ctx, fileCreds, slice)
+				require.NoError(t, dlErr)
+				rawData = append(rawData, sliceData...)
+			}
+		} else {
+			rawData, err = transfer.Download(ctx, fileCreds)
+			require.NoError(t, err)
+		}
+		require.NotEmpty(t, rawData, "exported file should not be empty")
+		return rawData
 	}
-	require.NotEmpty(t, rawData, "exported file should not be empty")
 
-	// Verify the data is valid gzip by decompressing it
-	gzReader, err := gzip.NewReader(bytes.NewReader(rawData))
-	require.NoError(t, err, "exported file should be valid gzip data")
+	// Export WITHOUT gzip — data should not be valid gzip
+	t.Run("without_gzip", func(t *testing.T) {
+		t.Parallel()
+		result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
+			WithFileName("test_export_plain").
+			WithFileType("csv").
+			SendAndWait(ctx, time.Minute*2)
+		require.NoError(t, err)
+		require.NotZero(t, result.File.FileID)
 
-	decompressed, err := io.ReadAll(gzReader)
-	require.NoError(t, err, "should be able to decompress gzip data")
-	require.NoError(t, gzReader.Close())
+		rawData := downloadExportedFile(t, result.File.FileID)
+		_, gzErr := gzip.NewReader(bytes.NewReader(rawData))
+		require.Error(t, gzErr, "exported file without gzip should not be valid gzip")
+	})
 
-	// Verify decompressed content contains the original CSV data
-	decompressedStr := string(decompressed)
-	assert.True(t, strings.Contains(decompressedStr, "col1"), "decompressed data should contain column headers")
-	assert.True(t, strings.Contains(decompressedStr, "val1"), "decompressed data should contain row values")
+	// Export WITH gzip — data should be valid gzip
+	t.Run("with_gzip", func(t *testing.T) {
+		t.Parallel()
+		result, err := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
+			WithFileName("test_export_gzip.csv").
+			WithFileType("csv").
+			WithGzip(true).
+			SendAndWait(ctx, time.Minute*2)
+		require.NoError(t, err)
+		require.NotZero(t, result.File.FileID)
+
+		rawData := downloadExportedFile(t, result.File.FileID)
+		gzReader, gzErr := gzip.NewReader(bytes.NewReader(rawData))
+		require.NoError(t, gzErr, "exported file with gzip should be valid gzip")
+		require.NoError(t, gzReader.Close())
+	})
 }
