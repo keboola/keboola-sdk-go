@@ -65,6 +65,7 @@ func TestWorkspaceTableExport(t *testing.T) {
 		req := api.NewWorkspaceTableExportRequest(defBranch.ID, createdWorkspace.ID, "test_table").
 			WithFileName("exported_table.csv").
 			WithFileType("csv").
+			WithGzip(true).
 			Build()
 
 		require.NotNil(t, req)
