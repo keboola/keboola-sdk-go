@@ -18,6 +18,7 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	// editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
 	apps, err := a.ListDataScienceAppsRequest(
 		WithDataScienceAppsType(DataScienceAppTypePython, DataScienceAppTypeR),
+		WithDataScienceAppsLimit(500),
 	).Send(ctx)
 	if err != nil {
 		return err

@@ -74,7 +74,6 @@ type EditorSession struct {
 }
 
 // EditorSessionWithConfig pairs an EditorSession with its backing keboola.sandboxes config.
-// It mirrors SandboxWorkspaceWithConfig used for Python/R workspaces.
 // Use EditorSession.WorkspaceID with StorageWorkspaceLoadDataRequest / StorageWorkspaceUnloadRequest
 // to load or unload data, and Config.ID when calling DeleteEditorSession.
 type EditorSessionWithConfig struct {

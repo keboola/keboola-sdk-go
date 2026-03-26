@@ -61,12 +61,16 @@ func CleanProject(
 		err = multierror.Append(err, e)
 	}
 
-	if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
-		err = multierror.Append(err, e)
+	if _, ok := api.Index().ServiceURLByID(ServiceID(DataScienceAPI)); ok {
+		if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
+			err = multierror.Append(err, e)
+		}
 	}
 
-	if e := api.CleanEditorSessions(ctx); e != nil {
-		err = multierror.Append(err, e)
+	if _, ok := api.Index().ServiceURLByID(ServiceID(EditorAPI)); ok {
+		if e := api.CleanEditorSessions(ctx); e != nil {
+			err = multierror.Append(err, e)
+		}
 	}
 
 	// Clean storage workspaces
