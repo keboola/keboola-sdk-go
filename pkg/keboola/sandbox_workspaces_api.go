@@ -85,7 +85,11 @@ func (a *AuthorizedAPI) ListSandboxWorkspaceInstancesRequest() request.APIReques
 }
 
 func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) error {
-	instances, err := a.ListSandboxWorkspaceInstancesRequest().Send(ctx)
+	// Use the /apps endpoint filtered to Python/R — Snowflake/BigQuery are managed by the
+	// editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
+	apps, err := a.ListDataScienceAppsRequest(
+		WithDataScienceAppsType(DataScienceAppTypePython, DataScienceAppTypeR),
+	).Send(ctx)
 	if err != nil {
 		return err
 	}
@@ -93,14 +97,9 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	wg := &sync.WaitGroup{}
 	m := &sync.Mutex{}
 
-	for _, s := range *instances {
-		// Snowflake and BigQuery workspaces are now managed by the editor service.
-		// They will be cleaned up by CleanEditorSessions — skip them here to avoid double-deletion.
-		if s.Type == SandboxWorkspaceTypeSnowflake || s.Type == SandboxWorkspaceTypeBigQuery {
-			continue
-		}
+	for _, app := range *apps {
 		wg.Go(func() {
-			if e := a.DeleteSandboxWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
+			if e := a.DeleteSandboxWorkspaceJobRequest(SandboxWorkspaceID(app.ID)).SendOrErr(ctx); e != nil {
 				m.Lock()
 				defer m.Unlock()
 				err = multierror.Append(err, e)
@@ -109,9 +108,5 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	}
 
 	wg.Wait()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
