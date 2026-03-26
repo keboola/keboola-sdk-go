@@ -188,3 +188,33 @@ func TestEditorSessionListAndGet(t *testing.T) {
 	}
 	assert.True(t, foundSession, "Session list did not include created session")
 }
+
+func TestResetEditorSessionCredentials(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, branch)
+
+	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
+	defer cancelFn()
+
+	// Create a session to reset credentials on
+	workspace, err := api.CreateEditorSession(ctx, branch.ID, "test")
+	require.NoError(t, err)
+	require.NotNil(t, workspace)
+
+	defer func() {
+		deleteErr := api.DeleteEditorSession(ctx, branch.ID, workspace.Config.ID, workspace.EditorSession.ID)
+		require.NoError(t, deleteErr)
+	}()
+
+	// Reset credentials
+	creds, err := api.ResetEditorSessionCredentialsRequest(workspace.EditorSession.ID).Send(ctx)
+	require.NoError(t, err)
+	assert.NotEmpty(t, creds.PrivateKey)
+	assert.NotEmpty(t, creds.PublicKey)
+}

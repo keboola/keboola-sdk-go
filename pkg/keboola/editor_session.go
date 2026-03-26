@@ -190,6 +190,23 @@ func (a *AuthorizedAPI) CreateEditorSessionRequest(payload CreateEditorSessionPa
 		})
 }
 
+// EditorSessionCredentials holds the rotated keypair returned by reset-credentials.
+type EditorSessionCredentials struct {
+	PrivateKey string `json:"privateKey"` //nolint: gosec
+	PublicKey  string `json:"publicKey"`
+}
+
+// ResetEditorSessionCredentialsRequest rotates the credentials of a running editor session.
+// https://api.keboola.com/?service=editor#post-/sql/sessions/-id-/reset-credentials
+func (a *AuthorizedAPI) ResetEditorSessionCredentialsRequest(id EditorSessionID) request.APIRequest[*EditorSessionCredentials] {
+	result := &EditorSessionCredentials{}
+	req := a.newRequest(EditorAPI).
+		WithResult(result).
+		WithPost(EditorAPISessionResetCredentials).
+		AndPathParam("sessionId", id.String())
+	return request.NewAPIRequest(result, req)
+}
+
 // DeleteEditorSessionRequest deletes an editor session by ID.
 // https://api.keboola.com/?service=editor#delete-/sql/sessions/-sessionId-
 func (a *AuthorizedAPI) DeleteEditorSessionRequest(id EditorSessionID) request.APIRequest[request.NoResult] {

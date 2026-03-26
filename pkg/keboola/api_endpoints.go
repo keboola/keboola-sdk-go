@@ -31,6 +31,7 @@ const (
 	DataScienceAPIApp  = "apps/{appId}"
 
 	// Endpoints for editor API.
-	EditorAPISessions = "sql/sessions"
-	EditorAPISession  = "sql/sessions/{sessionId}"
+	EditorAPISessions                = "sql/sessions"
+	EditorAPISession                 = "sql/sessions/{sessionId}"
+	EditorAPISessionResetCredentials = "sql/sessions/{sessionId}/reset-credentials" //nolint: gosec
 )
