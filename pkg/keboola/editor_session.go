@@ -275,9 +275,16 @@ func (a *AuthorizedAPI) CreateEditorSession(ctx context.Context, branchID Branch
 		ConfigurationID: emptyConfig.ID.String(),
 	}).Send(ctx)
 	if err != nil {
+		// If the POST succeeded but WaitForEditorSession timed out, session is non-nil.
+		// Best-effort: delete the orphaned session to avoid leaving it running.
+		if session != nil {
+			if delErr := a.DeleteEditorSessionRequest(session.ID).SendOrErr(ctx); delErr != nil {
+				err = multierror.Append(err, fmt.Errorf("failed to clean up orphaned session %s: %w", session.ID, delErr))
+			}
+		}
 		// Best-effort: delete the orphaned config so it doesn't litter the UI.
 		if _, cleanupErr := a.DeleteSandboxWorkspaceConfigRequest(branchID, emptyConfig.ID).Send(ctx); cleanupErr != nil {
-			return nil, multierror.Append(err, fmt.Errorf("failed to clean up orphaned config %s: %w", emptyConfig.ID, cleanupErr))
+			err = multierror.Append(err, fmt.Errorf("failed to clean up orphaned config %s: %w", emptyConfig.ID, cleanupErr))
 		}
 		return nil, err
 	}

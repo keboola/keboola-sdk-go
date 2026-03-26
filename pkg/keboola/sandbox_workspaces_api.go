@@ -14,10 +14,15 @@ func (v SandboxWorkspaceID) String() string {
 }
 
 func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) error {
-	// Use the /apps endpoint filtered to Python/R — Snowflake/BigQuery are managed by the
-	// editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
+	// Use the /apps endpoint for all non-editor app types. Snowflake/BigQuery are managed
+	// by the editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
 	apps, err := a.ListDataScienceAppsRequest(
-		WithDataScienceAppsType(DataScienceAppTypePython, DataScienceAppTypeR),
+		WithDataScienceAppsType(
+			DataScienceAppTypePython,
+			DataScienceAppTypeR,
+			DataScienceAppTypeStreamlit,
+			DataScienceAppTypePythonJS,
+		),
 		WithDataScienceAppsLimit(500),
 	).Send(ctx)
 	if err != nil {

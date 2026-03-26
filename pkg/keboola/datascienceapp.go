@@ -35,7 +35,7 @@ type DataScienceAppDesiredState string
 // DataScienceAppProvisioningStrategy is the provisioning strategy of a data science app.
 type DataScienceAppProvisioningStrategy string
 
-// DataScienceApp represents a data science app returned by the sandboxes service /apps endpoint.
+// DataScienceApp represents a data science app returned by the data-science service /apps endpoint.
 // It replaces the deprecated SandboxWorkspace for listing and status checks.
 // Field mapping from old SandboxWorkspace: ID→ID, Type→Type (narrowed), Active(bool)→State+DesiredState,
 // Size→Size, URL→URL, BranchID→BranchID, ConfigurationID→ConfigID.
@@ -95,7 +95,7 @@ func WithDataScienceAppsBranchID(v string) ListDataScienceAppsOption {
 	return func(c *listDataScienceAppsConfig) { c.BranchID = v }
 }
 
-// ListDataScienceAppsRequest returns a list of data science apps.
+// ListDataScienceAppsRequest returns a list of data science apps from the data-science service.
 // https://api.keboola.com/?service=sandboxes-service#get-/apps
 func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOption) request.APIRequest[*[]*DataScienceApp] {
 	cfg := &listDataScienceAppsConfig{}
@@ -117,8 +117,14 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 	if cfg.ComponentID != "" {
 		req = req.AndQueryParam("componentId", cfg.ComponentID.String())
 	}
-	for _, t := range cfg.Types {
-		req = req.AndQueryParam("type[]", string(t))
+	if len(cfg.Types) > 0 {
+		// Use AndQueryParam for the first type to ensure queryParams is initialized,
+		// then Add remaining types directly (AndQueryParam uses Set which would overwrite).
+		req = req.AndQueryParam("type[]", string(cfg.Types[0]))
+		q := req.QueryParams()
+		for _, t := range cfg.Types[1:] {
+			q.Add("type[]", string(t))
+		}
 	}
 	if cfg.BranchID != "" {
 		req = req.AndQueryParam("branchId", cfg.BranchID)
@@ -127,7 +133,7 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 	return request.NewAPIRequest(&result, req)
 }
 
-// GetDataScienceAppRequest returns a single data science app by ID.
+// GetDataScienceAppRequest returns a single data science app by ID from the data-science service.
 // https://api.keboola.com/?service=sandboxes-service#get-/apps/-appId-
 func (a *AuthorizedAPI) GetDataScienceAppRequest(id DataScienceAppID) request.APIRequest[*DataScienceApp] {
 	result := &DataScienceApp{}
