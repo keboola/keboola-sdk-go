@@ -46,10 +46,6 @@ type HTTPRequest interface {
 	AndHeader(header string, value string) HTTPRequest
 	// AndQueryParam method sets single parameter and its value.
 	AndQueryParam(param, value string) HTTPRequest
-	// AndQueryParamValues appends multiple values for a single query parameter key.
-	// Unlike AndQueryParam (which uses Set and overwrites), this uses Add so all values are preserved.
-	// Use this when the API expects repeated keys, e.g. type[]=a&type[]=b.
-	AndQueryParamValues(param string, values []string) HTTPRequest
 	// WithQueryParams method sets multiple parameters and its values.
 	WithQueryParams(params map[string]string) HTTPRequest
 	// AndPathParam method sets single URL path key-value pair.
@@ -240,12 +236,29 @@ func (r httpRequest) AndQueryParam(key, value string) HTTPRequest {
 	return r
 }
 
-func (r httpRequest) AndQueryParamValues(key string, values []string) HTTPRequest {
+func (r httpRequest) appendQueryParamValues(key string, values []string) HTTPRequest {
 	r.queryParams = cloneURLValues(r.queryParams)
 	for _, v := range values {
 		r.queryParams.Add(key, v)
 	}
 	return r
+}
+
+// multiValueQuerySetter is satisfied by the concrete httpRequest type.
+// It is used by AppendQueryParamValues to avoid widening the public HTTPRequest interface.
+type multiValueQuerySetter interface {
+	appendQueryParamValues(key string, values []string) HTTPRequest
+}
+
+// AppendQueryParamValues returns req with multiple values appended for the same query parameter key.
+// Unlike AndQueryParam (which uses Set and overwrites), this preserves all values so callers
+// can build repeated-key params such as type[]=a&type[]=b.
+// If req does not implement the internal multi-value setter (e.g. a custom mock), it is returned unchanged.
+func AppendQueryParamValues(req HTTPRequest, key string, values []string) HTTPRequest {
+	if adder, ok := req.(multiValueQuerySetter); ok {
+		return adder.appendQueryParamValues(key, values)
+	}
+	return req
 }
 
 func (r httpRequest) WithQueryParams(params map[string]string) HTTPRequest {

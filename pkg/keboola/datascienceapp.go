@@ -122,7 +122,7 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 		for i, t := range cfg.Types {
 			typeStrs[i] = string(t)
 		}
-		req = req.AndQueryParamValues("type[]", typeStrs)
+		req = request.AppendQueryParamValues(req, "type[]", typeStrs)
 	}
 	if cfg.BranchID != "" {
 		req = req.AndQueryParam("branchId", cfg.BranchID)

@@ -12,7 +12,7 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
-func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
+func TestEditorSessionCreateAndDeleteSnowflake(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
@@ -54,7 +54,7 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	assert.True(t, foundSession, "Session list did not find created session")
 }
 
-func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
+func TestEditorSessionCreateAndDeleteBigQuery(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithBigQueryBackend())
