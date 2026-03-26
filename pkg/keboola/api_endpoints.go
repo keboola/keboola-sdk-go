@@ -22,10 +22,6 @@ const (
 	SchedulerAPIConfigSchedules = "configurations/{configurationId}"
 	SchedulerAPIRefreshToken    = "schedules/{scheduleId}/refreshToken"
 
-	// Endpoints for workspaces API.
-	WorkspacesAPISandboxes = "sandboxes"
-	WorkspacesAPISandbox   = "sandboxes/{sandboxId}"
-
 	// Endpoints for data science apps (sandboxes service /apps).
 	DataScienceAPIApps = "apps"
 	DataScienceAPIApp  = "apps/{appId}"

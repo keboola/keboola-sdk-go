@@ -59,37 +59,29 @@ type SandboxWorkspace struct {
 	Credentials *SandboxWorkspaceCredentials `json:"credentials"`
 }
 
-// GetSandboxWorkspaceInstanceRequest returns a single sandbox workspace instance by ID.
-//
-// Deprecated: Snowflake and BigQuery workspaces are deprecated. Use GetEditorSessionRequest instead.
-// For Python/R workspaces, use GetSandboxWorkspace which fetches via the Storage API config.
-func (a *AuthorizedAPI) GetSandboxWorkspaceInstanceRequest(id SandboxWorkspaceID) request.APIRequest[*SandboxWorkspace] {
+// listSandboxWorkspaceInstancesRequest lists all sandbox workspace instances from the /sandboxes endpoint.
+// Used internally; supports all backends including GCP where the newer /apps endpoint is not available.
+func (a *AuthorizedAPI) listSandboxWorkspaceInstancesRequest() request.APIRequest[*[]*SandboxWorkspace] {
+	result := make([]*SandboxWorkspace, 0)
+	req := a.newRequest(WorkspacesAPI).
+		WithResult(&result).
+		WithGet("sandboxes")
+	return request.NewAPIRequest(&result, req)
+}
+
+// getSandboxWorkspaceInstanceRequest returns a single sandbox workspace instance by ID.
+// Used internally; supports all backends including GCP where the newer /apps endpoint is not available.
+func (a *AuthorizedAPI) getSandboxWorkspaceInstanceRequest(id SandboxWorkspaceID) request.APIRequest[*SandboxWorkspace] {
 	result := &SandboxWorkspace{}
 	req := a.newRequest(WorkspacesAPI).
 		WithResult(result).
-		WithGet(WorkspacesAPISandbox).
+		WithGet("sandboxes/{sandboxId}").
 		AndPathParam("sandboxId", id.String())
 	return request.NewAPIRequest(result, req)
 }
 
-// ListSandboxWorkspaceInstancesRequest returns a list of all sandbox workspace instances.
-//
-// Deprecated: Snowflake and BigQuery workspaces are deprecated. Use ListEditorSessionsRequest instead.
-// For Python/R workspaces, use ListSandboxWorkspaces which joins configs with instances.
-func (a *AuthorizedAPI) ListSandboxWorkspaceInstancesRequest() request.APIRequest[*[]*SandboxWorkspace] {
-	result := make([]*SandboxWorkspace, 0)
-	req := a.newRequest(WorkspacesAPI).
-		WithResult(&result).
-		WithGet(WorkspacesAPISandboxes)
-	return request.NewAPIRequest(&result, req)
-}
-
 func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) error {
-	// Use the /apps endpoint filtered to Python/R — Snowflake/BigQuery are managed by the
-	// editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
-	apps, err := a.ListDataScienceAppsRequest(
-		WithDataScienceAppsType(DataScienceAppTypePython, DataScienceAppTypeR),
-	).Send(ctx)
+	instances, err := a.listSandboxWorkspaceInstancesRequest().Send(ctx)
 	if err != nil {
 		return err
 	}
@@ -97,9 +89,14 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	wg := &sync.WaitGroup{}
 	m := &sync.Mutex{}
 
-	for _, app := range *apps {
+	for _, s := range *instances {
+		// Snowflake and BigQuery workspaces are now managed by the editor service.
+		// They will be cleaned up by CleanEditorSessions — skip them here to avoid double-deletion.
+		if s.Type == SandboxWorkspaceTypeSnowflake || s.Type == SandboxWorkspaceTypeBigQuery {
+			continue
+		}
 		wg.Go(func() {
-			if e := a.DeleteSandboxWorkspaceJobRequest(SandboxWorkspaceID(app.ID)).SendOrErr(ctx); e != nil {
+			if e := a.DeleteSandboxWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
 				m.Lock()
 				defer m.Unlock()
 				err = multierror.Append(err, e)

@@ -150,16 +150,15 @@ func (a *AuthorizedAPI) GetSandboxWorkspace(
 		return nil, err
 	}
 
-	workspace, err := a.GetSandboxWorkspaceInstanceRequest(workspaceID).Send(ctx)
+	workspace, err := a.getSandboxWorkspaceInstanceRequest(workspaceID).Send(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	out := &SandboxWorkspaceWithConfig{
+	return &SandboxWorkspaceWithConfig{
 		SandboxWorkspace: workspace,
 		Config:           config,
-	}
-	return out, nil
+	}, nil
 }
 
 func (a *AuthorizedAPI) ListSandboxWorkspaces(
@@ -185,18 +184,18 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 	})
 
 	wg.Go(func() {
-		data, e := a.ListSandboxWorkspaceInstancesRequest().Send(ctx)
+		data, e := a.listSandboxWorkspaceInstancesRequest().Send(ctx)
 		if e != nil {
 			m.Lock()
 			defer m.Unlock()
 			err = multierror.Append(err, e)
 			return
 		}
-		m := make(map[string]*SandboxWorkspace, len(*data))
+		result := make(map[string]*SandboxWorkspace, len(*data))
 		for _, workspace := range *data {
-			m[workspace.ID.String()] = workspace
+			result[workspace.ID.String()] = workspace
 		}
-		instances = m
+		instances = result
 	})
 
 	wg.Wait()
