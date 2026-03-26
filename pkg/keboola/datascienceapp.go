@@ -104,7 +104,7 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 	}
 
 	result := make([]*DataScienceApp, 0)
-	req := a.newRequest(WorkspacesAPI).
+	req := a.newRequest(DataScienceAPI).
 		WithResult(&result).
 		WithGet(DataScienceAPIApps)
 
@@ -118,7 +118,7 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 		req = req.AndQueryParam("componentId", cfg.ComponentID.String())
 	}
 	for _, t := range cfg.Types {
-		req = req.AndQueryParam("type", string(t))
+		req = req.AndQueryParam("type[]", string(t))
 	}
 	if cfg.BranchID != "" {
 		req = req.AndQueryParam("branchId", cfg.BranchID)
@@ -127,11 +127,22 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 	return request.NewAPIRequest(&result, req)
 }
 
+// dataScienceAppAsSandboxWorkspace maps a DataScienceApp to a SandboxWorkspace.
+// Used for Python/R workspaces; connection credentials (User/Password/Host) are not available via /apps.
+func dataScienceAppAsSandboxWorkspace(app *DataScienceApp) *SandboxWorkspace {
+	return &SandboxWorkspace{
+		ID:   SandboxWorkspaceID(app.ID),
+		Type: SandboxWorkspaceType(app.Type),
+		Size: app.Size,
+		URL:  app.URL,
+	}
+}
+
 // GetDataScienceAppRequest returns a single data science app by ID.
 // https://api.keboola.com/?service=sandboxes-service#get-/apps/-appId-
 func (a *AuthorizedAPI) GetDataScienceAppRequest(id DataScienceAppID) request.APIRequest[*DataScienceApp] {
 	result := &DataScienceApp{}
-	req := a.newRequest(WorkspacesAPI).
+	req := a.newRequest(DataScienceAPI).
 		WithResult(result).
 		WithGet(DataScienceAPIApp).
 		AndPathParam("appId", id.String())

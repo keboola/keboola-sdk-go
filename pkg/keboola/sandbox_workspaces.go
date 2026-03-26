@@ -150,13 +150,13 @@ func (a *AuthorizedAPI) GetSandboxWorkspace(
 		return nil, err
 	}
 
-	workspace, err := a.getSandboxWorkspaceInstanceRequest(workspaceID).Send(ctx)
+	app, err := a.GetDataScienceAppRequest(DataScienceAppID(workspaceID)).Send(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &SandboxWorkspaceWithConfig{
-		SandboxWorkspace: workspace,
+		SandboxWorkspace: dataScienceAppAsSandboxWorkspace(app),
 		Config:           config,
 	}, nil
 }
@@ -184,7 +184,10 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 	})
 
 	wg.Go(func() {
-		data, e := a.listSandboxWorkspaceInstancesRequest().Send(ctx)
+		data, e := a.ListDataScienceAppsRequest(
+			WithDataScienceAppsType(DataScienceAppTypePython, DataScienceAppTypeR),
+			WithDataScienceAppsBranchID(branchID.String()),
+		).Send(ctx)
 		if e != nil {
 			m.Lock()
 			defer m.Unlock()
@@ -192,8 +195,8 @@ func (a *AuthorizedAPI) ListSandboxWorkspaces(
 			return
 		}
 		result := make(map[string]*SandboxWorkspace, len(*data))
-		for _, workspace := range *data {
-			result[workspace.ID.String()] = workspace
+		for _, app := range *data {
+			result[app.ID.String()] = dataScienceAppAsSandboxWorkspace(app)
 		}
 		instances = result
 	})
