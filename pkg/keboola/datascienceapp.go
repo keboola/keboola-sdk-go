@@ -118,13 +118,11 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 		req = req.AndQueryParam("componentId", cfg.ComponentID.String())
 	}
 	if len(cfg.Types) > 0 {
-		// Use AndQueryParam for the first type to ensure queryParams is initialized,
-		// then Add remaining types directly (AndQueryParam uses Set which would overwrite).
-		req = req.AndQueryParam("type[]", string(cfg.Types[0]))
-		q := req.QueryParams()
-		for _, t := range cfg.Types[1:] {
-			q.Add("type[]", string(t))
+		typeStrs := make([]string, len(cfg.Types))
+		for i, t := range cfg.Types {
+			typeStrs[i] = string(t)
 		}
+		req = req.AndQueryParamValues("type[]", typeStrs)
 	}
 	if cfg.BranchID != "" {
 		req = req.AndQueryParam("branchId", cfg.BranchID)

@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+// DataScienceError is an alias for WorkspacesError. The data-science service
+// and the legacy workspaces service share the same error JSON shape.
+type DataScienceError = WorkspacesError
+
 // WorkspacesError represents the structure of Workspaces API error.
 type WorkspacesError struct {
 	Message   string `json:"message"`

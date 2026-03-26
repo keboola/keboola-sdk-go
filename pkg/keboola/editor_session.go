@@ -224,7 +224,8 @@ func (a *AuthorizedAPI) CreateEditorSessionRequest(payload CreateEditorSessionPa
 				return err
 			}
 			// Refresh result with final session state after it becomes ready.
-			finalSession, err := a.GetEditorSessionRequest(session.ID).Send(ctx)
+			// Use waitCtx so the whole OnSuccess path is bounded by onSuccessTimeout.
+			finalSession, err := a.GetEditorSessionRequest(session.ID).Send(waitCtx)
 			if err != nil {
 				return err
 			}

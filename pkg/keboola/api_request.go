@@ -35,7 +35,7 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 	case SchedulerAPI:
 		r = r.WithError(&SchedulerError{})
 	case DataScienceAPI:
-		r = r.WithError(&WorkspacesError{})
+		r = r.WithError(&DataScienceError{})
 	case EditorAPI:
 		r = r.WithError(&EditorError{})
 	}

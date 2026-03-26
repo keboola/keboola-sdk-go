@@ -46,6 +46,10 @@ type HTTPRequest interface {
 	AndHeader(header string, value string) HTTPRequest
 	// AndQueryParam method sets single parameter and its value.
 	AndQueryParam(param, value string) HTTPRequest
+	// AndQueryParamValues appends multiple values for a single query parameter key.
+	// Unlike AndQueryParam (which uses Set and overwrites), this uses Add so all values are preserved.
+	// Use this when the API expects repeated keys, e.g. type[]=a&type[]=b.
+	AndQueryParamValues(param string, values []string) HTTPRequest
 	// WithQueryParams method sets multiple parameters and its values.
 	WithQueryParams(params map[string]string) HTTPRequest
 	// AndPathParam method sets single URL path key-value pair.
@@ -233,6 +237,14 @@ func (r httpRequest) AndHeader(header string, value string) HTTPRequest {
 func (r httpRequest) AndQueryParam(key, value string) HTTPRequest {
 	r.queryParams = cloneURLValues(r.queryParams)
 	r.queryParams.Set(key, value)
+	return r
+}
+
+func (r httpRequest) AndQueryParamValues(key string, values []string) HTTPRequest {
+	r.queryParams = cloneURLValues(r.queryParams)
+	for _, v := range values {
+		r.queryParams.Add(key, v)
+	}
 	return r
 }
 
