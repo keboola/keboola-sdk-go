@@ -262,9 +262,8 @@ func (a *AuthorizedAPI) DeleteEditorSessionRequest(id EditorSessionID) request.A
 
 // CreateEditorSession creates a keboola.sandboxes config and then starts a new editor session
 // linked to that config. It waits until the session is ready and returns both together.
-// Use this for Snowflake and BigQuery workspaces instead of the deprecated CreateSandboxWorkspace.
 func (a *AuthorizedAPI) CreateEditorSession(ctx context.Context, branchID BranchID, workspaceName string) (*EditorSessionWithConfig, error) {
-	// Step 1: Create keboola.sandboxes config (same first step as CreateSandboxWorkspace).
+	// Step 1: Create keboola.sandboxes config.
 	emptyConfig, err := a.CreateSandboxWorkspaceConfigRequest(branchID, workspaceName).Send(ctx)
 	if err != nil {
 		return nil, err
@@ -289,7 +288,6 @@ func (a *AuthorizedAPI) CreateEditorSession(ctx context.Context, branchID Branch
 
 // DeleteEditorSession deletes an editor session and its backing keboola.sandboxes config.
 // Both deletions are always attempted; any errors are combined and returned together.
-// It mirrors DeleteSandboxWorkspace used for Python/R workspaces.
 func (a *AuthorizedAPI) DeleteEditorSession(ctx context.Context, branchID BranchID, configID ConfigID, sessionID EditorSessionID) error {
 	var err error
 	if e := a.DeleteEditorSessionRequest(sessionID).SendOrErr(ctx); e != nil {

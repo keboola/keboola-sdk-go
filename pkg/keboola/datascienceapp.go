@@ -127,17 +127,6 @@ func (a *AuthorizedAPI) ListDataScienceAppsRequest(opts ...ListDataScienceAppsOp
 	return request.NewAPIRequest(&result, req)
 }
 
-// dataScienceAppAsSandboxWorkspace maps a DataScienceApp to a SandboxWorkspace.
-// Used for Python/R workspaces; connection credentials (User/Password/Host) are not available via /apps.
-func dataScienceAppAsSandboxWorkspace(app *DataScienceApp) *SandboxWorkspace {
-	return &SandboxWorkspace{
-		ID:   SandboxWorkspaceID(app.ID),
-		Type: SandboxWorkspaceType(app.Type),
-		Size: app.Size,
-		URL:  app.URL,
-	}
-}
-
 // GetDataScienceAppRequest returns a single data science app by ID.
 // https://api.keboola.com/?service=sandboxes-service#get-/apps/-appId-
 func (a *AuthorizedAPI) GetDataScienceAppRequest(id DataScienceAppID) request.APIRequest[*DataScienceApp] {

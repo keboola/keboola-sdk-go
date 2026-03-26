@@ -12,56 +12,6 @@ import (
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola"
 )
 
-func TestWorkspacesCreateAndDeletePython(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	_, api := keboola.APIClientForAnEmptyProject(t, ctx)
-
-	// Get default branch
-	branch, err := api.GetDefaultBranchRequest().Send(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, branch)
-
-	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
-	defer cancelFn()
-
-	// Create workspace
-	workspace, err := api.CreateSandboxWorkspace(
-		ctx,
-		branch.ID,
-		"test",
-		keboola.SandboxWorkspaceTypePython,
-		keboola.WithExpireAfterHours(1),
-		keboola.WithSize(keboola.SandboxWorkspaceSizeMedium),
-	)
-	require.NoError(t, err)
-	require.NotNil(t, workspace)
-
-	defer func() {
-		// Delete workspace
-		err = api.DeleteSandboxWorkspace(
-			ctx,
-			branch.ID,
-			workspace.Config.ID,
-			workspace.SandboxWorkspace.ID,
-		)
-		require.NoError(t, err)
-	}()
-
-	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
-	require.NoError(t, err)
-	foundInstance := false
-	for _, v := range workspaces {
-		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypePython)
-			foundInstance = true
-			break
-		}
-	}
-	assert.True(t, foundInstance, "Workspace list did not find created workspace")
-}
-
 func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()

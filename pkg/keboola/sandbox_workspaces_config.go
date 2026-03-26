@@ -1,27 +1,8 @@
 package keboola
 
 import (
-	"fmt"
-
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
-
-func GetSandboxWorkspaceID(c *Config) (SandboxWorkspaceID, error) {
-	id, found, err := c.Content.GetNested("parameters.id")
-	if err != nil {
-		return "", err
-	}
-	if !found {
-		return "", fmt.Errorf("config is missing parameters.id")
-	}
-
-	out, ok := id.(string)
-	if !ok {
-		return "", fmt.Errorf("config.parameters.id is not a string")
-	}
-
-	return SandboxWorkspaceID(out), nil
-}
 
 func (a *AuthorizedAPI) GetSandboxWorkspaceConfigRequest(branchID BranchID, configID ConfigID) request.APIRequest[*Config] {
 	key := ConfigKey{
