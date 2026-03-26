@@ -217,7 +217,7 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 
 	// Send request
 	startedAt := time.Now()
-	res, err = nativeClient.Do(req)
+	res, err = nativeClient.Do(req) //nolint:gosec
 
 	// Trace request processed (defer!)
 	if tc != nil && tc.RequestProcessed != nil {

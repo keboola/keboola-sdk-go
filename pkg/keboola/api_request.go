@@ -36,6 +36,8 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&SchedulerError{})
 	case WorkspacesAPI:
 		r = r.WithError(&WorkspacesError{})
+	case EditorAPI:
+		r = r.WithError(&EditorError{})
 	}
 
 	return r

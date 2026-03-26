@@ -76,5 +76,5 @@ func LogTracer(wr io.Writer) Factory {
 
 func (t *logTrace) log(requestID uint64, a ...any) {
 	a = append([]any{fmt.Sprintf("HTTP_REQUEST[%04d]", requestID)}, a...)
-	_, _ = fmt.Fprintln(t.wr, a...)
+	_, _ = fmt.Fprintln(t.wr, a...) //nolint:gosec
 }

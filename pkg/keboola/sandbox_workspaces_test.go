@@ -2,7 +2,6 @@ package keboola_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -76,41 +75,33 @@ func TestWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
-	// Create workspace
-	workspace, err := api.CreateSandboxWorkspace(
-		ctx,
-		branch.ID,
-		"test-snowflake",
-		keboola.SandboxWorkspaceTypeSnowflake,
-		keboola.WithExpireAfterHours(1),
-		keboola.WithPublicKey(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
-	)
+	// Create editor session (replaces deprecated CreateSandboxWorkspace for Snowflake)
+	workspace, err := api.CreateEditorSession(ctx, branch.ID, "test")
 	require.NoError(t, err)
 	require.NotNil(t, workspace)
+	require.NotNil(t, workspace.Config)
+	require.NotNil(t, workspace.EditorSession)
+	assert.NotEmpty(t, workspace.EditorSession.ID)
+	assert.Equal(t, keboola.EditorSessionStatusReady, workspace.EditorSession.Status)
+	assert.Equal(t, keboola.EditorSessionBackendType("snowflake"), workspace.EditorSession.BackendType)
 
 	defer func() {
-		// Delete workspace
-		err = api.DeleteSandboxWorkspace(
-			ctx,
-			branch.ID,
-			workspace.Config.ID,
-			workspace.SandboxWorkspace.ID,
-		)
-		require.NoError(t, err)
+		deleteErr := api.DeleteEditorSession(ctx, branch.ID, workspace.Config.ID, workspace.EditorSession.ID)
+		require.NoError(t, deleteErr)
 	}()
 
-	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
+	// List sessions - verify the created session is present
+	sessions, err := api.ListEditorSessionsRequest().Send(ctx)
 	require.NoError(t, err)
-	foundInstance := false
-	for _, v := range workspaces {
-		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypeSnowflake)
-			foundInstance = true
+	foundSession := false
+	for _, s := range *sessions {
+		if s.ID == workspace.EditorSession.ID {
+			assert.Equal(t, keboola.EditorSessionBackendType("snowflake"), s.BackendType)
+			foundSession = true
 			break
 		}
 	}
-	assert.True(t, foundInstance, "Workspace list did not find created workspace")
+	assert.True(t, foundSession, "Session list did not find created session")
 }
 
 func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
@@ -126,51 +117,74 @@ func TestWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
 
-	// Create workspace
-	workspace, err := api.CreateSandboxWorkspace(
-		ctx,
-		branch.ID,
-		"test-bigquery",
-		keboola.SandboxWorkspaceTypeBigQuery,
-		keboola.WithExpireAfterHours(1),
-	)
+	// Create editor session (replaces deprecated CreateSandboxWorkspace for BigQuery)
+	workspace, err := api.CreateEditorSession(ctx, branch.ID, "test")
+	require.NoError(t, err)
+	require.NotNil(t, workspace)
+	require.NotNil(t, workspace.Config)
+	require.NotNil(t, workspace.EditorSession)
+	assert.NotEmpty(t, workspace.EditorSession.ID)
+	assert.Equal(t, keboola.EditorSessionStatusReady, workspace.EditorSession.Status)
+	assert.Equal(t, keboola.EditorSessionBackendType("bigquery"), workspace.EditorSession.BackendType)
+	assert.NotEmpty(t, workspace.EditorSession.WorkspaceID, "BigQuery session should have a workspace ID")
+
+	defer func() {
+		deleteErr := api.DeleteEditorSession(ctx, branch.ID, workspace.Config.ID, workspace.EditorSession.ID)
+		require.NoError(t, deleteErr)
+	}()
+
+	// List sessions - verify the created session is present
+	sessions, err := api.ListEditorSessionsRequest().Send(ctx)
+	require.NoError(t, err)
+	foundSession := false
+	for _, s := range *sessions {
+		if s.ID == workspace.EditorSession.ID {
+			assert.Equal(t, keboola.EditorSessionBackendType("bigquery"), s.BackendType)
+			foundSession = true
+			break
+		}
+	}
+	assert.True(t, foundSession, "Session list did not find created session")
+}
+
+func TestEditorSessionListAndGet(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
+
+	// Get default branch
+	branch, err := api.GetDefaultBranchRequest().Send(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, branch)
+
+	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
+	defer cancelFn()
+
+	// Create a session to list and get
+	workspace, err := api.CreateEditorSession(ctx, branch.ID, "test")
 	require.NoError(t, err)
 	require.NotNil(t, workspace)
 
 	defer func() {
-		// Delete workspace
-		err = api.DeleteSandboxWorkspace(
-			ctx,
-			branch.ID,
-			workspace.Config.ID,
-			workspace.SandboxWorkspace.ID,
-		)
-		require.NoError(t, err)
+		deleteErr := api.DeleteEditorSession(ctx, branch.ID, workspace.Config.ID, workspace.EditorSession.ID)
+		require.NoError(t, deleteErr)
 	}()
 
-	// Verify that credentials are populated for BigQuery workspace
-	require.NotNil(t, workspace.SandboxWorkspace.Credentials, "BigQuery workspace should have credentials")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.Type, "Credentials type should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ProjectID, "Credentials project_id should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.PrivateKeyID, "Credentials private_key_id should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientEmail, "Credentials client_email should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientID, "Credentials client_id should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.AuthURI, "Credentials auth_uri should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.TokenURI, "Credentials token_uri should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.AuthProviderX509CertURL, "Credentials auth_provider_x509_cert_url should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.ClientX509CertURL, "Credentials client_x509_cert_url should not be empty")
-	assert.NotEmpty(t, workspace.SandboxWorkspace.Credentials.PrivateKey, "Credentials private_key should not be empty")
-
-	// List workspaces - try to find the one we just created
-	workspaces, err := api.ListSandboxWorkspaces(ctx, branch.ID)
+	// Get session by ID
+	fetched, err := api.GetEditorSessionRequest(workspace.EditorSession.ID).Send(ctx)
 	require.NoError(t, err)
-	foundInstance := false
-	for _, v := range workspaces {
-		if workspace.SandboxWorkspace.ID == v.SandboxWorkspace.ID {
-			require.True(t, v.SandboxWorkspace.Type == keboola.SandboxWorkspaceTypeBigQuery)
-			foundInstance = true
+	assert.Equal(t, workspace.EditorSession.ID, fetched.ID)
+	assert.Equal(t, keboola.EditorSessionStatusReady, fetched.Status)
+
+	// List sessions - verify it appears
+	sessions, err := api.ListEditorSessionsRequest().Send(ctx)
+	require.NoError(t, err)
+	foundSession := false
+	for _, s := range *sessions {
+		if s.ID == workspace.EditorSession.ID {
+			foundSession = true
 			break
 		}
 	}
-	assert.True(t, foundInstance, "Workspace list did not find created workspace")
+	assert.True(t, foundSession, "Session list did not include created session")
 }

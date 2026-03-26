@@ -34,7 +34,7 @@ type SandboxWorkspaceCredentials struct {
 	TokenURI                string `json:"token_uri"`                   // nolint: tagliatelle
 	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"` // nolint: tagliatelle
 	ClientX509CertURL       string `json:"client_x509_cert_url"`        // nolint: tagliatelle
-	PrivateKey              string `json:"private_key"`                 // nolint: tagliatelle
+	PrivateKey              string `json:"private_key"` //nolint:gosec,tagliatelle
 }
 
 type SandboxWorkspace struct {
@@ -46,7 +46,7 @@ type SandboxWorkspace struct {
 	User     string                `json:"user"`
 	Host     string                `json:"host"`
 	URL      string                `json:"url"`
-	Password string                `json:"password"`
+	Password string                `json:"password"` //nolint:gosec
 	Created  SandboxWorkspacesTime `json:"createdTimestamp"`
 	Updated  SandboxWorkspacesTime `json:"updatedTimestamp"`
 	Start    SandboxWorkspacesTime `json:"startTimestamp"`
@@ -59,19 +59,23 @@ type SandboxWorkspace struct {
 	Credentials *SandboxWorkspaceCredentials `json:"credentials"`
 }
 
-// GetSandboxWorkspaceInstanceRequest retrieves a workspace by its ID
-// https://sandboxes.keboola.com/documentation
-func (a *AuthorizedAPI) GetSandboxWorkspaceInstanceRequest(workspaceID SandboxWorkspaceID) request.APIRequest[*SandboxWorkspace] {
+// GetSandboxWorkspaceInstanceRequest returns a single sandbox workspace instance by ID.
+//
+// Deprecated: Snowflake and BigQuery workspaces are deprecated. Use GetEditorSessionRequest instead.
+// For Python/R workspaces, use GetSandboxWorkspace which fetches via the Storage API config.
+func (a *AuthorizedAPI) GetSandboxWorkspaceInstanceRequest(id SandboxWorkspaceID) request.APIRequest[*SandboxWorkspace] {
 	result := &SandboxWorkspace{}
 	req := a.newRequest(WorkspacesAPI).
-		WithResult(&result).
+		WithResult(result).
 		WithGet(WorkspacesAPISandbox).
-		AndPathParam("sandboxId", workspaceID.String())
+		AndPathParam("sandboxId", id.String())
 	return request.NewAPIRequest(result, req)
 }
 
-// ListSandboxWorkspaceInstancesRequest returns a list of all workspaces
-// https://sandboxes.keboola.com/documentation
+// ListSandboxWorkspaceInstancesRequest returns a list of all sandbox workspace instances.
+//
+// Deprecated: Snowflake and BigQuery workspaces are deprecated. Use ListEditorSessionsRequest instead.
+// For Python/R workspaces, use ListSandboxWorkspaces which joins configs with instances.
 func (a *AuthorizedAPI) ListSandboxWorkspaceInstancesRequest() request.APIRequest[*[]*SandboxWorkspace] {
 	result := make([]*SandboxWorkspace, 0)
 	req := a.newRequest(WorkspacesAPI).

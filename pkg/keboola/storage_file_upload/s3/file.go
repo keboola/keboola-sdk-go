@@ -21,7 +21,7 @@ type Path struct {
 type Credentials struct {
 	AccessKeyID     string       `json:"AccessKeyId"`
 	SecretAccessKey string       `json:"SecretAccessKey"`
-	SessionToken    string       `json:"SessionToken"`
+	SessionToken    string       `json:"SessionToken"` //nolint:gosec
 	Expiration      iso8601.Time `json:"Expiration"`
 }
 

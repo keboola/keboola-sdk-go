@@ -41,7 +41,7 @@ type StorageWorkspaceDetails struct {
 	Warehouse         *string                      `json:"warehouse"`
 	User              *string                      `json:"user"`
 	LoginType         *string                      `json:"loginType"`
-	PrivateKey        *string                      `json:"privateKey"`
+	PrivateKey        *string                      `json:"privateKey"` //nolint:gosec
 	Account           *string                      `json:"account"`
 	Role              *string                      `json:"role"`
 	SSOLoginAvailable *bool                        `json:"ssoLoginAvailable,omitempty"`
@@ -54,7 +54,7 @@ type StorageWorkspaceCredentials struct {
 	Type                    string `json:"type"`                        // nolint: tagliatelle
 	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
 	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
-	PrivateKey              string `json:"private_key"`                 // nolint: tagliatelle
+	PrivateKey              string `json:"private_key"` //nolint:gosec,tagliatelle
 	ClientEmail             string `json:"client_email"`                // nolint: tagliatelle
 	ClientID                string `json:"client_id"`                   // nolint: tagliatelle
 	AuthURI                 string `json:"auth_uri"`                    // nolint: tagliatelle
