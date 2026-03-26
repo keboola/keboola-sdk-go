@@ -2,7 +2,9 @@ package keboola
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -143,6 +145,48 @@ func newEditorSessionBackoff() *backoff.ExponentialBackOff {
 	return b
 }
 
+// waitForEditorSessionDeleted polls GetEditorSessionRequest until the session returns 404.
+func (a *AuthorizedAPI) waitForEditorSessionDeleted(ctx context.Context, id EditorSessionID) error {
+	retry := newEditorSessionBackoff()
+	for {
+		_, err := a.GetEditorSessionRequest(id).Send(ctx)
+		if err != nil {
+			var editorErr *EditorError
+			if errors.As(err, &editorErr) && editorErr.StatusCode() == http.StatusNotFound {
+				return nil
+			}
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for editor session %q to be deleted: %w", id, ctx.Err())
+		case <-time.After(retry.NextBackOff()):
+		}
+	}
+}
+
+// waitForStorageWorkspaceDeleted polls StorageWorkspaceDetailRequest until the workspace
+// returns 404, confirming the async storage workspaceDrop job triggered by the editor service
+// has completed. This prevents CleanStorageWorkspaces from racing and issuing a second drop.
+func (a *AuthorizedAPI) waitForStorageWorkspaceDeleted(ctx context.Context, branchID BranchID, workspaceID uint64) error {
+	retry := newEditorSessionBackoff()
+	for {
+		_, err := a.StorageWorkspaceDetailRequest(branchID, workspaceID).Send(ctx)
+		if err != nil {
+			var storageErr *StorageError
+			if errors.As(err, &storageErr) && storageErr.StatusCode() == http.StatusNotFound {
+				return nil
+			}
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for storage workspace %d to be deleted: %w", workspaceID, ctx.Err())
+		case <-time.After(retry.NextBackOff()):
+		}
+	}
+}
+
 // ListEditorSessionsRequest returns a list of all editor sessions.
 // https://api.keboola.com/?service=editor#get-/sql/sessions
 func (a *AuthorizedAPI) ListEditorSessionsRequest() request.APIRequest[*[]*EditorSession] {
@@ -275,6 +319,26 @@ func (a *AuthorizedAPI) CleanEditorSessions(ctx context.Context) error {
 				err = multierror.Append(err, e)
 				m.Unlock()
 				// Don't return — still attempt to delete the backing config below.
+			} else {
+				// Wait for the editor session to be fully removed from the editor API.
+				if e := a.waitForEditorSessionDeleted(ctx, s.ID); e != nil {
+					m.Lock()
+					err = multierror.Append(err, e)
+					m.Unlock()
+				} else if s.WorkspaceID != "" && s.BranchID != "" {
+					// The editor service drops the backing storage workspace asynchronously.
+					// Wait for it to disappear from the storage API so CleanStorageWorkspaces
+					// won't race and trigger a second workspaceDrop on the same workspace.
+					workspaceID, parseErr := strconv.ParseUint(s.WorkspaceID, 10, 64)
+					branchIDInt, parseBranchErr := strconv.Atoi(s.BranchID)
+					if parseErr == nil && parseBranchErr == nil {
+						if e := a.waitForStorageWorkspaceDeleted(ctx, BranchID(branchIDInt), workspaceID); e != nil {
+							m.Lock()
+							err = multierror.Append(err, e)
+							m.Unlock()
+						}
+					}
+				}
 			}
 			// Also delete the backing keboola.sandboxes config created by CreateEditorSession.
 			// Guard on ComponentID so we never touch configs belonging to other components.

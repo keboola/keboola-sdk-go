@@ -94,6 +94,11 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 	m := &sync.Mutex{}
 
 	for _, s := range *instances {
+		// Snowflake and BigQuery workspaces are now managed by the editor service.
+		// They will be cleaned up by CleanEditorSessions — skip them here to avoid double-deletion.
+		if s.Type == SandboxWorkspaceTypeSnowflake || s.Type == SandboxWorkspaceTypeBigQuery {
+			continue
+		}
 		wg.Go(func() {
 			if e := a.DeleteSandboxWorkspaceJobRequest(s.ID).SendOrErr(ctx); e != nil {
 				m.Lock()
