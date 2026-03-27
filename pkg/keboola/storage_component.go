@@ -69,8 +69,8 @@ type Component struct {
 
 // ComponentData https://keboola.docs.apiary.io/#reference/components-and-configurations/get-development-branch-components/get-development-branch-components
 type ComponentData struct {
-	DefaultBucket      bool   `json:"default_bucket"`       //nolint: tagliatelle
-	DefaultBucketStage string `json:"default_bucket_stage"` //nolint: tagliatelle
+	DefaultBucket      bool   `json:"default_bucket"`
+	DefaultBucketStage string `json:"default_bucket_stage"`
 }
 
 // ComponentWithConfigs is result of ListConfigsAndRowsFrom request.

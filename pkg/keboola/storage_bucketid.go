@@ -13,7 +13,7 @@ const (
 	BucketStageSys = "sys"
 )
 
-// nolint:gochecknoglobals
+// nolint: gochecknoglobals
 var stagesMap = map[string]bool{
 	BucketStageIn:  true,
 	BucketStageOut: true,

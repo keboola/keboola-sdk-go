@@ -29,5 +29,5 @@ const (
 	// Endpoints for editor API.
 	EditorAPISessions                = "sql/sessions"
 	EditorAPISession                 = "sql/sessions/{sessionId}"
-	EditorAPISessionResetCredentials = "sql/sessions/{sessionId}/reset-credentials" //nolint: gosec
+	EditorAPISessionResetCredentials = "sql/sessions/{sessionId}/reset-credentials" // nolint: gosec
 )
