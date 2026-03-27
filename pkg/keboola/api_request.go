@@ -34,8 +34,10 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&QueueError{})
 	case SchedulerAPI:
 		r = r.WithError(&SchedulerError{})
-	case WorkspacesAPI:
-		r = r.WithError(&WorkspacesError{})
+	case DataScienceAPI:
+		r = r.WithError(&DataScienceError{})
+	case EditorAPI:
+		r = r.WithError(&EditorError{})
 	}
 
 	return r

@@ -90,6 +90,16 @@ linters:
         text: ineffectual assignment to ctx
       - path: (.+)\.go$
         text: this value of `ctx` is never use
+      # External API formats dictate non-camelCase JSON tag names in these files.
+      - linters:
+          - tagliatelle
+        path: storage_file_upload
+      - linters:
+          - tagliatelle
+        path: storage_component\.go
+      - linters:
+          - tagliatelle
+        path: storage_workspace\.go
     paths:
       - third_party$
       - builtin$

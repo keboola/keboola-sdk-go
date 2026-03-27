@@ -56,11 +56,6 @@ func TestCleanProject(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, *schedules, 0)
 
-	// No sandbox instances
-	instances, err := api.ListSandboxWorkspaceInstancesRequest().Send(ctx)
-	assert.NoError(t, err)
-	assert.Len(t, *instances, 0)
-
 	// No notification subscriptions
 	notifications, err := api.ListNotificationSubscriptionsRequest().Send(ctx)
 	assert.NoError(t, err)

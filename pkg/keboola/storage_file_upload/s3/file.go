@@ -17,15 +17,13 @@ type Path struct {
 	Bucket string `json:"bucket"`
 }
 
-//nolint:tagliatelle
 type Credentials struct {
 	AccessKeyID     string       `json:"AccessKeyId"`
 	SecretAccessKey string       `json:"SecretAccessKey"`
-	SessionToken    string       `json:"SessionToken"`
+	SessionToken    string       `json:"SessionToken"` // nolint: gosec
 	Expiration      iso8601.Time `json:"Expiration"`
 }
 
-//nolint:tagliatelle
 type UploadParams struct {
 	Path
 	Credentials Credentials `json:"credentials"`

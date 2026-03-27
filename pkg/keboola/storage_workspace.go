@@ -41,7 +41,7 @@ type StorageWorkspaceDetails struct {
 	Warehouse         *string                      `json:"warehouse"`
 	User              *string                      `json:"user"`
 	LoginType         *string                      `json:"loginType"`
-	PrivateKey        *string                      `json:"privateKey"`
+	PrivateKey        *string                      `json:"privateKey"` // nolint: gosec
 	Account           *string                      `json:"account"`
 	Role              *string                      `json:"role"`
 	SSOLoginAvailable *bool                        `json:"ssoLoginAvailable,omitempty"`
@@ -51,16 +51,16 @@ type StorageWorkspaceDetails struct {
 // StorageWorkspaceCredentials contains authentication credentials for the workspace.
 type StorageWorkspaceCredentials struct {
 	ID                      uint64 `json:"id"`
-	Type                    string `json:"type"`                        // nolint: tagliatelle
-	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
-	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
-	PrivateKey              string `json:"private_key"`                 // nolint: tagliatelle
-	ClientEmail             string `json:"client_email"`                // nolint: tagliatelle
-	ClientID                string `json:"client_id"`                   // nolint: tagliatelle
-	AuthURI                 string `json:"auth_uri"`                    // nolint: tagliatelle
-	TokenURI                string `json:"token_uri"`                   // nolint: tagliatelle
-	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"` // nolint: tagliatelle
-	ClientX509CertURL       string `json:"client_x509_cert_url"`        // nolint: tagliatelle
+	Type                    string `json:"type"`
+	ProjectID               string `json:"project_id"`
+	PrivateKeyID            string `json:"private_key_id"`
+	PrivateKey              string `json:"private_key"` // nolint: gosec
+	ClientEmail             string `json:"client_email"`
+	ClientID                string `json:"client_id"`
+	AuthURI                 string `json:"auth_uri"`
+	TokenURI                string `json:"token_uri"`
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
+	ClientX509CertURL       string `json:"client_x509_cert_url"`
 }
 
 type StorageWorkspacePayload struct {

@@ -14,7 +14,6 @@ type ConnectionString struct {
 	SharedAccessSignature string
 }
 
-//nolint:tagliatelle
 type Credentials struct {
 	SASConnectionString string       `json:"SASConnectionString"`
 	Expiration          iso8601.Time `json:"expiration"`

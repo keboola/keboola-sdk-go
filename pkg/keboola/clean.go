@@ -49,40 +49,37 @@ func CleanProject(
 	ctx context.Context,
 	api *AuthorizedAPI,
 ) error {
-	m := &sync.Mutex{}
 	var err error
 
 	// Clean schedules first
 	if e := api.CleanAllSchedulesRequest().SendOrErr(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
 		err = multierror.Append(err, e)
 	}
 
 	// Clean notification subscriptions
 	if e := api.CleanAllNotificationSubscriptionsRequest().SendOrErr(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
 		err = multierror.Append(err, e)
 	}
 
-	if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
-		err = multierror.Append(err, e)
+	if _, ok := api.Index().ServiceURLByID(ServiceID(DataScienceAPI)); ok {
+		if e := api.CleanSandboxWorkspaceInstances(ctx); e != nil {
+			err = multierror.Append(err, e)
+		}
+	}
+
+	if _, ok := api.Index().ServiceURLByID(ServiceID(EditorAPI)); ok {
+		if e := api.CleanEditorSessions(ctx); e != nil {
+			err = multierror.Append(err, e)
+		}
 	}
 
 	// Clean storage workspaces
 	if e := api.CleanStorageWorkspaces(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
 		err = multierror.Append(err, e)
 	}
 
 	// Clean the rest of the project
 	if e := api.CleanProjectRequest().SendOrErr(ctx); e != nil {
-		m.Lock()
-		defer m.Unlock()
 		err = multierror.Append(err, e)
 	}
 

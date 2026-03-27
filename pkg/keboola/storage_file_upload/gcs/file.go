@@ -11,10 +11,9 @@ type Path struct {
 	Bucket string `json:"bucket"`
 }
 
-//nolint:tagliatelle
 type Credentials struct {
 	ProjectID   string `json:"projectId"`
-	AccessToken string `json:"access_token"`
+	AccessToken string `json:"access_token"` // nolint: gosec
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`
 }

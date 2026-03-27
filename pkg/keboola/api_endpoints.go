@@ -22,7 +22,12 @@ const (
 	SchedulerAPIConfigSchedules = "configurations/{configurationId}"
 	SchedulerAPIRefreshToken    = "schedules/{scheduleId}/refreshToken"
 
-	// Endpoints for workspaces API.
-	WorkspacesAPISandboxes = "sandboxes"
-	WorkspacesAPISandbox   = "sandboxes/{sandboxId}"
+	// Endpoints for data science apps (sandboxes service /apps).
+	DataScienceAPIApps = "apps"
+	DataScienceAPIApp  = "apps/{appId}"
+
+	// Endpoints for editor API.
+	EditorAPISessions                = "sql/sessions"
+	EditorAPISession                 = "sql/sessions/{sessionId}"
+	EditorAPISessionResetCredentials = "sql/sessions/{sessionId}/reset-credentials" // nolint: gosec
 )
