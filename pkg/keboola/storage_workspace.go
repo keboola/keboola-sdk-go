@@ -54,7 +54,7 @@ type StorageWorkspaceCredentials struct {
 	Type                    string `json:"type"`                        // nolint: tagliatelle
 	ProjectID               string `json:"project_id"`                  // nolint: tagliatelle
 	PrivateKeyID            string `json:"private_key_id"`              // nolint: tagliatelle
-	PrivateKey              string `json:"private_key"` //nolint:gosec,tagliatelle
+	PrivateKey              string `json:"private_key"` // nolint: gosec,tagliatelle
 	ClientEmail             string `json:"client_email"`                // nolint: tagliatelle
 	ClientID                string `json:"client_id"`                   // nolint: tagliatelle
 	AuthURI                 string `json:"auth_uri"`                    // nolint: tagliatelle
