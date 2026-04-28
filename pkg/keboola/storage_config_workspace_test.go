@@ -63,11 +63,11 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	workspace := &keboola.StorageConfigWorkspacePayload{
 		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
 			Backend:               keboola.StorageWorkspaceBackendSnowflake,
-			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			BackendSize:           new(keboola.StorageWorkspaceBackendSizeMedium),
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-			PublicKey:             ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+			PublicKey:             new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 		},
 		UseCase: keboola.StorageWorkspaceUseCaseNormal,
 	}
@@ -117,7 +117,7 @@ func TestStorageConfigWorkspacePayload_UseCaseMarshalling(t *testing.T) {
 	payload := &keboola.StorageConfigWorkspacePayload{
 		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
 			Backend:               keboola.StorageWorkspaceBackendSnowflake,
-			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			BackendSize:           new(keboola.StorageWorkspaceBackendSizeMedium),
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
@@ -150,7 +150,7 @@ func TestStorageConfigWorkspacePayload_UseCaseMarshalling(t *testing.T) {
 	payloadNormal := &keboola.StorageConfigWorkspacePayload{
 		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
 			Backend:               keboola.StorageWorkspaceBackendSnowflake,
-			BackendSize:           ptr(keboola.StorageWorkspaceBackendSizeMedium),
+			BackendSize:           new(keboola.StorageWorkspaceBackendSizeMedium),
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,

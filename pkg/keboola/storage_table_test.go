@@ -86,17 +86,17 @@ func TestCreateTableDefinition(t *testing.T) {
 		Columns: Columns{
 			{
 				Name:       "name",
-				BaseType:   ptr(TypeString),
+				BaseType:   new(TypeString),
 				Definition: &ColumnDefinition{Type: "STRING"},
 			},
 			{
 				Name:       "age",
-				BaseType:   ptr(TypeNumeric),
+				BaseType:   new(TypeNumeric),
 				Definition: &ColumnDefinition{Type: "INT"},
 			},
 			{
 				Name:       "time",
-				BaseType:   ptr(TypeDate),
+				BaseType:   new(TypeDate),
 				Definition: &ColumnDefinition{Type: "DATE"},
 			},
 		},
@@ -147,17 +147,17 @@ func TestCreateTableDefinition(t *testing.T) {
 			Columns: Columns{
 				{
 					Name:       "age",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: "NUMBER", Length: DefaultNumber, Nullable: false},
 				},
 				{
 					Name:       "name",
-					BaseType:   ptr(TypeString),
+					BaseType:   new(TypeString),
 					Definition: &ColumnDefinition{Type: "VARCHAR", Length: DefaultString, Nullable: false},
 				},
 				{
 					Name:       "time",
-					BaseType:   ptr(TypeDate),
+					BaseType:   new(TypeDate),
 					Definition: &ColumnDefinition{Type: "DATE", Nullable: false},
 				},
 			},
@@ -199,7 +199,7 @@ func TestCreateTableDefinition(t *testing.T) {
 						Nullable: false,
 						Default:  "",
 					},
-					BaseType: ptr(TypeString),
+					BaseType: new(TypeString),
 				},
 				{
 					Name: "comments",
@@ -209,7 +209,7 @@ func TestCreateTableDefinition(t *testing.T) {
 						Default:  "100",
 						Nullable: true,
 					},
-					BaseType: ptr(TypeNumeric),
+					BaseType: new(TypeNumeric),
 				},
 				{
 					Name: "favorite_number",
@@ -219,7 +219,7 @@ func TestCreateTableDefinition(t *testing.T) {
 						Nullable: true,
 						Default:  "100",
 					},
-					BaseType: ptr(TypeNumeric),
+					BaseType: new(TypeNumeric),
 				},
 			},
 		}
@@ -239,7 +239,7 @@ func TestCreateTableDefinition(t *testing.T) {
 					Nullable: true,
 					Default:  "100",
 				},
-				BaseType: ptr(TypeNumeric),
+				BaseType: new(TypeNumeric),
 			},
 			{
 				Name: "email",
@@ -248,7 +248,7 @@ func TestCreateTableDefinition(t *testing.T) {
 					Length:   DefaultString,
 					Nullable: false,
 				},
-				BaseType: ptr(TypeString),
+				BaseType: new(TypeString),
 			},
 			{
 				Name: "favorite_number",
@@ -258,7 +258,7 @@ func TestCreateTableDefinition(t *testing.T) {
 					Nullable: true,
 					Default:  "100",
 				},
-				BaseType: ptr(TypeNumeric),
+				BaseType: new(TypeNumeric),
 			},
 		}, maxUseCaseTable.Definition.Columns)
 
@@ -386,17 +386,17 @@ func TestCreateTableDefinitionWithBigQuery(t *testing.T) {
 		Columns: Columns{
 			{
 				Name:       "id",
-				BaseType:   ptr(TypeInt),
+				BaseType:   new(TypeInt),
 				Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 			},
 			{
 				Name:       "age",
-				BaseType:   ptr(TypeInt),
+				BaseType:   new(TypeInt),
 				Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: true},
 			},
 			{
 				Name:       "time",
-				BaseType:   ptr(TypeTimestamp),
+				BaseType:   new(TypeTimestamp),
 				Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 			},
 		},
@@ -425,17 +425,17 @@ func TestCreateTableDefinitionWithBigQuery(t *testing.T) {
 			Columns: Columns{
 				{
 					Name:       "age",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: true},
 				},
 				{
 					Name:       "id",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 				},
 				{
 					Name:       "time",
-					BaseType:   ptr(TypeTimestamp),
+					BaseType:   new(TypeTimestamp),
 					Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 				},
 			},
@@ -478,12 +478,12 @@ func TestCreateTableDefinition_TimePartitioning(t *testing.T) {
 		Columns: Columns{
 			{
 				Name:       "id",
-				BaseType:   ptr(TypeInt),
+				BaseType:   new(TypeInt),
 				Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 			},
 			{
 				Name:       "time",
-				BaseType:   ptr(TypeTimestamp),
+				BaseType:   new(TypeTimestamp),
 				Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 			},
 		},
@@ -517,12 +517,12 @@ func TestCreateTableDefinition_TimePartitioning(t *testing.T) {
 			Columns: Columns{
 				{
 					Name:       "id",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 				},
 				{
 					Name:       "time",
-					BaseType:   ptr(TypeTimestamp),
+					BaseType:   new(TypeTimestamp),
 					Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 				},
 			},
@@ -566,12 +566,12 @@ func TestCreateTableDefinition_Clustering(t *testing.T) {
 		Columns: Columns{
 			{
 				Name:       "id",
-				BaseType:   ptr(TypeInt),
+				BaseType:   new(TypeInt),
 				Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 			},
 			{
 				Name:       "time",
-				BaseType:   ptr(TypeTimestamp),
+				BaseType:   new(TypeTimestamp),
 				Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 			},
 		},
@@ -605,12 +605,12 @@ func TestCreateTableDefinition_Clustering(t *testing.T) {
 			Columns: Columns{
 				{
 					Name:       "id",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 				},
 				{
 					Name:       "time",
-					BaseType:   ptr(TypeTimestamp),
+					BaseType:   new(TypeTimestamp),
 					Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 				},
 			},
@@ -654,12 +654,12 @@ func TestCreateTableDefinition_RangePartitioning(t *testing.T) {
 		Columns: Columns{
 			{
 				Name:       "id",
-				BaseType:   ptr(TypeInt),
+				BaseType:   new(TypeInt),
 				Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 			},
 			{
 				Name:       "time",
-				BaseType:   ptr(TypeTimestamp),
+				BaseType:   new(TypeTimestamp),
 				Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 			},
 		},
@@ -696,12 +696,12 @@ func TestCreateTableDefinition_RangePartitioning(t *testing.T) {
 			Columns: Columns{
 				{
 					Name:       "id",
-					BaseType:   ptr(TypeInt),
+					BaseType:   new(TypeInt),
 					Definition: &ColumnDefinition{Type: TypeInt.String(), Nullable: false},
 				},
 				{
 					Name:       "time",
-					BaseType:   ptr(TypeTimestamp),
+					BaseType:   new(TypeTimestamp),
 					Definition: &ColumnDefinition{Type: TypeTimestamp.String(), Nullable: false},
 				},
 			},
@@ -748,8 +748,4 @@ func removeDynamicValueFromTable(table *Table) {
 	table.LastChangeDate = nil
 	table.Bucket.Created = iso8601.Time{}
 	table.Bucket.LastChangeDate = nil
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }
