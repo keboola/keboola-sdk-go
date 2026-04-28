@@ -1,6 +1,6 @@
 module github.com/keboola/keboola-sdk-go/v2/transfer
 
-go 1.25.2
+go 1.26.2
 
 require (
 	cloud.google.com/go/storage v1.62.1
