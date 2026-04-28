@@ -36,7 +36,3 @@ func removeDynamicValueFromTable(table *keboola.Table) {
 	table.Bucket.Created = iso8601.Time{}
 	table.Bucket.LastChangeDate = nil
 }
-
-func ptr[T any](v T) *T {
-	return &v
-}

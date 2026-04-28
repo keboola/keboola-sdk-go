@@ -32,10 +32,10 @@ func TestWorkspaceTableExport(t *testing.T) {
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   ptr(keboola.StorageWorkspaceBackendSizeMedium),
+		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     ptr(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey:     new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
