@@ -3,7 +3,6 @@ FROM golang:1.25.2
 ENV HOME=/my-home
 ENV GOCACHE=/tmp/cache/go
 ENV GOMODCACHE=/tmp/cache/go-mod
-ENV GOFLAGS="-mod=mod"
 ENV PATH="$PATH:$GOPATH/bin"
 
 # Install editor

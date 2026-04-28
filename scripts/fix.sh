@@ -15,7 +15,7 @@ fi
 
 # Fix modules
 go mod tidy
-go mod vendor
+go work vendor
 
 # Run all analyzers with -fix
 # https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md#modernize-simplify-code-by-using-modern-constructs

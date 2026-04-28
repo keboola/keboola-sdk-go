@@ -37,7 +37,7 @@ tasks:
     desc: Tidy go.mod for each module and sync the workspace
     cmds:
       - go mod tidy
-      - go mod vendor
+      - go work vendor
       - cd v2/transfer && go mod tidy
       - go work sync
 
@@ -45,4 +45,4 @@ tasks:
     cmds:
       - go tool go-mod-upgrade
       - go mod tidy
-      - go mod vendor
+      - go work vendor
