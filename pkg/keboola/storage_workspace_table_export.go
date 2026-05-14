@@ -11,7 +11,6 @@ import (
 
 // WorkspaceTableExportRequestBuilder builds requests for exporting tables from workspaces.
 // This operation exports existing tables from a workspace to a file in the storage backend.
-// Currently, only Snowflake backend is supported.
 type WorkspaceTableExportRequestBuilder struct {
 	branchID    BranchID
 	workspaceID uint64
