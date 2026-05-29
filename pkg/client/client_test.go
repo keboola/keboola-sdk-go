@@ -37,6 +37,31 @@ func (e testError) Error() string {
 	return e.ErrorMsg
 }
 
+// responseError is a minimal test error type that implements the client's
+// errorWithResponse interface (via SetResponse). Tests for empty-body 4xx
+// handling use it to assert that the SDK still populates the typed errDef
+// with the HTTP status code.
+type responseError struct {
+	Message  string `json:"error"`
+	response *http.Response
+}
+
+func (e *responseError) Error() string {
+	if e.Message == "" {
+		return http.StatusText(e.StatusCode())
+	}
+	return e.Message
+}
+
+func (e *responseError) SetResponse(r *http.Response) { e.response = r }
+
+func (e *responseError) StatusCode() int {
+	if e.response == nil {
+		return 0
+	}
+	return e.response.StatusCode
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 	c := New()
@@ -176,6 +201,65 @@ func TestJsonErrorResult(t *testing.T) {
 	assert.Same(t, errDef, err)
 	assert.Equal(t, &testError{ErrorMsg: "error message"}, err)
 	assert.Equal(t, 1, transport.GetCallCountInfo()["GET https://example.com"])
+}
+
+// TestJsonErrorResult_EmptyBody covers the case where the server returns a 4xx
+// status with Content-Type: application/json but an empty body — as Storage API
+// does under workspace credentials lock contention (409). The caller must still
+// receive the typed errDef with the HTTP status code accessible, instead of a
+// generic "cannot decode JSON error: EOF" string that hides the real status.
+func TestJsonErrorResult_EmptyBody(t *testing.T) {
+	t.Parallel()
+
+	transport := httpmock.NewMockTransport()
+	transport.RegisterResponder("POST", "https://example.com/workspaces/credentials", func(*http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusConflict, "")
+		resp.Header.Set("Content-Type", "application/json")
+		return resp, nil
+	})
+
+	ctx := context.Background()
+	c := New().WithTransport(transport).WithRetry(request.RetryConfig{
+		Count:               0, // Skip retries — we want to observe the empty-body handling, not loop.
+		WaitTimeStart:       time.Millisecond,
+		WaitTimeMax:         time.Millisecond,
+		TotalRequestTimeout: time.Second,
+	})
+	errDef := &responseError{}
+	_, _, err := request.NewHTTPRequest(c).
+		WithPost("https://example.com/workspaces/credentials").
+		WithError(errDef).
+		Send(ctx)
+
+	assert.Error(t, err)
+	assert.NotContains(t, err.Error(), "cannot decode JSON error: EOF",
+		"empty body must not surface a JSON parse error to the caller")
+	assert.Same(t, errDef, err, "typed errDef must be returned even when the body is empty")
+	assert.Equal(t, http.StatusConflict, errDef.StatusCode(),
+		"errDef must have the HTTP status code populated so callers can branch on it")
+}
+
+// TestJsonErrorResult_MalformedBody confirms that a non-empty but invalid JSON
+// payload still produces a parse error — only empty/whitespace bodies are
+// handled specially.
+func TestJsonErrorResult_MalformedBody(t *testing.T) {
+	t.Parallel()
+
+	transport := httpmock.NewMockTransport()
+	transport.RegisterResponder("GET", "https://example.com", func(*http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(http.StatusBadRequest, "{not valid json")
+		resp.Header.Set("Content-Type", "application/json")
+		return resp, nil
+	})
+
+	ctx := context.Background()
+	c := New().WithTransport(transport).WithRetry(request.RetryConfig{Count: 0, TotalRequestTimeout: time.Second})
+	errDef := &responseError{}
+	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com").WithError(errDef).Send(ctx)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot decode JSON error",
+		"malformed (non-empty) JSON body must still surface the decode error")
 }
 
 func TestWithBaseUrl(t *testing.T) {

@@ -354,8 +354,15 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 			}
 			return resultDef, nil, nil
 		} else if r.StatusCode > 399 && errDef != nil {
-			// Map JSON response to defined error
-			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil {
+			// Map JSON response to defined error.
+			// An empty body (typical of Storage API returning HTTP 409 Conflict under
+			// workspace credentials lock contention) makes the decoder return io.EOF.
+			// Treat that as "no error details available" and fall through so the typed
+			// errDef is still populated via SetRequest/SetResponse and the caller can
+			// branch on the HTTP status code (e.g. StatusCode()==409) instead of
+			// receiving a generic "cannot decode JSON error: EOF" string that masks
+			// the underlying status.
+			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil && !errors.Is(err, io.EOF) {
 				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
 			}
 			// Set HTTP request
