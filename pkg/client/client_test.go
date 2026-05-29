@@ -37,25 +37,25 @@ func (e testError) Error() string {
 	return e.ErrorMsg
 }
 
-// errorWithResp is a minimal test error type that implements the client's
+// responseError is a minimal test error type that implements the client's
 // errorWithResponse interface (via SetResponse). Tests for empty-body 4xx
 // handling use it to assert that the SDK still populates the typed errDef
 // with the HTTP status code.
-type errorWithResp struct {
+type responseError struct {
 	Message  string `json:"error"`
 	response *http.Response
 }
 
-func (e *errorWithResp) Error() string {
+func (e *responseError) Error() string {
 	if e.Message == "" {
 		return http.StatusText(e.StatusCode())
 	}
 	return e.Message
 }
 
-func (e *errorWithResp) SetResponse(r *http.Response) { e.response = r }
+func (e *responseError) SetResponse(r *http.Response) { e.response = r }
 
-func (e *errorWithResp) StatusCode() int {
+func (e *responseError) StatusCode() int {
 	if e.response == nil {
 		return 0
 	}
@@ -225,7 +225,7 @@ func TestJsonErrorResult_EmptyBody(t *testing.T) {
 		WaitTimeMax:         time.Millisecond,
 		TotalRequestTimeout: time.Second,
 	})
-	errDef := &errorWithResp{}
+	errDef := &responseError{}
 	_, _, err := request.NewHTTPRequest(c).
 		WithPost("https://example.com/workspaces/credentials").
 		WithError(errDef).
@@ -253,7 +253,7 @@ func TestJsonErrorResult_WhitespaceBody(t *testing.T) {
 
 	ctx := context.Background()
 	c := New().WithTransport(transport).WithRetry(request.RetryConfig{Count: 0, TotalRequestTimeout: time.Second})
-	errDef := &errorWithResp{}
+	errDef := &responseError{}
 	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com").WithError(errDef).Send(ctx)
 
 	assert.Error(t, err)
@@ -276,7 +276,7 @@ func TestJsonErrorResult_MalformedBody(t *testing.T) {
 
 	ctx := context.Background()
 	c := New().WithTransport(transport).WithRetry(request.RetryConfig{Count: 0, TotalRequestTimeout: time.Second})
-	errDef := &errorWithResp{}
+	errDef := &responseError{}
 	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com").WithError(errDef).Send(ctx)
 
 	assert.Error(t, err)
