@@ -354,9 +354,21 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 			}
 			return resultDef, nil, nil
 		} else if r.StatusCode > 399 && errDef != nil {
-			// Map JSON response to defined error
-			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil {
-				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
+			// Map JSON response to defined error.
+			// Read the body fully so we can distinguish an empty payload (no error details
+			// available — e.g. Storage API returns empty body on workspace credentials
+			// lock contention 409) from a malformed JSON document. For an empty body we
+			// skip decoding entirely so callers still receive the typed errDef with the
+			// HTTP status code accessible via SetResponse, instead of a generic
+			// "cannot decode JSON error: EOF" string that masks the underlying status.
+			bodyBytes, readErr := io.ReadAll(decodedBody)
+			if readErr != nil {
+				return nil, nil, fmt.Errorf(`cannot read response body: %w`, readErr)
+			}
+			if len(bytes.TrimSpace(bodyBytes)) > 0 {
+				if err := json.Unmarshal(bodyBytes, errDef); err != nil {
+					return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
+				}
 			}
 			// Set HTTP request
 			var errWithReq errorWithRequest
