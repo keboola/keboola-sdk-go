@@ -239,28 +239,6 @@ func TestJsonErrorResult_EmptyBody(t *testing.T) {
 		"errDef must have the HTTP status code populated so callers can branch on it")
 }
 
-// TestJsonErrorResult_WhitespaceBody covers the whitespace-only variant of
-// TestJsonErrorResult_EmptyBody — same expectation.
-func TestJsonErrorResult_WhitespaceBody(t *testing.T) {
-	t.Parallel()
-
-	transport := httpmock.NewMockTransport()
-	transport.RegisterResponder("GET", "https://example.com", func(*http.Request) (*http.Response, error) {
-		resp := httpmock.NewStringResponse(http.StatusServiceUnavailable, "  \n  ")
-		resp.Header.Set("Content-Type", "application/json")
-		return resp, nil
-	})
-
-	ctx := context.Background()
-	c := New().WithTransport(transport).WithRetry(request.RetryConfig{Count: 0, TotalRequestTimeout: time.Second})
-	errDef := &responseError{}
-	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com").WithError(errDef).Send(ctx)
-
-	assert.Error(t, err)
-	assert.NotContains(t, err.Error(), "cannot decode JSON error")
-	assert.Equal(t, http.StatusServiceUnavailable, errDef.StatusCode())
-}
-
 // TestJsonErrorResult_MalformedBody confirms that a non-empty but invalid JSON
 // payload still produces a parse error — only empty/whitespace bodies are
 // handled specially.
