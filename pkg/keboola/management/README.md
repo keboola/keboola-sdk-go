@@ -91,6 +91,10 @@ After regenerating, apply the following manual fixes:
 - **ComponentAccess type**: Change from `*string` to `[]string`
 - **Redacted logging**: Ensure sensitive fields (passwords, secrets) use redacted logging
 
+Hand-written files that are NOT generated and must be kept:
+- `auth_schemes.go` — exported security scheme and header name constants; update it if
+  `securitySchemes` in `api/openapi.yaml` change
+
 ## Installation
 
 Install the following dependencies:

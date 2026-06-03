@@ -31,15 +31,15 @@ func Test_management_TokenVerification_ApiKeyAuthHeader(t *testing.T) {
 	defer server.Close()
 
 	ctx := context.WithValue(context.Background(), management.ContextAPIKeys, map[string]management.APIKey{
-		"ApiKeyAuth": {Key: "manage-token"},
+		management.AuthSchemeAPIKey: {Key: "manage-token"},
 	})
 
 	resp, httpRes, err := newTestClient(server.URL).TokenVerificationAPI.TokenVerification(ctx).Execute()
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
-	assert.Equal(t, "manage-token", gotHeader.Get("X-KBC-ManageApiToken"))
-	assert.Empty(t, gotHeader.Get("X-Kubernetes-Authorization"))
+	assert.Equal(t, "manage-token", gotHeader.Get(management.HeaderManageAPIToken))
+	assert.Empty(t, gotHeader.Get(management.HeaderKubernetesAuthorization))
 	assert.Equal(t, []interface{}{"git-repo:manage"}, resp.GetScopes())
 }
 
@@ -55,14 +55,14 @@ func Test_management_TokenVerification_K8sAuthHeader(t *testing.T) {
 	defer server.Close()
 
 	ctx := context.WithValue(context.Background(), management.ContextAPIKeys, map[string]management.APIKey{
-		"K8sAuth": {Key: "k8s-token"},
+		management.AuthSchemeK8s: {Key: "k8s-token"},
 	})
 
 	resp, httpRes, err := newTestClient(server.URL).TokenVerificationAPI.TokenVerification(ctx).Execute()
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
-	assert.Equal(t, "k8s-token", gotHeader.Get("X-Kubernetes-Authorization"))
-	assert.Empty(t, gotHeader.Get("X-KBC-ManageApiToken"))
+	assert.Equal(t, "k8s-token", gotHeader.Get(management.HeaderKubernetesAuthorization))
+	assert.Empty(t, gotHeader.Get(management.HeaderManageAPIToken))
 	assert.Equal(t, []interface{}{"git-repo:manage"}, resp.GetScopes())
 }
