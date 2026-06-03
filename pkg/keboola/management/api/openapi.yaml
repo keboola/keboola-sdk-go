@@ -96,6 +96,9 @@ paths:
       description: ""
       operationId: Token Verification
       parameters: []
+      security:
+      - ApiKeyAuth: []
+      - K8sAuth: []
       responses:
         "200":
           content:
@@ -9443,4 +9446,8 @@ components:
     ApiKeyAuth:
       in: header
       name: X-KBC-ManageApiToken
+      type: apiKey
+    K8sAuth:
+      in: header
+      name: X-Kubernetes-Authorization
       type: apiKey

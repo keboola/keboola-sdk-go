@@ -288,6 +288,7 @@ func redactSensitiveData(dump []byte) []byte {
 		"Authorization",
 		"X-StorageApi-Token",
 		"X-KBC-ManageApiToken",
+		"X-Kubernetes-Authorization",
 		"X-Api-Key",
 		"Cookie",
 		"Set-Cookie",

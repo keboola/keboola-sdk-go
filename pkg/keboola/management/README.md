@@ -454,6 +454,27 @@ auth := context.WithValue(
 r, err := client.Service.Operation(auth, args)
 ```
 
+### K8sAuth
+
+- **Type**: API key
+- **API key parameter name**: X-Kubernetes-Authorization
+- **Location**: HTTP header
+
+Note, each API key must be added to a map of `map[string]APIKey` where the key is: K8sAuth and passed in as the auth context for each request.
+
+Example
+
+```go
+auth := context.WithValue(
+		context.Background(),
+		management.ContextAPIKeys,
+		map[string]management.APIKey{
+			"K8sAuth": {Key: "API_KEY_STRING"},
+		},
+	)
+r, err := client.Service.Operation(auth, args)
+```
+
 
 ## Documentation for Utility Methods
 
