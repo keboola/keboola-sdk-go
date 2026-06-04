@@ -289,6 +289,7 @@ func redactSensitiveData(dump []byte) []byte {
 		"X-StorageApi-Token",
 		"X-KBC-ManageApiToken",
 		"X-Kubernetes-Authorization",
+		"X-Subject-Token",
 		"X-Api-Key",
 		"Cookie",
 		"Set-Cookie",
@@ -304,6 +305,7 @@ func redactSensitiveData(dump []byte) []byte {
 
 	jsonSensitiveFields := []string{
 		"token", "password", "secret", "key", "apiKey", "api_key",
+		"storageToken", "subjectToken",
 		"accessToken", "access_token", "refreshToken", "refresh_token",
 		"clientSecret", "client_secret", "privateKey", "private_key",
 	}

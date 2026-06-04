@@ -98,6 +98,10 @@ Hand-written files that are NOT generated and must be kept:
   `KeboolaServiceAccountAuth` and `NewAutoAuth`
 - `auth_transport.go` — `http.RoundTripper` applying an `Auth` per request and
   the `NewAPIClientWithAuth` constructor
+- `auth_bridge.go` — `AuthBridgeAPIService` for the internal auth-bridge resolver
+  (`POST /manage/internal/auth-bridge/resolve-storage-token`), exposed via the
+  `APIClient.AuthBridgeAPI()` method; also keep `X-Subject-Token` / `storageToken`
+  in `redactSensitiveData` in `client.go`
 
 ## Installation
 
@@ -493,6 +497,30 @@ The `KeboolaServiceAccountAuth` sends `Bearer <token>` in the
 `X-Kubernetes-Authorization` header, matching the keboola-operator client.
 When an `Auth` is installed it takes precedence over headers set via
 `ContextAPIKeys` — use one mechanism or the other, not both.
+
+### Auth bridge: resolve programmatic tokens to legacy Storage tokens
+
+Connection programmatic bearer tokens (`kbc_at_*` access tokens, `kbc_pat_*`
+personal access tokens) can be exchanged for the matching legacy Storage token
+via the internal resolver endpoint (hand-written `AuthBridgeAPIService`, not
+part of the OpenAPI spec). The caller authenticates with its projected
+Kubernetes ServiceAccount JWT, which must be mapped to the
+`internal:auth-bridge:resolve-storage-token` scope in Connection's
+Kubernetes-auth configuration:
+
+```go
+client := management.NewAPIClientWithAuth(cfg, management.NewKeboolaServiceAccountAuth(""))
+result, httpRes, err := client.AuthBridgeAPI().
+	ResolveStorageToken(ctx).
+	SubjectToken("kbc_at_..."). // or "kbc_pat_...", "Bearer " prefix optional
+	AuthBridgeStorageTokenResolveRequest(management.AuthBridgeStorageTokenResolveRequest{ProjectID: 123}).
+	Execute()
+```
+
+Services usually do not call this directly — use the higher-level
+`keboola.StorageTokenExchanger` from `pkg/keboola`, which adds token-prefix
+validation and 400/401/403/502 error mapping. Never log the subject token or
+the resolved Storage token.
 
 
 ## Documentation for Utility Methods
