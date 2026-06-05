@@ -1,6 +1,7 @@
 package management
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -24,10 +25,13 @@ func newAuthTestServer(headers *http.Header) *httptest.Server {
 }
 
 // newAuthTestClient returns an API client with the given Auth pointing at the test server.
-func newAuthTestClient(serverURL string, auth management.Auth) *management.APIClient {
+func newAuthTestClient(t *testing.T, serverURL string, auth management.Auth) *management.APIClient {
+	t.Helper()
 	cfg := management.NewConfiguration()
 	cfg.Servers = management.ServerConfigurations{{URL: serverURL}}
-	return management.NewAPIClientWithAuth(cfg, auth)
+	client, err := management.NewAPIClientWithAuth(cfg, auth)
+	require.NoError(t, err)
+	return client
 }
 
 func Test_management_Auth_ManageAPITokenHeader(t *testing.T) {
@@ -40,7 +44,7 @@ func Test_management_Auth_ManageAPITokenHeader(t *testing.T) {
 	auth, err := management.NewManageAPITokenAuth("manage-token")
 	require.NoError(t, err)
 
-	resp, httpRes, err := newAuthTestClient(server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
+	resp, httpRes, err := newAuthTestClient(t, server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
@@ -68,7 +72,7 @@ func Test_management_Auth_ServiceAccountHeader(t *testing.T) {
 
 	auth := management.NewKeboolaServiceAccountAuth(tokenPath)
 
-	resp, httpRes, err := newAuthTestClient(server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
+	resp, httpRes, err := newAuthTestClient(t, server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
@@ -86,7 +90,7 @@ func Test_management_Auth_ServiceAccountTokenRotation(t *testing.T) {
 	server := newAuthTestServer(&gotHeader)
 	defer server.Close()
 
-	client := newAuthTestClient(server.URL, management.NewKeboolaServiceAccountAuth(tokenPath))
+	client := newAuthTestClient(t, server.URL, management.NewKeboolaServiceAccountAuth(tokenPath))
 
 	_, _, err := client.TokenVerificationAPI.TokenVerification(t.Context()).Execute()
 	require.NoError(t, err)
@@ -110,7 +114,7 @@ func Test_management_Auth_ServiceAccountTokenFileMissing(t *testing.T) {
 
 	auth := management.NewKeboolaServiceAccountAuth(filepath.Join(t.TempDir(), "missing"))
 
-	_, _, err := newAuthTestClient(server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
+	_, _, err := newAuthTestClient(t, server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "failed to read service account token file")
 }
@@ -127,7 +131,7 @@ func Test_management_Auth_ServiceAccountTokenFileEmpty(t *testing.T) {
 
 	auth := management.NewKeboolaServiceAccountAuth(tokenPath)
 
-	_, _, err := newAuthTestClient(server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
+	_, _, err := newAuthTestClient(t, server.URL, auth).TokenVerificationAPI.TokenVerification(t.Context()).Execute()
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "service account token file is empty")
 }
@@ -151,6 +155,37 @@ func Test_management_Auth_DoesNotMutateDefaultClient(t *testing.T) {
 	require.NoError(t, err)
 
 	before := http.DefaultClient.Transport
-	management.NewAPIClientWithAuth(management.NewConfiguration(), auth)
+	_, err = management.NewAPIClientWithAuth(management.NewConfiguration(), auth)
+	require.NoError(t, err)
 	assert.Equal(t, before, http.DefaultClient.Transport)
+}
+
+func Test_management_Auth_NilAuth(t *testing.T) {
+	t.Parallel()
+
+	client, err := management.NewAPIClientWithAuth(management.NewConfiguration(), nil)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "auth must not be nil")
+	assert.Nil(t, client)
+}
+
+func Test_management_Auth_TakesPrecedenceOverContextAPIKeys(t *testing.T) {
+	t.Parallel()
+
+	var gotHeader http.Header
+	server := newAuthTestServer(&gotHeader)
+	defer server.Close()
+
+	auth, err := management.NewManageAPITokenAuth("auth-strategy-token")
+	require.NoError(t, err)
+
+	// Set the same header via ContextAPIKeys too — the Auth transport runs
+	// last and must win, as documented on NewAPIClientWithAuth.
+	ctx := context.WithValue(t.Context(), management.ContextAPIKeys, map[string]management.APIKey{
+		management.AuthSchemeAPIKey: {Key: "context-api-keys-token"},
+	})
+
+	_, _, err = newAuthTestClient(t, server.URL, auth).TokenVerificationAPI.TokenVerification(ctx).Execute()
+	require.NoError(t, err)
+	assert.Equal(t, []string{"auth-strategy-token"}, gotHeader.Values(management.HeaderManageAPIToken))
 }

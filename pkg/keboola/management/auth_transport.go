@@ -2,7 +2,11 @@
 // openapi-generator, keep when regenerating.
 package management
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+	"strings"
+)
 
 // authTransport injects Auth.AuthHeaders() into every outgoing request.
 //
@@ -23,6 +27,14 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// The RoundTripper contract forbids mutating the supplied request.
 	req = req.Clone(req.Context())
 	for k, v := range headers {
+		// The generated prepareRequest assigns header map keys directly,
+		// bypassing canonicalization — drop any case-insensitive duplicates
+		// (e.g. from ContextAPIKeys) so the Auth value is the only one sent.
+		for existing := range req.Header {
+			if strings.EqualFold(existing, k) {
+				delete(req.Header, existing)
+			}
+		}
 		req.Header.Set(k, v)
 	}
 
@@ -40,9 +52,16 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 // automatically. When an Auth is installed it takes precedence over headers
 // set via ContextAPIKeys — use one mechanism or the other, not both.
 //
+// A nil auth is rejected with an error so a misconfigured client fails at
+// construction instead of panicking on the first request.
+//
 // cfg.HTTPClient is shallow-copied before its transport is wrapped, so a
 // shared client (e.g. http.DefaultClient) is never mutated.
-func NewAPIClientWithAuth(cfg *Configuration, auth Auth) *APIClient {
+func NewAPIClientWithAuth(cfg *Configuration, auth Auth) (*APIClient, error) {
+	if auth == nil {
+		return nil, errors.New("auth must not be nil")
+	}
+
 	httpClient := &http.Client{}
 	if cfg.HTTPClient != nil {
 		clientCopy := *cfg.HTTPClient
@@ -51,5 +70,5 @@ func NewAPIClientWithAuth(cfg *Configuration, auth Auth) *APIClient {
 	httpClient.Transport = &authTransport{base: httpClient.Transport, auth: auth}
 	cfg.HTTPClient = httpClient
 
-	return NewAPIClient(cfg)
+	return NewAPIClient(cfg), nil
 }
