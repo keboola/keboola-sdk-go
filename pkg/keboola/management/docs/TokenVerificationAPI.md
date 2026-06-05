@@ -57,7 +57,7 @@ Other parameters are passed through a pointer to a apiTokenVerificationRequest s
 
 ### Authorization
 
-[K8sAuth](../README.md#K8sAuth), [ApiKeyAuth](../README.md#ApiKeyAuth)
+[K8sAuth](../README.md#recommended-dynamic-auth-rotating-tokens), [ApiKeyAuth](../README.md#ApiKeyAuth)
 
 ### HTTP request headers
 
