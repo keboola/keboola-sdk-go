@@ -26,15 +26,18 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	// The RoundTripper contract forbids mutating the supplied request.
 	req = req.Clone(req.Context())
-	for k, v := range headers {
-		// The generated prepareRequest assigns header map keys directly,
-		// bypassing canonicalization — drop any case-insensitive duplicates
-		// (e.g. from ContextAPIKeys) so the Auth value is the only one sent.
-		for existing := range req.Header {
-			if strings.EqualFold(existing, k) {
-				delete(req.Header, existing)
-			}
+	// The Auth must be the only auth mechanism on the wire: strip every known
+	// auth header (e.g. set via ContextAPIKeys, possibly for a different
+	// scheme than the Auth uses) and any case-insensitive duplicate of a
+	// header we are about to set. The comparison must be case-insensitive
+	// because the generated prepareRequest assigns header map keys directly,
+	// bypassing canonicalization, so req.Header.Set alone would send both values.
+	for existing := range req.Header {
+		if isKnownAuthHeader(existing) || hasHeaderFold(headers, existing) {
+			delete(req.Header, existing)
 		}
+	}
+	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
 
@@ -44,6 +47,23 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	return base.RoundTrip(req)
+}
+
+// isKnownAuthHeader reports whether name is one of the authentication headers
+// defined by the API's security schemes (see auth_schemes.go).
+func isKnownAuthHeader(name string) bool {
+	return strings.EqualFold(name, HeaderManageAPIToken) ||
+		strings.EqualFold(name, HeaderKubernetesAuthorization)
+}
+
+// hasHeaderFold reports whether the header map contains name under any casing.
+func hasHeaderFold(headers map[string]string, name string) bool {
+	for k := range headers {
+		if strings.EqualFold(k, name) {
+			return true
+		}
+	}
+	return false
 }
 
 // NewAPIClientWithAuth creates an APIClient that resolves authentication
