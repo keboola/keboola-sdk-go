@@ -3,7 +3,6 @@ package management
 import (
 	"context"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,12 +21,7 @@ func newTestClient(serverURL string) *management.APIClient {
 func Test_management_TokenVerification_ApiKeyAuthHeader(t *testing.T) {
 	t.Parallel()
 
-	var gotHeader http.Header
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotHeader = r.Header.Clone()
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"scopes": ["git-repo:manage"]}`))
-	}))
+	server, gotHeader := newAuthTestServer()
 	defer server.Close()
 
 	ctx := context.WithValue(context.Background(), management.ContextAPIKeys, map[string]management.APIKey{
@@ -38,20 +32,15 @@ func Test_management_TokenVerification_ApiKeyAuthHeader(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
-	assert.Equal(t, "manage-token", gotHeader.Get(management.HeaderManageAPIToken))
-	assert.Empty(t, gotHeader.Get(management.HeaderKubernetesAuthorization))
+	assert.Equal(t, "manage-token", gotHeader().Get(management.HeaderManageAPIToken))
+	assert.Empty(t, gotHeader().Get(management.HeaderKubernetesAuthorization))
 	assert.Equal(t, []interface{}{"git-repo:manage"}, resp.GetScopes())
 }
 
 func Test_management_TokenVerification_K8sAuthHeader(t *testing.T) {
 	t.Parallel()
 
-	var gotHeader http.Header
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotHeader = r.Header.Clone()
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"scopes": ["git-repo:manage"]}`))
-	}))
+	server, gotHeader := newAuthTestServer()
 	defer server.Close()
 
 	ctx := context.WithValue(context.Background(), management.ContextAPIKeys, map[string]management.APIKey{
@@ -62,7 +51,7 @@ func Test_management_TokenVerification_K8sAuthHeader(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 	assert.Equal(t, http.StatusOK, httpRes.StatusCode)
-	assert.Equal(t, "k8s-token", gotHeader.Get(management.HeaderKubernetesAuthorization))
-	assert.Empty(t, gotHeader.Get(management.HeaderManageAPIToken))
+	assert.Equal(t, "k8s-token", gotHeader().Get(management.HeaderKubernetesAuthorization))
+	assert.Empty(t, gotHeader().Get(management.HeaderManageAPIToken))
 	assert.Equal(t, []interface{}{"git-repo:manage"}, resp.GetScopes())
 }
