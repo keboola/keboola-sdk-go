@@ -25,7 +25,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+	openapiclient "github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
 
 func main() {
@@ -57,7 +57,7 @@ Other parameters are passed through a pointer to a apiTokenVerificationRequest s
 
 ### Authorization
 
-[ApiKeyAuth](../README.md#ApiKeyAuth)
+[K8sAuth](../README.md#recommended-dynamic-auth-rotating-tokens), [ApiKeyAuth](../README.md#ApiKeyAuth)
 
 ### HTTP request headers
 

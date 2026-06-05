@@ -91,6 +91,14 @@ After regenerating, apply the following manual fixes:
 - **ComponentAccess type**: Change from `*string` to `[]string`
 - **Redacted logging**: Ensure sensitive fields (passwords, secrets) use redacted logging
 
+Hand-written files that are NOT generated and must be kept:
+- `auth_schemes.go` — exported security scheme and header name constants; update it if
+  `securitySchemes` in `api/openapi.yaml` change
+- `auth.go` — `Auth` strategy interface with `ManageAPITokenAuth`,
+  `KeboolaServiceAccountAuth` and `NewAutoAuth`
+- `auth_transport.go` — `http.RoundTripper` applying an `Auth` per request and
+  the `NewAPIClientWithAuth` constructor
+
 ## Installation
 
 Install the following dependencies:
@@ -453,6 +461,38 @@ auth := context.WithValue(
 	)
 r, err := client.Service.Operation(auth, args)
 ```
+
+### Recommended: dynamic auth (rotating tokens)
+
+The `ContextAPIKeys` example above sends a **static** value. For credentials
+that rotate — most notably the projected Kubernetes ServiceAccount token sent
+in the `X-Kubernetes-Authorization` header — use the hand-written `Auth`
+strategy instead. Its `AuthHeaders()` is resolved on **every request**, so
+rotated tokens are picked up automatically:
+
+```go
+// Explicit Manage API token:
+auth, err := management.NewManageAPITokenAuth("MANAGE_TOKEN")
+
+// Projected Kubernetes ServiceAccount token, re-read from disk per request
+// (empty path falls back to management.DefaultServiceAccountTokenPath):
+auth := management.NewKeboolaServiceAccountAuth("")
+
+// Auto-configuration: non-empty token -> ManageAPITokenAuth,
+// empty token -> KeboolaServiceAccountAuth at the default path:
+auth, err := management.NewAutoAuth(os.Getenv("KBC_MANAGE_TOKEN"))
+
+client, err := management.NewAPIClientWithAuth(management.NewConfiguration(), auth)
+if err != nil {
+	log.Fatal(err) // auth must not be nil
+}
+resp, httpRes, err := client.TokenVerificationAPI.TokenVerification(ctx).Execute()
+```
+
+The `KeboolaServiceAccountAuth` sends `Bearer <token>` in the
+`X-Kubernetes-Authorization` header, matching the keboola-operator client.
+When an `Auth` is installed it takes precedence over headers set via
+`ContextAPIKeys` — use one mechanism or the other, not both.
 
 
 ## Documentation for Utility Methods
