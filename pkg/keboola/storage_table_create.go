@@ -1,6 +1,7 @@
 package keboola
 
 import (
+	"bytes"
 	"context"
 	jsonLib "encoding/json"
 	"fmt"
@@ -56,7 +57,6 @@ func (a *AuthorizedAPI) CreateTableFromFileRequest(tableKey TableKey, fileKey Fi
 	return request.NewAPIRequest(table, req)
 }
 
-
 type CreateTableRequest struct {
 	TableDefinition
 	Name string `json:"name"`
@@ -66,6 +66,34 @@ type Column struct {
 	Name       string            `json:"name"`
 	Definition *ColumnDefinition `json:"definition,omitempty"`
 	*BaseType  `json:"basetype,omitempty"`
+}
+
+// UnmarshalJSON tolerates non-object shapes of the "definition" field.
+//
+// The Storage API returns an object for typed columns, but for untyped columns it
+// may omit the field, send null, or send an empty array `[]`. The default decoder
+// expects an object and fails on `[]` with "expect { or n, but found [". A column
+// definition is meaningful only when it is a JSON object; any other shape (null,
+// empty, array) means "no definition", which we represent as a nil pointer.
+func (c *Column) UnmarshalJSON(data []byte) error {
+	// columnAlias drops Column's methods to avoid recursing into this UnmarshalJSON.
+	type columnAlias Column
+	aux := &struct {
+		Definition jsonLib.RawMessage `json:"definition,omitempty"`
+		*columnAlias
+	}{columnAlias: (*columnAlias)(c)}
+	if err := jsonLib.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	c.Definition = nil
+	if def := bytes.TrimSpace(aux.Definition); len(def) > 0 && def[0] == '{' {
+		c.Definition = &ColumnDefinition{}
+		if err := jsonLib.Unmarshal(def, c.Definition); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type Columns []Column
