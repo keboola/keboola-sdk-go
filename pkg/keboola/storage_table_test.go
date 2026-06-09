@@ -325,6 +325,18 @@ func TestWithoutDefinition(t *testing.T) {
 	resTab.ColumnMetadata = ColumnsMetadata{}
 	require.NoError(t, err)
 
+	// The Storage API now returns a definition block even for untyped tables, with
+	// each column carrying an empty (non-object) definition. Verify it round-trips
+	// without per-column definitions, then blank it like the other server-populated
+	// dynamic fields above before the full comparison.
+	require.NotNil(t, resTab.Definition)
+	assert.Equal(t, []string{"name"}, resTab.Definition.PrimaryKeyNames)
+	assert.Equal(t, []string{"name", "age", "time"}, resTab.Definition.Columns.Names())
+	for _, c := range resTab.Definition.Columns {
+		assert.Nil(t, c.Definition)
+	}
+	resTab.Definition = nil
+
 	assert.Equal(t, &Table{
 		TableKey:       newTable.TableKey,
 		URI:            newTable.URI,
