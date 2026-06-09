@@ -61,6 +61,14 @@ func TestTableApiCalls(t *testing.T) {
 	// Get table (without table and columns metadata)
 	respGet1, err := api.GetTableRequest(tableKey).Send(ctx)
 	assert.NoError(t, err)
+	// The Storage API returns a definition block for untyped tables, with each
+	// column carrying an empty (non-object) definition. Verify it round-trips
+	// without per-column definitions before removeDynamicValueFromTable blanks it.
+	require.NotNil(t, respGet1.Definition)
+	assert.Equal(t, []string{"first", "second", "third", "fourth"}, respGet1.Definition.Columns.Names())
+	for _, c := range respGet1.Definition.Columns {
+		assert.Nil(t, c.Definition)
+	}
 	removeDynamicValueFromTable(respGet1)
 	assert.Equal(t, &keboola.Table{
 		TableKey:      tableKey,
