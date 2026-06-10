@@ -35,4 +35,7 @@ func removeDynamicValueFromTable(table *keboola.Table) {
 	table.LastChangeDate = nil
 	table.Bucket.Created = iso8601.Time{}
 	table.Bucket.LastChangeDate = nil
+	// The Storage API now returns a definition block even for untyped tables; treat
+	// it as a server-populated dynamic field for these round-trip comparisons.
+	table.Definition = nil
 }
