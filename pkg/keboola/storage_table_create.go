@@ -68,13 +68,14 @@ type Column struct {
 	*BaseType  `json:"basetype,omitempty"`
 }
 
-// UnmarshalJSON tolerates non-object shapes of the "definition" field.
+// UnmarshalJSON tolerates the various "definition" shapes the Storage API sends.
 //
-// The Storage API returns an object for typed columns, but for untyped columns it
-// may omit the field, send null, or send an empty array `[]`. The default decoder
-// expects an object and fails on `[]` with "expect { or n, but found [". A column
-// definition is meaningful only when it is a JSON object; any other shape (null,
-// empty, array) means "no definition", which we represent as a nil pointer.
+// Typed columns get a populated object. Untyped columns have, across API versions,
+// had the field omitted, sent as null, as an empty array `[]`, or as an empty
+// object `{}`. The default decoder expects an object and fails on `[]` with
+// "expect { or n, but found [". A column definition is meaningful only when it is
+// a non-empty JSON object; any other shape (null, empty, array, or an all-empty
+// object) means "no definition", which we represent as a nil pointer.
 func (c *Column) UnmarshalJSON(data []byte) error {
 	// columnAlias drops Column's methods to avoid recursing into this UnmarshalJSON.
 	type columnAlias Column
@@ -88,9 +89,14 @@ func (c *Column) UnmarshalJSON(data []byte) error {
 
 	c.Definition = nil
 	if def := bytes.TrimSpace(aux.Definition); len(def) > 0 && def[0] == '{' {
-		c.Definition = &ColumnDefinition{}
-		if err := jsonLib.Unmarshal(def, c.Definition); err != nil {
+		cd := &ColumnDefinition{}
+		if err := jsonLib.Unmarshal(def, cd); err != nil {
 			return err
+		}
+		// Ignore empty definitions (`{}` or all-empty fields); a real definition
+		// always carries at least a type.
+		if *cd != (ColumnDefinition{}) {
+			c.Definition = cd
 		}
 	}
 	return nil

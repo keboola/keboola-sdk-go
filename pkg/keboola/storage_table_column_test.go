@@ -36,6 +36,18 @@ func TestColumn_UnmarshalJSON(t *testing.T) {
 			wantDef:  nil,
 		},
 		{
+			name:     "untyped column with empty object definition (server regression)",
+			input:    `{"name":"col","definition":{}}`,
+			wantName: "col",
+			wantDef:  nil,
+		},
+		{
+			name:     "untyped column with all-empty object definition",
+			input:    `{"name":"col","definition":{"type":"","length":"","nullable":false,"default":""}}`,
+			wantName: "col",
+			wantDef:  nil,
+		},
+		{
 			name:     "untyped column without definition field",
 			input:    `{"name":"col"}`,
 			wantName: "col",
