@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
@@ -105,6 +106,11 @@ func NewStorageTokenExchanger(
 	if auth == nil {
 		return nil, fmt.Errorf("auth must not be nil")
 	}
+
+	// Trim a trailing slash so the resolver path (which already starts with "/")
+	// is not appended as a double slash, which can trigger redirects/routing
+	// issues depending on the deployment.
+	connectionURL = strings.TrimRight(connectionURL, "/")
 
 	cfg := management.NewConfiguration()
 	cfg.Servers = management.ServerConfigurations{{URL: connectionURL}}

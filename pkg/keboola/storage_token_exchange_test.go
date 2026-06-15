@@ -181,6 +181,33 @@ func TestStorageTokenExchanger_RejectsNonProgrammaticToken(t *testing.T) {
 	assert.NotContains(t, exchangeErr.Error(), "1234-123456-abcdef")
 }
 
+// A connection URL with a trailing slash must not produce a double slash in
+// the resolver request path.
+func TestStorageTokenExchanger_TrailingSlashURL(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/manage/internal/auth-bridge/resolve-storage-token", r.URL.Path)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"storageToken": "legacy-token", "tokenDetail": {"id": "456"}}`))
+	}))
+	defer server.Close()
+
+	saTokenPath := t.TempDir() + "/token"
+	require.NoError(t, os.WriteFile(saTokenPath, []byte("sa-jwt"), 0o600))
+
+	exchanger, err := NewStorageTokenExchanger(
+		server.URL+"/",
+		management.NewKeboolaServiceAccountAuth(saTokenPath),
+		WithExchangerHTTPClient(server.Client()),
+	)
+	require.NoError(t, err)
+
+	result, err := exchanger.Exchange(context.Background(), "kbc_at_secret", 123)
+	require.NoError(t, err)
+	assert.Equal(t, "legacy-token", result.StorageToken)
+}
+
 func TestNewStorageTokenExchanger_Validation(t *testing.T) {
 	t.Parallel()
 

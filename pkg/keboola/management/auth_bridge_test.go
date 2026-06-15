@@ -170,6 +170,14 @@ func TestResolveStorageToken_MissingInputs(t *testing.T) {
 		Execute()
 	require.ErrorContains(t, err, "subjectToken is required")
 
+	// A whitespace-only subject token is effectively missing input.
+	_, _, err = apiClient.AuthBridgeAPI().
+		ResolveStorageToken(context.Background()).
+		SubjectToken("   ").
+		AuthBridgeStorageTokenResolveRequest(AuthBridgeStorageTokenResolveRequest{ProjectID: 123}).
+		Execute()
+	require.ErrorContains(t, err, "subjectToken is required")
+
 	_, _, err = apiClient.AuthBridgeAPI().
 		ResolveStorageToken(context.Background()).
 		SubjectToken("kbc_at_secret").

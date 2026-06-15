@@ -106,7 +106,7 @@ func (a *AuthBridgeAPIService) ResolveStorageTokenExecute(
 ) (*AuthBridgeStorageTokenResolveResponse, *http.Response, error) {
 	var returnValue *AuthBridgeStorageTokenResolveResponse
 
-	if r.subjectToken == "" {
+	if strings.TrimSpace(r.subjectToken) == "" {
 		return returnValue, nil, &GenericOpenAPIError{error: "subjectToken is required"}
 	}
 	if r.body == nil {
