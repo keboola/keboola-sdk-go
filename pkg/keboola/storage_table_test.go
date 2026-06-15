@@ -333,7 +333,9 @@ func TestWithoutDefinition(t *testing.T) {
 	// dynamic fields above before the full comparison.
 	require.NotNil(t, resTab.Definition)
 	assert.Equal(t, []string{"name"}, resTab.Definition.PrimaryKeyNames)
-	assert.Equal(t, []string{"name", "age", "time"}, resTab.Definition.Columns.Names())
+	// Order-insensitive: removeDynamicValueFromTable sorts columns by name, and
+	// the API may return them primary-key-first; only the set of names matters here.
+	assert.ElementsMatch(t, []string{"name", "age", "time"}, resTab.Definition.Columns.Names())
 	for _, c := range resTab.Definition.Columns {
 		assert.Nil(t, c.Definition)
 	}
