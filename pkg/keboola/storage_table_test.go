@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sort"
 	"testing"
 	"time"
 
@@ -230,6 +231,7 @@ func TestCreateTableDefinition(t *testing.T) {
 
 		maxUseCaseTable, err := api.GetTableRequest(maxUseCaseTableKey).Send(ctx)
 		require.NoError(t, err)
+		sortTableColumnsByName(maxUseCaseTable.Definition.Columns)
 		assert.Equal(t, Columns{
 			{
 				Name: "comments",
@@ -760,4 +762,17 @@ func removeDynamicValueFromTable(table *Table) {
 	table.LastChangeDate = nil
 	table.Bucket.Created = iso8601.Time{}
 	table.Bucket.LastChangeDate = nil
+	// Normalize column order: the Storage API returns primary-key columns first,
+	// while these tests declare expected columns alphabetically by name.
+	if table.Definition != nil {
+		sortTableColumnsByName(table.Definition.Columns)
+	}
+}
+
+// sortTableColumnsByName sorts a table definition's columns by name, making
+// column-order-sensitive assertions order-insensitive.
+func sortTableColumnsByName(cols Columns) {
+	sort.Slice(cols, func(i, j int) bool {
+		return cols[i].Name < cols[j].Name
+	})
 }
