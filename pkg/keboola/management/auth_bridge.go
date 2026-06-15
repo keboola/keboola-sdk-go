@@ -5,6 +5,7 @@ package management
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
@@ -45,6 +46,13 @@ type AuthBridgeStorageTokenResolveResponse struct {
 	UserID       string `json:"userId"`
 	// ExpiresAt is the token expiration timestamp, nil for non-expiring tokens.
 	ExpiresAt *string `json:"expiresAt"`
+	// TokenDetail is the full token detail the resolver returns alongside the
+	// legacy token — the same payload as the Storage API tokens/verify response —
+	// so callers do not need a follow-up verify call (keboola/connection#7604).
+	// Kept as raw JSON here because this generated-companion package must not
+	// import pkg/keboola; the higher-level keboola.StorageTokenExchanger decodes
+	// it into a keboola.Token. Never log it — it may carry token material.
+	TokenDetail json.RawMessage `json:"tokenDetail"`
 }
 
 type ApiResolveStorageTokenRequest struct {
@@ -157,11 +165,17 @@ func (a *AuthBridgeAPIService) ResolveStorageTokenExecute(
 	return returnValue, httpResponse, nil
 }
 
-// ensureBearerScheme normalizes a token to the "Bearer <token>" form expected
-// by the resolver's X-Subject-Token header.
+// ensureBearerScheme normalizes a token to the canonical "Bearer <token>" form
+// expected by the resolver's X-Subject-Token header. An existing scheme prefix
+// is matched case-insensitively (HTTP auth schemes are case-insensitive, RFC
+// 7235) so a lowercase "bearer …" value is not double-prefixed, and surrounding
+// whitespace is trimmed.
 func ensureBearerScheme(token string) string {
-	if strings.HasPrefix(token, "Bearer ") {
-		return token
+	token = strings.TrimSpace(token)
+
+	const scheme = "bearer "
+	if len(token) >= len(scheme) && strings.EqualFold(token[:len(scheme)], scheme) {
+		return "Bearer " + strings.TrimSpace(token[len(scheme):])
 	}
 
 	return "Bearer " + token

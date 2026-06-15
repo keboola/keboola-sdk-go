@@ -509,7 +509,7 @@ Kubernetes ServiceAccount JWT, which must be mapped to the
 Kubernetes-auth configuration:
 
 ```go
-client := management.NewAPIClientWithAuth(cfg, management.NewKeboolaServiceAccountAuth(""))
+client, err := management.NewAPIClientWithAuth(cfg, management.NewKeboolaServiceAccountAuth(""))
 result, httpRes, err := client.AuthBridgeAPI().
 	ResolveStorageToken(ctx).
 	SubjectToken("kbc_at_..."). // or "kbc_pat_...", "Bearer " prefix optional
@@ -517,10 +517,16 @@ result, httpRes, err := client.AuthBridgeAPI().
 	Execute()
 ```
 
+The resolver returns the legacy token together with its full token detail in
+`result.TokenDetail` — the same payload as the Storage API `tokens/verify`
+response (keboola/connection#7604) — so no follow-up Storage verification call
+is needed.
+
 Services usually do not call this directly — use the higher-level
 `keboola.StorageTokenExchanger` from `pkg/keboola`, which adds token-prefix
-validation and 400/401/403/502 error mapping. Never log the subject token or
-the resolved Storage token.
+validation, 400/401/403/502 error mapping and decodes the token detail into a
+ready-to-use `keboola.Token` (`StorageTokenExchangeResult.Token`). Never log the
+subject token or the resolved Storage token.
 
 
 ## Documentation for Utility Methods

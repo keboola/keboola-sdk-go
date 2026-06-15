@@ -44,12 +44,20 @@ func TestStorageTokenExchanger_Exchange(t *testing.T) {
 		assert.Equal(t, float64(123), body["projectId"])
 
 		w.Header().Set("Content-Type", "application/json")
+		// The resolver returns the full token detail (the same payload as
+		// tokens/verify) alongside the legacy token, so a single call yields a
+		// ready-to-use Token with no follow-up verify.
 		_, _ = w.Write([]byte(`{
 			"storageToken": "legacy-token",
 			"projectId": 123,
 			"tokenId": "456",
 			"userId": "789",
-			"expiresAt": null
+			"expiresAt": null,
+			"tokenDetail": {
+				"id": "456",
+				"description": "programmatic token",
+				"owner": {"id": 123, "name": "my-project", "features": ["feat-x"]}
+			}
 		}`))
 	}))
 	defer server.Close()
@@ -62,6 +70,16 @@ func TestStorageTokenExchanger_Exchange(t *testing.T) {
 	assert.Equal(t, "456", result.TokenID)
 	assert.Equal(t, "789", result.UserID)
 	assert.Nil(t, result.ExpiresAt)
+
+	// Token is built directly from the resolver's tokenDetail, with the legacy
+	// token set as the token value — no follow-up VerifyTokenRequest needed.
+	require.NotNil(t, result.Token)
+	assert.Equal(t, "legacy-token", result.Token.Token)
+	assert.Equal(t, "456", result.Token.ID)
+	assert.Equal(t, "programmatic token", result.Token.Description)
+	assert.Equal(t, 123, result.Token.Owner.ID)
+	assert.Equal(t, "my-project", result.Token.Owner.Name)
+	assert.Contains(t, result.Token.Owner.Features, "feat-x")
 }
 
 func TestStorageTokenExchanger_ErrorMapping(t *testing.T) {
@@ -111,6 +129,39 @@ func TestStorageTokenExchanger_NetworkErrorMapsToBadGateway(t *testing.T) {
 	require.ErrorAs(t, err, &exchangeErr)
 	assert.Equal(t, 0, exchangeErr.StatusCode)
 	assert.Equal(t, http.StatusBadGateway, exchangeErr.ClientStatusCode())
+}
+
+// A 200 response missing the storage token or its detail (e.g. a Connection
+// deploy predating keboola/connection#7604) is an our-side incident mapped to
+// 502, and never echoes the response body.
+func TestStorageTokenExchanger_MissingFieldsMapToBadGateway(t *testing.T) {
+	t.Parallel()
+
+	cases := map[string]string{
+		"missing token detail":  `{"storageToken": "legacy-token", "projectId": 123}`,
+		"missing storage token": `{"projectId": 123, "tokenDetail": {"id": "456"}}`,
+		"empty token detail":    `{"storageToken": "legacy-token", "tokenDetail": {}}`,
+	}
+
+	for name, responseBody := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(responseBody))
+			}))
+			defer server.Close()
+
+			result, err := newTestExchanger(t, server).Exchange(context.Background(), "kbc_at_secret", 123)
+
+			assert.Nil(t, result)
+			exchangeErr := &StorageTokenExchangeError{}
+			require.ErrorAs(t, err, &exchangeErr)
+			assert.Equal(t, http.StatusBadGateway, exchangeErr.ClientStatusCode())
+			assert.NotContains(t, exchangeErr.Error(), "legacy-token")
+		})
+	}
 }
 
 func TestStorageTokenExchanger_RejectsNonProgrammaticToken(t *testing.T) {

@@ -24,7 +24,10 @@ func newAuthBridgeTestClient(t *testing.T, server *httptest.Server, auth Auth) *
 		return NewAPIClient(cfg)
 	}
 
-	return NewAPIClientWithAuth(cfg, auth)
+	apiClient, err := NewAPIClientWithAuth(cfg, auth)
+	require.NoError(t, err)
+
+	return apiClient
 }
 
 func TestResolveStorageToken_Success(t *testing.T) {
@@ -50,7 +53,8 @@ func TestResolveStorageToken_Success(t *testing.T) {
 			"projectId": 123,
 			"tokenId": "456",
 			"userId": "789",
-			"expiresAt": "2026-06-04T12:30:00+02:00"
+			"expiresAt": "2026-06-04T12:30:00+02:00",
+			"tokenDetail": {"id": "456", "description": "programmatic token"}
 		}`))
 	}))
 	defer server.Close()
@@ -71,13 +75,42 @@ func TestResolveStorageToken_Success(t *testing.T) {
 	assert.Equal(t, "789", result.UserID)
 	require.NotNil(t, result.ExpiresAt)
 	assert.Equal(t, "2026-06-04T12:30:00+02:00", *result.ExpiresAt)
+	assert.JSONEq(t, `{"id": "456", "description": "programmatic token"}`, string(result.TokenDetail))
 }
 
-func TestResolveStorageToken_BearerPrefixNotDuplicated(t *testing.T) {
+func TestResolveStorageToken_BearerSchemeNormalized(t *testing.T) {
+	t.Parallel()
+
+	// The subject token reaches the resolver as the canonical "Bearer <token>"
+	// regardless of an existing scheme prefix (any case) or surrounding
+	// whitespace, and the prefix is never duplicated.
+	for _, subjectToken := range []string{
+		"kbc_pat_secret",
+		"Bearer kbc_pat_secret",
+		"bearer kbc_pat_secret",
+		"  BEARER   kbc_pat_secret  ",
+	} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "Bearer kbc_pat_secret", r.Header.Get(HeaderSubjectToken))
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"storageToken": "t", "projectId": 1, "tokenId": "1", "userId": "1", "expiresAt": null}`))
+		}))
+
+		_, _, err := newAuthBridgeTestClient(t, server, nil).AuthBridgeAPI().
+			ResolveStorageToken(context.Background()).
+			SubjectToken(subjectToken).
+			AuthBridgeStorageTokenResolveRequest(AuthBridgeStorageTokenResolveRequest{ProjectID: 1}).
+			Execute()
+		require.NoError(t, err)
+
+		server.Close()
+	}
+}
+
+func TestResolveStorageToken_NilExpiresAt(t *testing.T) {
 	t.Parallel()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "Bearer kbc_pat_secret", r.Header.Get(HeaderSubjectToken))
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"storageToken": "t", "projectId": 1, "tokenId": "1", "userId": "1", "expiresAt": null}`))
 	}))

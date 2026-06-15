@@ -16,10 +16,25 @@ const (
 
 // IsProgrammaticToken reports whether the token is a Connection programmatic
 // bearer token (kbc_at_* or kbc_pat_*). An optional "Bearer " scheme prefix
-// is ignored, so both raw tokens and Authorization header values match.
+// (case-insensitive) and surrounding whitespace are ignored, so both raw
+// tokens and Authorization header values match.
 func IsProgrammaticToken(token string) bool {
-	token = strings.TrimPrefix(token, "Bearer ")
+	token = stripBearerScheme(token)
 
 	return strings.HasPrefix(token, TokenPrefixAccessToken) ||
 		strings.HasPrefix(token, TokenPrefixPersonalAccessToken)
+}
+
+// stripBearerScheme removes an optional, case-insensitive "Bearer " scheme
+// prefix and surrounding whitespace. HTTP auth schemes are case-insensitive
+// (RFC 7235), so "Bearer ", "bearer " and "  BEARER  <token>" are all handled.
+func stripBearerScheme(token string) string {
+	token = strings.TrimSpace(token)
+
+	const scheme = "bearer "
+	if len(token) >= len(scheme) && strings.EqualFold(token[:len(scheme)], scheme) {
+		return strings.TrimSpace(token[len(scheme):])
+	}
+
+	return token
 }
