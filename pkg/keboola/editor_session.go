@@ -33,6 +33,13 @@ const (
 	EditorSessionStatusReady        EditorSessionStatus = "ready"
 )
 
+// editorSessionReadyTimeout bounds how long CreateEditorSessionRequest waits for
+// a new session to become ready. Editor sessions provision a backing workspace
+// (BigQuery in particular can take several minutes), so the generic 1-minute
+// onSuccessTimeout is too short. context.WithTimeout still caps this at the
+// caller's own context deadline when that is sooner.
+const editorSessionReadyTimeout = 10 * time.Minute
+
 // EditorSessionBackendType is the backend database type of an editor session.
 type EditorSessionBackendType string
 
@@ -218,13 +225,13 @@ func (a *AuthorizedAPI) CreateEditorSessionRequest(payload CreateEditorSessionPa
 		WithJSONBody(payload)
 	return request.NewAPIRequest(result, httpReq).
 		WithOnSuccess(func(ctx context.Context, session *EditorSession) error {
-			waitCtx, cancelFn := context.WithTimeout(ctx, a.onSuccessTimeout)
+			waitCtx, cancelFn := context.WithTimeout(ctx, editorSessionReadyTimeout)
 			defer cancelFn()
 			if err := a.WaitForEditorSession(waitCtx, session.ID); err != nil {
 				return err
 			}
 			// Refresh result with final session state after it becomes ready.
-			// Use waitCtx so the whole OnSuccess path is bounded by onSuccessTimeout.
+			// Use waitCtx so the whole OnSuccess path is bounded by editorSessionReadyTimeout.
 			finalSession, err := a.GetEditorSessionRequest(session.ID).Send(waitCtx)
 			if err != nil {
 				return err

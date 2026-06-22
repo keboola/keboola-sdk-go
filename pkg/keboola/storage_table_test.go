@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"sort"
 	"testing"
 	"time"
 
@@ -230,6 +231,7 @@ func TestCreateTableDefinition(t *testing.T) {
 
 		maxUseCaseTable, err := api.GetTableRequest(maxUseCaseTableKey).Send(ctx)
 		require.NoError(t, err)
+		sortTableColumnsByName(maxUseCaseTable.Definition.Columns)
 		assert.Equal(t, Columns{
 			{
 				Name: "comments",
@@ -331,7 +333,9 @@ func TestWithoutDefinition(t *testing.T) {
 	// dynamic fields above before the full comparison.
 	require.NotNil(t, resTab.Definition)
 	assert.Equal(t, []string{"name"}, resTab.Definition.PrimaryKeyNames)
-	assert.Equal(t, []string{"name", "age", "time"}, resTab.Definition.Columns.Names())
+	// Order-insensitive: removeDynamicValueFromTable sorts columns by name, and
+	// the API may return them primary-key-first; only the set of names matters here.
+	assert.ElementsMatch(t, []string{"name", "age", "time"}, resTab.Definition.Columns.Names())
 	for _, c := range resTab.Definition.Columns {
 		assert.Nil(t, c.Definition)
 	}
@@ -760,4 +764,17 @@ func removeDynamicValueFromTable(table *Table) {
 	table.LastChangeDate = nil
 	table.Bucket.Created = iso8601.Time{}
 	table.Bucket.LastChangeDate = nil
+	// Normalize column order: the Storage API returns primary-key columns first,
+	// while these tests declare expected columns alphabetically by name.
+	if table.Definition != nil {
+		sortTableColumnsByName(table.Definition.Columns)
+	}
+}
+
+// sortTableColumnsByName sorts a table definition's columns by name, making
+// column-order-sensitive assertions order-insensitive.
+func sortTableColumnsByName(cols Columns) {
+	sort.Slice(cols, func(i, j int) bool {
+		return cols[i].Name < cols[j].Name
+	})
 }
