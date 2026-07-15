@@ -147,7 +147,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 func TestStorageWorkspaceUnload(t *testing.T) {
 	t.Parallel()
 	ctx := t.Context()
-	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend(), testproject.WithLegacyTransformation())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
