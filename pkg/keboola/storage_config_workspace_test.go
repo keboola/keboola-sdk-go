@@ -2,7 +2,6 @@ package keboola_test
 
 import (
 	"context"
-	"os"
 	"slices"
 	"testing"
 	"time"
@@ -67,7 +66,7 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-			PublicKey:             new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+			PublicKey:             new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
 		},
 		UseCase: keboola.StorageWorkspaceUseCaseNormal,
 	}

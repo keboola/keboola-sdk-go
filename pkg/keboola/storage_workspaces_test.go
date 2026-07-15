@@ -2,7 +2,6 @@ package keboola_test
 
 import (
 	"context"
-	"os"
 	"slices"
 	"testing"
 	"time"
@@ -33,7 +32,7 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
@@ -159,7 +158,7 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
 		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey: new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey: new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -186,7 +185,7 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	workspace2, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
 		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey: new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey: new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {

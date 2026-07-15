@@ -3,7 +3,6 @@ package transfer_test
 import (
 	"bytes"
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -54,7 +53,7 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
