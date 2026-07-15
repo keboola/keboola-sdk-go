@@ -147,7 +147,10 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 func TestStorageWorkspaceUnload(t *testing.T) {
 	t.Parallel()
 	ctx := t.Context()
-	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend(), testproject.WithLegacyTransformation())
+	// Workspaces with the default (legacy service) login type can no longer be created
+	// on the projects flagged legacyTransformation. testproject has no negative filter,
+	// so select the non-legacy Snowflake projects via their GCS staging storage.
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend(), testproject.WithStagingStorage(testproject.StagingStorageGCS))
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
