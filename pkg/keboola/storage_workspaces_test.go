@@ -147,10 +147,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 func TestStorageWorkspaceUnload(t *testing.T) {
 	t.Parallel()
 	ctx := t.Context()
-	// Workspaces with the default (legacy service) login type can no longer be created
-	// on the projects flagged legacyTransformation. testproject has no negative filter,
-	// so select the non-legacy Snowflake projects via their GCS staging storage.
-	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend(), testproject.WithStagingStorage(testproject.StagingStorageGCS))
+	_, api := keboola.APIClientForAnEmptyProject(t, ctx, testproject.WithSnowflakeBackend())
 
 	ctx, cancelFn := context.WithTimeout(ctx, time.Minute*10)
 	defer cancelFn()
@@ -161,7 +158,8 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	// Create workspace
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
-		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey: new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -187,7 +185,8 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	// Without a configuration the API skips the drop and returns an empty job list.
 	workspace2, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
-		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey: new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
