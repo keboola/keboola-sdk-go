@@ -32,31 +32,27 @@ type DataScienceAppState string
 // DataScienceAppDesiredState is the desired lifecycle state of a data science app.
 type DataScienceAppDesiredState string
 
-// DataScienceAppProvisioningStrategy is the provisioning strategy of a data science app.
-type DataScienceAppProvisioningStrategy string
-
 // DataScienceApp represents a data science app returned by the data-science service /apps endpoint.
 // It replaces the deprecated SandboxWorkspace for listing and status checks.
 // Field mapping from old SandboxWorkspace: ID→ID, Type→Type (narrowed), Active(bool)→State+DesiredState,
 // Size→Size, URL→URL, BranchID→BranchID, ConfigurationID→ConfigID.
 // Connection details (User/Password/Host/Credentials) are not exposed here.
 type DataScienceApp struct {
-	ID                      DataScienceAppID                   `json:"id"`
-	Type                    DataScienceAppType                 `json:"type"`
-	ProjectID               string                             `json:"projectId"`
-	ComponentID             ComponentID                        `json:"componentId"`
-	BranchID                string                             `json:"branchId"`
-	ConfigID                string                             `json:"configId"`
-	ConfigVersion           string                             `json:"configVersion"`
-	State                   DataScienceAppState                `json:"state"`
-	DesiredState            DataScienceAppDesiredState         `json:"desiredState"`
-	LastRequestTimestamp    iso8601.Time                       `json:"lastRequestTimestamp"`
-	LastStartTimestamp      iso8601.Time                       `json:"lastStartTimestamp"`
-	URL                     string                             `json:"url"`
-	AutoSuspendAfterSeconds int                                `json:"autoSuspendAfterSeconds"`
-	AutoRestartEnabled      bool                               `json:"autoRestartEnabled"`
-	Size                    string                             `json:"size"`
-	ProvisioningStrategy    DataScienceAppProvisioningStrategy `json:"provisioningStrategy"`
+	ID                      DataScienceAppID           `json:"id"`
+	Type                    DataScienceAppType         `json:"type"`
+	ProjectID               string                     `json:"projectId"`
+	ComponentID             ComponentID                `json:"componentId"`
+	BranchID                string                     `json:"branchId"`
+	ConfigID                string                     `json:"configId"`
+	ConfigVersion           string                     `json:"configVersion"`
+	State                   DataScienceAppState        `json:"state"`
+	DesiredState            DataScienceAppDesiredState `json:"desiredState"`
+	LastRequestTimestamp    iso8601.Time               `json:"lastRequestTimestamp"`
+	LastStartTimestamp      iso8601.Time               `json:"lastStartTimestamp"`
+	URL                     string                     `json:"url"`
+	AutoSuspendAfterSeconds int                        `json:"autoSuspendAfterSeconds"`
+	AutoRestartEnabled      bool                       `json:"autoRestartEnabled"`
+	Size                    string                     `json:"size"`
 }
 
 type listDataScienceAppsConfig struct {
