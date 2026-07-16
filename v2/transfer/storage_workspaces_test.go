@@ -50,7 +50,6 @@ func TestStorageWorkspaceLoadData(t *testing.T) {
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),

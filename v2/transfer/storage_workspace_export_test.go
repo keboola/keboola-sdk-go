@@ -52,7 +52,6 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
@@ -70,7 +69,6 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 	})
 
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Load data into workspace
@@ -152,7 +150,6 @@ func TestWorkspaceTableExportGzip(t *testing.T) {
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
 		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
