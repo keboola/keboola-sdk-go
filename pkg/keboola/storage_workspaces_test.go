@@ -122,10 +122,11 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	require.NoError(t, err)
 	initialLen := len(*workspaces)
 
-	// Create workspace - should fail
+	// Create workspace - should fail, backendSize is not supported (dynamic backends)
 	workspace := &keboola.StorageWorkspacePayload{
-		Backend:   keboola.StorageWorkspaceBackendBigQuery,
-		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+		Backend:     keboola.StorageWorkspaceBackendBigQuery,
+		BackendSize: new(keboola.StorageWorkspaceBackendSizeMedium),
+		LoginType:   keboola.StorageWorkspaceLoginTypeDefault,
 	}
 
 	_, err = api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
