@@ -2,7 +2,6 @@ package keboola_test
 
 import (
 	"context"
-	"os"
 	"slices"
 	"testing"
 	"time"
@@ -63,11 +62,10 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	workspace := &keboola.StorageConfigWorkspacePayload{
 		StorageWorkspacePayload: keboola.StorageWorkspacePayload{
 			Backend:               keboola.StorageWorkspaceBackendSnowflake,
-			BackendSize:           new(keboola.StorageWorkspaceBackendSizeMedium),
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-			PublicKey:             new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+			PublicKey:             new(keboola.GenerateRSAPublicKeyPEM(t)),
 		},
 		UseCase: keboola.StorageWorkspaceUseCaseNormal,
 	}
@@ -84,7 +82,6 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 	})
 
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// List configuration workspaces - should contain the created workspace

@@ -2,7 +2,6 @@ package keboola_test
 
 import (
 	"context"
-	"os"
 	"slices"
 	"testing"
 	"time"
@@ -30,10 +29,9 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	networkPolicy := "user"
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
-		BackendSize:   new(keboola.StorageWorkspaceBackendSizeMedium),
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     new(os.Getenv("TEST_SNOWFLAKE_PUBLIC_KEY")), //nolint: forbidigo
+		PublicKey:     new(keboola.GenerateRSAPublicKeyPEM(t)),
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
@@ -48,7 +46,6 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	})
 
 	assert.Equal(t, keboola.StorageWorkspaceBackendSnowflake, createdWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, keboola.StorageWorkspaceBackendSizeMedium, *createdWorkspace.BackendSize)
 	assert.Equal(t, string(keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair), *createdWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Get workspace details
@@ -57,7 +54,6 @@ func TestStorageWorkspacesCreateAndDeleteSnowflake(t *testing.T) {
 	require.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Create credentials
@@ -126,7 +122,7 @@ func TestStorageWorkspacesCreateWrongBigQuery(t *testing.T) {
 	require.NoError(t, err)
 	initialLen := len(*workspaces)
 
-	// Create workspace - should fail
+	// Create workspace - should fail, backendSize is not supported (dynamic backends)
 	workspace := &keboola.StorageWorkspacePayload{
 		Backend:     keboola.StorageWorkspaceBackendBigQuery,
 		BackendSize: new(keboola.StorageWorkspaceBackendSizeMedium),
@@ -158,7 +154,8 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	// Create workspace
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
-		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey: new(keboola.GenerateRSAPublicKeyPEM(t)),
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -184,7 +181,8 @@ func TestStorageWorkspaceUnload(t *testing.T) {
 	// Without a configuration the API skips the drop and returns an empty job list.
 	workspace2, err := api.StorageWorkspaceCreateRequest(defBranch.ID, &keboola.StorageWorkspacePayload{
 		Backend:   keboola.StorageWorkspaceBackendSnowflake,
-		LoginType: keboola.StorageWorkspaceLoginTypeDefault,
+		LoginType: keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
+		PublicKey: new(keboola.GenerateRSAPublicKeyPEM(t)),
 	}).Send(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -248,7 +246,6 @@ func TestStorageWorkspacesCreateAndDeleteBigQuery(t *testing.T) {
 	assert.NotNil(t, retrievedWorkspace)
 	assert.Equal(t, createdWorkspace.ID, retrievedWorkspace.ID)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.Backend, retrievedWorkspace.StorageWorkspaceDetails.Backend)
-	assert.Equal(t, createdWorkspace.BackendSize, retrievedWorkspace.BackendSize)
 	assert.Equal(t, createdWorkspace.StorageWorkspaceDetails.LoginType, retrievedWorkspace.StorageWorkspaceDetails.LoginType)
 
 	// Create credentials

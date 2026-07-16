@@ -40,5 +40,19 @@
         "token": "$TEST_KBC_PROJECT_GCP_US_826_TOKEN",
         "stagingStorage": "gcs",
         "backend": "bigquery"
+    },
+    {
+        "host": "connection.us-east4.gcp.keboola.com",
+        "project": 6084,
+        "token": "$TEST_KBC_PROJECT_GCP_US_6084_TOKEN",
+        "stagingStorage": "gcs",
+        "backend": "snowflake"
+    },
+    {
+        "host": "connection.us-east4.gcp.keboola.com",
+        "project": 6083,
+        "token": "$TEST_KBC_PROJECT_GCP_US_6083_TOKEN",
+        "stagingStorage": "gcs",
+        "backend": "snowflake"
     }
 ]
