@@ -65,7 +65,7 @@ func TestConfigWorkspacesCreateAndListSnowflake(t *testing.T) {
 			NetworkPolicy:         &networkPolicy,
 			ReadOnlyStorageAccess: true,
 			LoginType:             keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-			PublicKey:             new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
+			PublicKey:             new(keboola.GenerateRSAPublicKeyPEM(t)),
 		},
 		UseCase: keboola.StorageWorkspaceUseCaseNormal,
 	}

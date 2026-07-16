@@ -54,7 +54,7 @@ func TestWorkspaceTableExportSuccess(t *testing.T) {
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
+		PublicKey:     new(keboola.GenerateRSAPublicKeyPEM(t)),
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
@@ -152,7 +152,7 @@ func TestWorkspaceTableExportGzip(t *testing.T) {
 		Backend:       keboola.StorageWorkspaceBackendSnowflake,
 		NetworkPolicy: &networkPolicy,
 		LoginType:     keboola.StorageWorkspaceLoginTypeSnowflakeServiceKeypair,
-		PublicKey:     new(string(keboola.GenerateRSAKeyPairPKCS1(t).PublicKeyPEM)),
+		PublicKey:     new(keboola.GenerateRSAPublicKeyPEM(t)),
 	}
 
 	createdWorkspace, err := api.StorageWorkspaceCreateRequest(defBranch.ID, workspace).Send(ctx)
