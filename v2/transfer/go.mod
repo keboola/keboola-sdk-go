@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.100.0
 	github.com/googleapis/gax-go/v2 v2.22.0
 	github.com/jarcoal/httpmock v1.4.1
-	github.com/keboola/go-utils v1.4.2-0.20260805043155-1aa69a7f0aff
+	github.com/keboola/go-utils v1.5.0
 	github.com/keboola/keboola-sdk-go/v2 v2.18.0
 	github.com/relvacode/iso8601 v1.7.0
 	github.com/stretchr/testify v1.11.1

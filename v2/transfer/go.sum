@@ -171,8 +171,8 @@ github.com/jarcoal/httpmock v1.4.1 h1:0Ju+VCFuARfFlhVXFc2HxlcQkfB+Xq12/EotHko+x2
 github.com/jarcoal/httpmock v1.4.1/go.mod h1:ftW1xULwo+j0R0JJkJIIi7UKigZUXCLLanykgjwBXL0=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
-github.com/keboola/go-utils v1.4.2-0.20260805043155-1aa69a7f0aff h1:AWrh2As8HV7QO4uvjxlcoIVpSMqrHYoyTIZigWhLfz4=
-github.com/keboola/go-utils v1.4.2-0.20260805043155-1aa69a7f0aff/go.mod h1:9NRWdiNBG4e2pAXYqCQwKKUqIZcGDXKAkGpjEoN3Qe8=
+github.com/keboola/go-utils v1.5.0 h1:3SSy59GIJ4F+pOBWe46q837b2mBQV9ESsJgFzJAi9xs=
+github.com/keboola/go-utils v1.5.0/go.mod h1:bnYV65QDJvIsmWc0UTbYCvPvodoekjmn+i3Nuo1vcWM=
 github.com/keboola/keboola-sdk-go/v2 v2.18.0 h1:wkHTV4eUHr3aEwHmbo/Lhxq1uiYzdFbcMfY38Icvo2Q=
 github.com/keboola/keboola-sdk-go/v2 v2.18.0/go.mod h1:dLDyVUt6gMPGoXgON8yKh6+k4VEMlByXMqkK7rL1kuE=
 github.com/keybase/go-keychain v0.0.1 h1:way+bWYa6lDppZoZcgMbYsvC7GxljxrskdNInRtuthU=
