@@ -125,3 +125,22 @@ func TestWithoutRedirects(t *testing.T) {
 	assert.Equal(t, "target", got)
 	assert.Equal(t, int32(1), hits.Load(), "the default client follows the redirect")
 }
+
+// The JSON decoder reports a failed read as text, the cap error must still be the typed one.
+func TestWithMaxResponseBytes_JSONResult(t *testing.T) {
+	t.Parallel()
+
+	transport := httpmock.NewMockTransport()
+	body := `{"foo":"` + strings.Repeat("x", 200) + `"}`
+	transport.RegisterResponder(http.MethodGet, "https://example.com/json", func(*http.Request) (*http.Response, error) {
+		resp := httpmock.NewStringResponse(200, body)
+		resp.Header.Set("Content-Type", "application/json")
+		return resp, nil
+	})
+	c := client.New().WithTransport(transport).WithRetry(request.TestingRetry()).WithMaxResponseBytes(50)
+
+	var got testStruct
+	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com/json").WithResult(&got).Send(t.Context())
+	var tooLarge *http.MaxBytesError
+	require.ErrorAs(t, err, &tooLarge)
+}

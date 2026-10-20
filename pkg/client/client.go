@@ -326,6 +326,29 @@ func requestBody(r request.HTTPRequest) (io.ReadCloser, error) {
 	return nil, fmt.Errorf(`unsupported request body type "%T", to encode body as JSON please specify content-type header`, body)
 }
 
+// cappedBody remembers that the cap of Client.WithMaxResponseBytes was hit while the body was read.
+type cappedBody struct {
+	io.ReadCloser
+	exceeded error
+}
+
+func (c *cappedBody) Read(p []byte) (int, error) {
+	n, err := c.ReadCloser.Read(p)
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		c.exceeded = err
+	}
+	return n, err
+}
+
+// failure returns the cap error when it is what made err, otherwise err. It is safe on a nil receiver (no cap set).
+func (c *cappedBody) failure(err error) error {
+	if c != nil && c.exceeded != nil {
+		return c.exceeded
+	}
+	return err
+}
+
 func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes int64) (result any, err error, parseError error) {
 	defer r.Body.Close()
 
@@ -339,8 +362,11 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes 
 		return nil, nil, fmt.Errorf("cannot decode response body: %w", err)
 	}
 
+	// The JSON decoder reports a failed read as text, so the cap is also remembered here and reported as it is.
+	var capped *cappedBody
 	if maxBytes > 0 {
-		decodedBody = http.MaxBytesReader(nil, decodedBody, maxBytes)
+		capped = &cappedBody{ReadCloser: http.MaxBytesReader(nil, decodedBody, maxBytes)}
+		decodedBody = capped
 	}
 
 	// Process content type, for example "application/json; charset=utf-8"
@@ -380,7 +406,7 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes 
 		if r.StatusCode > 199 && r.StatusCode < 300 && resultDef != nil {
 			// Map JSON response to defined result
 			if err := json.NewDecoder(decodedBody).Decode(resultDef); err != nil {
-				return nil, nil, fmt.Errorf(`cannot decode JSON result: %w`, err)
+				return nil, nil, capped.failure(fmt.Errorf(`cannot decode JSON result: %w`, err))
 			}
 			return resultDef, nil, nil
 		} else if r.StatusCode > 399 && errDef != nil {
@@ -393,7 +419,7 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes 
 			// receiving a generic "cannot decode JSON error: EOF" string that masks
 			// the underlying status.
 			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil && !errors.Is(err, io.EOF) {
-				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
+				return nil, nil, capped.failure(fmt.Errorf(`cannot decode JSON error: %w`, err))
 			}
 			// Set HTTP request
 			var errWithReq errorWithRequest
