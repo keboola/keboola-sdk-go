@@ -118,6 +118,9 @@ func TestWithoutRedirects(t *testing.T) {
 
 	_, err := send(client.New().WithRetry(request.TestingRetry()).WithoutRedirects())
 	require.ErrorIs(t, err, client.ErrRedirectNotFollowed)
+	var redirect *client.RedirectError
+	require.ErrorAs(t, err, &redirect)
+	assert.Equal(t, http.StatusFound, redirect.StatusCode)
 	assert.Zero(t, hits.Load(), "the redirect target was not called")
 
 	got, err := send(client.New().WithRetry(request.TestingRetry()))
@@ -141,6 +144,31 @@ func TestWithMaxResponseBytes_JSONResult(t *testing.T) {
 
 	var got testStruct
 	_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com/json").WithResult(&got).Send(t.Context())
+	var tooLarge *http.MaxBytesError
+	require.ErrorAs(t, err, &tooLarge)
+}
+
+// A body that never ends and never completes a JSON value is cut off at the cap, whatever the decoder does with it.
+func TestWithMaxResponseBytes_EndlessJSON(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"foo":[`))
+		w.(http.Flusher).Flush()
+		chunk := []byte(strings.Repeat(" ", 1024))
+		for range 10_000 {
+			if _, err := w.Write(chunk); err != nil {
+				return
+			}
+			w.(http.Flusher).Flush()
+		}
+	}))
+	t.Cleanup(srv.Close)
+	c := client.New().WithRetry(request.TestingRetry()).WithMaxResponseBytes(16 << 10)
+
+	var got map[string]any
+	_, _, err := request.NewHTTPRequest(c).WithGet(srv.URL).WithResult(&got).Send(t.Context())
 	var tooLarge *http.MaxBytesError
 	require.ErrorAs(t, err, &tooLarge)
 }
