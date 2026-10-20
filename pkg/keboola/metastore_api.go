@@ -125,7 +125,7 @@ func (a *AuthorizedAPI) ListMetastoreObjectsRequest(
 	for _, p := range cfg.query {
 		req = req.AndQueryParam(p.key, p.value)
 	}
-	req = req.WithResult(result).WithOnSuccess(keepMetastoreHeader(&result.Header))
+	req = req.WithResult(result).WithOnComplete(keepMetastoreAnswer(&result.StatusCode, &result.Header))
 	return request.NewAPIRequest(result, req)
 }
 
@@ -147,15 +147,19 @@ func (a *AuthorizedAPI) GetMetastoreObjectRequest(objectType, objectID string) r
 		AndPathParam("objectId", objectID).
 		AndHeader("Accept", metastoreAccept).
 		WithResult(result).
-		WithOnSuccess(keepMetastoreHeader(&result.Header))
+		WithOnComplete(keepMetastoreAnswer(&result.StatusCode, &result.Header))
 	return request.NewAPIRequest(result, req)
 }
 
-// keepMetastoreHeader stores the headers of the answer where the result keeps them.
-func keepMetastoreHeader(dst *http.Header) func(context.Context, request.HTTPResponse) error {
-	return func(_ context.Context, response request.HTTPResponse) error {
-		*dst = response.ResponseHeader()
-		return nil
+// keepMetastoreAnswer stores the status and the headers of the answer where the result keeps them, also when the request
+// failed after an answer arrived. The error is passed on untouched.
+func keepMetastoreAnswer(status *int, header *http.Header) func(context.Context, request.HTTPResponse, error) error {
+	return func(_ context.Context, response request.HTTPResponse, err error) error {
+		if raw := response.RawResponse(); raw != nil {
+			*status = raw.StatusCode
+			*header = raw.Header
+		}
+		return err
 	}
 }
 

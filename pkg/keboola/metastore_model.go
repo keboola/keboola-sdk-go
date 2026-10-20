@@ -36,14 +36,17 @@ type MetastoreObjectMeta struct {
 // broken answer from an empty list checks for nil.
 type MetastoreObjectList struct {
 	Data []*MetastoreObject `json:"data"`
-	// Header is the headers of the HTTP answer, for a caller that relies on one the Metastore sets. It is not part of
-	// the JSON.
-	Header http.Header `json:"-"`
+	// StatusCode and Header are those of the HTTP answer. They are set whenever an answer arrived, also when the request
+	// returned an error (a refusal, an answer that could not be decoded), so a caller can tell a refusal from a failure to
+	// get an answer: StatusCode is 0 when there was none. They are not part of the JSON.
+	StatusCode int         `json:"-"`
+	Header     http.Header `json:"-"`
 }
 
 // MetastoreObjectResponse is the answer to a read of one Metastore object.
 type MetastoreObjectResponse struct {
 	Data *MetastoreObject `json:"data"`
-	// Header is the headers of the HTTP answer, see MetastoreObjectList.Header.
-	Header http.Header `json:"-"`
+	// StatusCode and Header are those of the HTTP answer, see MetastoreObjectList.
+	StatusCode int         `json:"-"`
+	Header     http.Header `json:"-"`
 }

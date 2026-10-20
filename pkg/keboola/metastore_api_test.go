@@ -1,6 +1,7 @@
 package keboola_test
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"testing"
@@ -194,14 +195,15 @@ func TestListMetastoreObjectsRequest_Error(t *testing.T) {
 		`{"error": 403, "code": "403", "exception": "Access denied", "exceptionId": "metastore-abc", "status": "error"}`,
 		http.Header{"X-Refused": {"true"}}, nil))
 
-	_, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
+	list, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
 
 	var metastoreErr *keboola.MetastoreError
 	require.ErrorAs(t, err, &metastoreErr)
 	assert.Equal(t, http.StatusForbidden, metastoreErr.StatusCode())
 	assert.Equal(t, "Access denied", metastoreErr.ErrorUserMessage())
 	assert.Equal(t, "metastore-abc", metastoreErr.ErrorExceptionID())
-	assert.Equal(t, "true", metastoreErr.ResponseHeader().Get("X-Refused"), "a refusal marker header is readable")
+	assert.Equal(t, http.StatusForbidden, list.StatusCode, "the result carries the status of an error answer")
+	assert.Equal(t, "true", list.Header.Get("X-Refused"), "and its headers, so a refusal marker is readable")
 }
 
 func TestGetMetastoreObjectRequest(t *testing.T) {
@@ -227,4 +229,43 @@ func TestGetMetastoreObjectRequest(t *testing.T) {
 		require.Error(t, err, "id %q", id)
 	}
 	assert.Zero(t, transport.GetTotalCallCount(), "nothing is sent")
+}
+
+// The result tells a failure to get an answer (status 0) from an answer that could not be used.
+func TestListMetastoreObjectsRequest_StatusOfFailures(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no answer", func(t *testing.T) {
+		t.Parallel()
+
+		api, transport := newMetastoreAPI(t)
+		transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL, httpmock.NewErrorResponder(errors.New("connection refused")))
+
+		list, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
+		require.Error(t, err)
+		assert.Zero(t, list.StatusCode)
+		assert.Nil(t, list.Header)
+	})
+
+	t.Run("an answer that is not JSON:API", func(t *testing.T) {
+		t.Parallel()
+
+		api, transport := newMetastoreAPI(t)
+		transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL, metastoreResponder(http.StatusOK, `{"data": [`, nil, nil))
+
+		list, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
+		require.Error(t, err)
+		assert.Equal(t, http.StatusOK, list.StatusCode)
+	})
+
+	t.Run("an error answer that is not JSON", func(t *testing.T) {
+		t.Parallel()
+
+		api, transport := newMetastoreAPI(t)
+		transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL, httpmock.NewStringResponder(http.StatusBadGateway, "<html>bad gateway</html>"))
+
+		list, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
+		require.Error(t, err)
+		assert.Equal(t, http.StatusBadGateway, list.StatusCode)
+	})
 }

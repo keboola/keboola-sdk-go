@@ -59,15 +59,6 @@ func (e MetastoreError) StatusCode() int {
 	return 0
 }
 
-// ResponseHeader returns the headers of the error response, nil when there was none. The Metastore marks some answers
-// with a header, so a caller may need to read it on an error too.
-func (e MetastoreError) ResponseHeader() http.Header {
-	if e.response == nil {
-		return nil
-	}
-	return e.response.Header
-}
-
 // SetRequest sets the HTTP request that caused the error.
 func (e *MetastoreError) SetRequest(request *http.Request) {
 	e.request = request
