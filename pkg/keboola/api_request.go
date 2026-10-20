@@ -38,6 +38,8 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&DataScienceError{})
 	case EditorAPI:
 		r = r.WithError(&EditorError{})
+	case MetastoreAPI:
+		r = r.WithError(&MetastoreError{})
 	}
 
 	return r
@@ -46,6 +48,9 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 func (a *PublicAPI) baseURLForService(s ServiceType) string {
 	if s == StorageAPI {
 		return "v2/storage"
+	}
+	if url, found := a.serviceURLs[s]; found {
+		return url
 	}
 
 	url, found := a.index.Services.ToMap().URLByID(ServiceID(s))

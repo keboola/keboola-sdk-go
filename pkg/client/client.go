@@ -45,6 +45,10 @@ type Client struct {
 	header         http.Header
 	retry          request.RetryConfig
 	traceFactories []trace.Factory
+	// maxResponseBytes caps the decoded response body, 0 is no cap.
+	maxResponseBytes int64
+	// noRedirects makes a redirect an error instead of a request to another URL.
+	noRedirects bool
 }
 
 // New creates new HTTP Client.
@@ -103,6 +107,22 @@ func (c Client) WithTransport(transport http.RoundTripper) Client {
 // Individual requests can override this using APIRequest.WithRetry().
 func (c Client) WithRetry(retry request.RetryConfig) Client {
 	c.retry = retry
+	return c
+}
+
+// WithMaxResponseBytes returns a clone of the Client that fails a request whose response body, after the content
+// decoding, is larger than limit bytes. The error wraps ErrResponseTooLarge. It bounds what a caller that talks to a
+// service it cannot fully trust reads into memory. Zero or a negative limit means no cap.
+func (c Client) WithMaxResponseBytes(limit int64) Client {
+	c.maxResponseBytes = max(limit, 0)
+	return c
+}
+
+// WithoutRedirects returns a clone of the Client that does not follow redirects: a 3xx answer is an error. A redirect
+// would send the request, with its headers, to another URL, and the headers of a request to an internal service can
+// carry credentials.
+func (c Client) WithoutRedirects() Client {
+	c.noRedirects = true
 	return c
 }
 
@@ -214,6 +234,9 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 		Timeout:   retryConfig.TotalRequestTimeout,
 		Transport: roundTripper{retry: retryConfig, trace: tc, wrapped: c.transport}, // wrapped transport for trace/retry
 	}
+	if c.noRedirects {
+		nativeClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	}
 
 	// Send request
 	startedAt := time.Now()
@@ -231,6 +254,12 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 		return nil, nil, handleSendError(startedAt, c.retry.TotalRequestTimeout, req, err)
 	}
 
+	// A redirect that was not followed is not a result: the caller would read an empty body as an empty answer.
+	if c.noRedirects && res.StatusCode >= 300 && res.StatusCode < 400 {
+		_ = res.Body.Close()
+		return res, nil, fmt.Errorf(`request %s "%s" was redirected (%d %s), redirects are not followed`, req.Method, req.URL.String(), res.StatusCode, http.StatusText(res.StatusCode))
+	}
+
 	// Parse body
 	if res != nil && res.Body != nil && res.Body != http.NoBody {
 		// Trace BodyParseStart
@@ -240,7 +269,7 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 
 		// Parse
 		var parseError error
-		result, err, parseError = handleResponseBody(res, reqDef.ResultDef(), reqDef.ErrorDef())
+		result, err, parseError = handleResponseBody(res, reqDef.ResultDef(), reqDef.ErrorDef(), c.maxResponseBytes)
 
 		// Trace BodyParseDone
 		if tc != nil && tc.BodyParseDone != nil {
@@ -300,8 +329,13 @@ func requestBody(r request.HTTPRequest) (io.ReadCloser, error) {
 	return nil, fmt.Errorf(`unsupported request body type "%T", to encode body as JSON please specify content-type header`, body)
 }
 
-func handleResponseBody(r *http.Response, resultDef any, errDef error) (result any, err error, parseError error) {
+func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes int64) (result any, err error, parseError error) {
 	defer r.Body.Close()
+
+	// The announced size is checked before a byte is read, the body is checked while it is read.
+	if maxBytes > 0 && r.ContentLength > maxBytes {
+		return nil, nil, ErrResponseTooLarge
+	}
 
 	if r.StatusCode == http.StatusNoContent {
 		return nil, nil, nil
@@ -311,6 +345,10 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 	decodedBody, err := decode.Decode(r.Body, r.Header.Get("Content-Encoding"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("cannot decode response body: %w", err)
+	}
+
+	if maxBytes > 0 {
+		decodedBody = &limitedReader{r: decodedBody, left: maxBytes}
 	}
 
 	// Process content type, for example "application/json; charset=utf-8"

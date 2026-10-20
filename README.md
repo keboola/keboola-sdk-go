@@ -153,6 +153,7 @@ The `keboola` package provides the `keboola.API` implementation, it covers:
   - [Jobs Queue API](https://app.swaggerhub.com/apis-docs/keboola/job-queue-api)
   - [Sandboxes API](https://sandboxes.keboola.com/documentation)
   - [Scheduler API](https://app.swaggerhub.com/apis/odinuv/scheduler)
+  - Metastore API (read-only: list and get objects of the repository; `WithServiceURL` reaches it by an in-cluster address)
 
 Not all API requests are covered, API requests are extended as needed.
 
