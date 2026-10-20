@@ -36,6 +36,9 @@ const (
 
 type ContextKey string
 
+// ErrRedirectNotFollowed is the error of a request that was redirected by a Client set WithoutRedirects.
+var ErrRedirectNotFollowed = errors.New("redirects are not followed")
+
 // Client is a default and configurable implementation of the Sender interface by Go native http.Client.
 // It supports retry and tracing/telemetry.
 type Client struct {
@@ -111,16 +114,16 @@ func (c Client) WithRetry(retry request.RetryConfig) Client {
 }
 
 // WithMaxResponseBytes returns a clone of the Client that fails a request whose response body, after the content
-// decoding, is larger than limit bytes. The error wraps ErrResponseTooLarge. It bounds what a caller that talks to a
+// decoding, is larger than limit bytes. The error wraps *http.MaxBytesError. It bounds what a caller that talks to a
 // service it cannot fully trust reads into memory. Zero or a negative limit means no cap.
 func (c Client) WithMaxResponseBytes(limit int64) Client {
-	c.maxResponseBytes = max(limit, 0)
+	c.maxResponseBytes = limit
 	return c
 }
 
-// WithoutRedirects returns a clone of the Client that does not follow redirects: a 3xx answer is an error. A redirect
-// would send the request, with its headers, to another URL, and the headers of a request to an internal service can
-// carry credentials.
+// WithoutRedirects returns a clone of the Client that does not follow redirects: a redirect is an error that wraps
+// ErrRedirectNotFollowed. A redirect would send the request, with its headers, to another URL, and the headers of a
+// request to an internal service can carry credentials.
 func (c Client) WithoutRedirects() Client {
 	c.noRedirects = true
 	return c
@@ -235,7 +238,7 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 		Transport: roundTripper{retry: retryConfig, trace: tc, wrapped: c.transport}, // wrapped transport for trace/retry
 	}
 	if c.noRedirects {
-		nativeClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+		nativeClient.CheckRedirect = func(*http.Request, []*http.Request) error { return ErrRedirectNotFollowed }
 	}
 
 	// Send request
@@ -252,12 +255,6 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 	// Handle send error
 	if err != nil {
 		return nil, nil, handleSendError(startedAt, c.retry.TotalRequestTimeout, req, err)
-	}
-
-	// A redirect that was not followed is not a result: the caller would read an empty body as an empty answer.
-	if c.noRedirects && res.StatusCode >= 300 && res.StatusCode < 400 {
-		_ = res.Body.Close()
-		return res, nil, fmt.Errorf(`request %s "%s" was redirected (%d %s), redirects are not followed`, req.Method, req.URL.String(), res.StatusCode, http.StatusText(res.StatusCode))
 	}
 
 	// Parse body
@@ -332,11 +329,6 @@ func requestBody(r request.HTTPRequest) (io.ReadCloser, error) {
 func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes int64) (result any, err error, parseError error) {
 	defer r.Body.Close()
 
-	// The announced size is checked before a byte is read, the body is checked while it is read.
-	if maxBytes > 0 && r.ContentLength > maxBytes {
-		return nil, nil, ErrResponseTooLarge
-	}
-
 	if r.StatusCode == http.StatusNoContent {
 		return nil, nil, nil
 	}
@@ -348,7 +340,7 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes 
 	}
 
 	if maxBytes > 0 {
-		decodedBody = &limitedReader{r: decodedBody, left: maxBytes}
+		decodedBody = http.MaxBytesReader(nil, decodedBody, maxBytes)
 	}
 
 	// Process content type, for example "application/json; charset=utf-8"

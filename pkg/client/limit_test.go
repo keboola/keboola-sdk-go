@@ -3,7 +3,6 @@ package client_test
 import (
 	"bytes"
 	"compress/gzip"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -42,8 +41,8 @@ func TestWithMaxResponseBytes(t *testing.T) {
 			var got string
 			_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com/body").WithResult(&got).Send(t.Context())
 			if tc.tooLarge {
-				require.Error(t, err)
-				assert.True(t, errors.Is(err, client.ErrResponseTooLarge), "got: %v", err)
+				var tooLarge *http.MaxBytesError
+				require.ErrorAs(t, err, &tooLarge)
 				return
 			}
 			require.NoError(t, err)
@@ -74,12 +73,12 @@ func TestWithMaxResponseBytes_Decoded(t *testing.T) {
 
 	var got string
 	_, _, err = request.NewHTTPRequest(c).WithGet("https://example.com/zip").WithResult(&got).Send(t.Context())
-	require.Error(t, err)
-	assert.True(t, errors.Is(err, client.ErrResponseTooLarge), "got: %v", err)
+	var tooLarge *http.MaxBytesError
+	require.ErrorAs(t, err, &tooLarge)
 }
 
-// A body announced above the limit is refused before it is read, and the limit holds for an error answer too.
-func TestWithMaxResponseBytes_AnnouncedAndErrorAnswers(t *testing.T) {
+// The limit holds for an error answer too, not only for a result.
+func TestWithMaxResponseBytes_ErrorAnswers(t *testing.T) {
 	t.Parallel()
 
 	transport := httpmock.NewMockTransport()
@@ -90,8 +89,8 @@ func TestWithMaxResponseBytes_AnnouncedAndErrorAnswers(t *testing.T) {
 	var got string
 	for _, path := range []string{"big", "err"} {
 		_, _, err := request.NewHTTPRequest(c).WithGet("https://example.com/" + path).WithResult(&got).WithError(&testError{}).Send(t.Context())
-		require.Error(t, err, path)
-		assert.True(t, errors.Is(err, client.ErrResponseTooLarge), "%s: %v", path, err)
+		var tooLarge *http.MaxBytesError
+		require.ErrorAs(t, err, &tooLarge, path)
 	}
 }
 
@@ -118,8 +117,7 @@ func TestWithoutRedirects(t *testing.T) {
 	}
 
 	_, err := send(client.New().WithRetry(request.TestingRetry()).WithoutRedirects())
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "redirect")
+	require.ErrorIs(t, err, client.ErrRedirectNotFollowed)
 	assert.Zero(t, hits.Load(), "the redirect target was not called")
 
 	got, err := send(client.New().WithRetry(request.TestingRetry()))

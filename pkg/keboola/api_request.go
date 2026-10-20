@@ -49,9 +49,6 @@ func (a *PublicAPI) baseURLForService(s ServiceType) string {
 	if s == StorageAPI {
 		return "v2/storage"
 	}
-	if url, found := a.serviceURLs[s]; found {
-		return url
-	}
 
 	url, found := a.index.Services.ToMap().URLByID(ServiceID(s))
 	if !found {

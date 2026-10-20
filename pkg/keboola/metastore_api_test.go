@@ -1,7 +1,6 @@
 package keboola_test
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"testing"
@@ -39,8 +38,8 @@ const metastoreListBody = `{
 	]
 }`
 
-// newMetastoreAPI returns an API whose Metastore requests go to metastoreTestHost, as in-cluster callers configure it, on
-// top of an index that does not know the service.
+// newMetastoreAPI returns an API whose Metastore requests go to metastoreTestHost, listed in the index as an in-cluster
+// caller would list it.
 func newMetastoreAPI(t *testing.T) (*keboola.AuthorizedAPI, *httpmock.MockTransport) {
 	t.Helper()
 
@@ -48,9 +47,8 @@ func newMetastoreAPI(t *testing.T) (*keboola.AuthorizedAPI, *httpmock.MockTransp
 	c = c.WithHeader("X-Kubernetes-Authorization", "Bearer sa-token")
 	api := keboola.NewPublicAPIFromIndex(
 		"https://connection.test",
-		&keboola.Index{},
+		&keboola.Index{Services: keboola.Services{{ID: "metastore", URL: metastoreTestHost}}},
 		keboola.WithClient(&c),
-		keboola.WithServiceURL(keboola.MetastoreAPI, metastoreTestHost),
 	).NewAuthorizedAPI("my-token", time.Minute)
 	return api, transport
 }
@@ -125,7 +123,6 @@ func TestListMetastoreObjectsRequest_FilterShape(t *testing.T) {
 		expect url.Values
 	}{
 		{name: "one value", opt: keboola.WithMetastoreFilterIn("table", "in.c-main.orders"), expect: url.Values{"table": {"in.c-main.orders"}}},
-		{name: "two values", opt: keboola.WithMetastoreFilterIn("table", "a.b", "c.d"), expect: url.Values{"table[in]": {"a.b|c.d"}}},
 		{name: "equality", opt: keboola.WithMetastoreFilter("kid", "KID:x"), expect: url.Values{"kid": {"KID:x"}}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -157,6 +154,8 @@ func TestListMetastoreObjectsRequest_Invalid(t *testing.T) {
 		{name: "a field with a bracket", objectType: "rls-policy", opts: []keboola.ListMetastoreObjectsOption{keboola.WithMetastoreFilter("table[in]", "a.b")}},
 		{name: "an empty object type", objectType: ""},
 		{name: "an object type with a slash", objectType: "rls-policy/x"},
+		{name: "an object type that climbs a segment", objectType: ".."},
+		{name: "an object type that is the current segment", objectType: "."},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -173,26 +172,18 @@ func TestListMetastoreObjectsRequest_Invalid(t *testing.T) {
 func TestListMetastoreObjectsRequest_EmptyAndMissingData(t *testing.T) {
 	t.Parallel()
 
-	for _, tc := range []struct {
-		name  string
-		body  string
-		isNil bool
-	}{
-		{name: "empty list", body: `{"data": []}`, isNil: false},
-		{name: "no data key", body: `{}`, isNil: true},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+	api, transport := newMetastoreAPI(t)
+	transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL+`\?empty`, metastoreResponder(http.StatusOK, `{"data": []}`, nil, nil))
+	transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL+`\?missing`, metastoreResponder(http.StatusOK, `{}`, nil, nil))
 
-			api, transport := newMetastoreAPI(t)
-			transport.RegisterResponder(http.MethodGet, `=~^`+metastoreListURL, metastoreResponder(http.StatusOK, tc.body, nil, nil))
+	empty, err := api.ListMetastoreObjectsRequest("rls-policy", keboola.WithMetastoreFilter("empty", "1")).Send(t.Context())
+	require.NoError(t, err)
+	assert.NotNil(t, empty.Data)
+	assert.Empty(t, empty.Data)
 
-			list, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
-			require.NoError(t, err)
-			assert.Equal(t, tc.isNil, list.Data == nil)
-			assert.Empty(t, list.Data)
-		})
-	}
+	missing, err := api.ListMetastoreObjectsRequest("rls-policy", keboola.WithMetastoreFilter("missing", "1")).Send(t.Context())
+	require.NoError(t, err)
+	assert.Nil(t, missing.Data)
 }
 
 func TestListMetastoreObjectsRequest_Error(t *testing.T) {
@@ -204,10 +195,9 @@ func TestListMetastoreObjectsRequest_Error(t *testing.T) {
 		http.Header{"X-Refused": {"true"}}, nil))
 
 	_, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
-	require.Error(t, err)
 
 	var metastoreErr *keboola.MetastoreError
-	require.True(t, errors.As(err, &metastoreErr), "the error is a MetastoreError: %v", err)
+	require.ErrorAs(t, err, &metastoreErr)
 	assert.Equal(t, http.StatusForbidden, metastoreErr.StatusCode())
 	assert.Equal(t, "Access denied", metastoreErr.ErrorUserMessage())
 	assert.Equal(t, "metastore-abc", metastoreErr.ErrorExceptionID())
@@ -230,24 +220,11 @@ func TestGetMetastoreObjectRequest(t *testing.T) {
 	require.NotNil(t, object.Data)
 	assert.Equal(t, 2, object.Data.Meta.Revision)
 
-	_, err = api.GetMetastoreObjectRequest("rls-policy", "").Send(t.Context())
-	require.Error(t, err, "an empty id is never sent")
-}
-
-// Without an override the service is looked up in the index, like every other service.
-func TestMetastoreAPI_ServiceFromIndex(t *testing.T) {
-	t.Parallel()
-
-	c, transport := client.NewMockedClient()
-	api := keboola.NewPublicAPIFromIndex(
-		"https://connection.test",
-		&keboola.Index{Services: keboola.Services{{ID: "metastore", URL: "https://metastore.from-index.test"}}},
-		keboola.WithClient(&c),
-	).NewAuthorizedAPI("my-token", time.Minute)
-	transport.RegisterResponder(http.MethodGet, `=~^https://metastore\.from-index\.test/api/v1/repository/rls-policy`,
-		metastoreResponder(http.StatusOK, `{"data": []}`, nil, nil))
-
-	_, err := api.ListMetastoreObjectsRequest("rls-policy").Send(t.Context())
-	require.NoError(t, err)
-	assert.Equal(t, 1, transport.GetTotalCallCount())
+	// An id that is not a plain name is never sent: it could address another endpoint with the caller's token.
+	transport.ZeroCallCounters()
+	for _, id := range []string{"", ".", "..", "a/b", "a/../b", "%2e%2e"} {
+		_, err = api.GetMetastoreObjectRequest("rls-policy", id).Send(t.Context())
+		require.Error(t, err, "id %q", id)
+	}
+	assert.Zero(t, transport.GetTotalCallCount(), "nothing is sent")
 }

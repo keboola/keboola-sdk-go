@@ -38,8 +38,6 @@ const (
 type PublicAPI struct {
 	sender request.Sender
 	index  *Index
-	// serviceURLs overrides the URL a service has in the index, see WithServiceURL.
-	serviceURLs map[ServiceType]string
 }
 
 type AuthorizedAPI struct {
@@ -86,9 +84,7 @@ func NewPublicAPI(ctx context.Context, host string, opts ...APIOption) (*PublicA
 func NewPublicAPIFromIndex(host string, index *Index, opts ...APIOption) *PublicAPI {
 	cfg := newAPIConfig(opts)
 	c := newClient(host, cfg)
-	api := newPublicAPI(c, index)
-	api.serviceURLs = cfg.serviceURLs
-	return api
+	return newPublicAPI(c, index)
 }
 
 func newPublicAPI(sender request.Sender, index *Index) *PublicAPI {

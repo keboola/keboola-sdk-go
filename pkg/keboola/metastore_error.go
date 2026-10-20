@@ -7,8 +7,6 @@ import (
 
 // MetastoreError represents an error from the Metastore API.
 type MetastoreError struct {
-	// HTTPStatus is the HTTP status code the Metastore reports in its body ("error").
-	HTTPStatus  int            `json:"error"`
 	Code        string         `json:"code"`
 	Message     string         `json:"exception"`
 	ExceptionID string         `json:"exceptionId"`
@@ -58,11 +56,11 @@ func (e MetastoreError) StatusCode() int {
 	if e.response != nil {
 		return e.response.StatusCode
 	}
-	return e.HTTPStatus
+	return 0
 }
 
-// ResponseHeader returns the headers of the error response, nil when there was none. The Metastore marks some refusals
-// with a header (for example the refusal of the ServiceAccount step-up).
+// ResponseHeader returns the headers of the error response, nil when there was none. The Metastore marks some answers
+// with a header, so a caller may need to read it on an error too.
 func (e MetastoreError) ResponseHeader() http.Header {
 	if e.response == nil {
 		return nil

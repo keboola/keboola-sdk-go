@@ -14,7 +14,6 @@ type apiConfig struct {
 	onSuccessTimeout time.Duration
 	tracerProvider   otelTrace.TracerProvider
 	meterProvider    otelMetric.MeterProvider
-	serviceURLs      map[ServiceType]string
 }
 
 type APIOption func(c *apiConfig)
@@ -50,17 +49,5 @@ func WithTracerProvider(v otelTrace.TracerProvider) APIOption {
 func WithMeterProvider(v otelMetric.MeterProvider) APIOption {
 	return func(c *apiConfig) {
 		c.meterProvider = v
-	}
-}
-
-// WithServiceURL makes requests of the service go to baseURL instead of the URL the index advertises for it. It is how
-// a service is reached by an address the index does not know, for example the in-cluster address of the Metastore.
-// The index must still be given (NewPublicAPIFromIndex), the other services keep using it.
-func WithServiceURL(service ServiceType, baseURL string) APIOption {
-	return func(c *apiConfig) {
-		if c.serviceURLs == nil {
-			c.serviceURLs = make(map[ServiceType]string)
-		}
-		c.serviceURLs[service] = baseURL
 	}
 }
