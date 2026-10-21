@@ -38,6 +38,8 @@ func (a *PublicAPI) newRequest(s ServiceType) request.HTTPRequest {
 		r = r.WithError(&DataScienceError{})
 	case EditorAPI:
 		r = r.WithError(&EditorError{})
+	case MetastoreAPI:
+		r = r.WithError(&MetastoreError{})
 	}
 
 	return r

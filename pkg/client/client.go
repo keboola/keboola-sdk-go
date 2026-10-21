@@ -36,6 +36,22 @@ const (
 
 type ContextKey string
 
+// ErrRedirectNotFollowed is the error of a request that was redirected by a Client set WithoutRedirects. The error
+// returned is a *RedirectError, which wraps it.
+var ErrRedirectNotFollowed = errors.New("redirects are not followed")
+
+// RedirectError is the error of a redirect a Client set WithoutRedirects did not follow.
+type RedirectError struct {
+	// StatusCode is the status of the redirect answer.
+	StatusCode int
+}
+
+func (e *RedirectError) Error() string {
+	return fmt.Sprintf("%s (HTTP %d)", ErrRedirectNotFollowed, e.StatusCode)
+}
+
+func (e *RedirectError) Unwrap() error { return ErrRedirectNotFollowed }
+
 // Client is a default and configurable implementation of the Sender interface by Go native http.Client.
 // It supports retry and tracing/telemetry.
 type Client struct {
@@ -45,6 +61,10 @@ type Client struct {
 	header         http.Header
 	retry          request.RetryConfig
 	traceFactories []trace.Factory
+	// maxResponseBytes caps the decoded response body, 0 is no cap.
+	maxResponseBytes int64
+	// noRedirects makes a redirect an error instead of a request to another URL.
+	noRedirects bool
 }
 
 // New creates new HTTP Client.
@@ -103,6 +123,22 @@ func (c Client) WithTransport(transport http.RoundTripper) Client {
 // Individual requests can override this using APIRequest.WithRetry().
 func (c Client) WithRetry(retry request.RetryConfig) Client {
 	c.retry = retry
+	return c
+}
+
+// WithMaxResponseBytes returns a clone of the Client that fails a request whose response body, after the content
+// decoding, is larger than limit bytes. The error wraps *http.MaxBytesError. It bounds what a caller that talks to a
+// service it cannot fully trust reads into memory. Zero or a negative limit means no cap.
+func (c Client) WithMaxResponseBytes(limit int64) Client {
+	c.maxResponseBytes = limit
+	return c
+}
+
+// WithoutRedirects returns a clone of the Client that does not follow redirects: a redirect is an error that wraps
+// ErrRedirectNotFollowed. A redirect would send the request, with its headers, to another URL, and the headers of a
+// request to an internal service can carry credentials.
+func (c Client) WithoutRedirects() Client {
+	c.noRedirects = true
 	return c
 }
 
@@ -214,6 +250,12 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 		Timeout:   retryConfig.TotalRequestTimeout,
 		Transport: roundTripper{retry: retryConfig, trace: tc, wrapped: c.transport}, // wrapped transport for trace/retry
 	}
+	if c.noRedirects {
+		nativeClient.CheckRedirect = func(req *http.Request, _ []*http.Request) error {
+			// The redirect answer is the response that made the next request.
+			return &RedirectError{StatusCode: req.Response.StatusCode}
+		}
+	}
 
 	// Send request
 	startedAt := time.Now()
@@ -240,7 +282,7 @@ func (c Client) Send(ctx context.Context, reqDef request.HTTPRequest) (res *http
 
 		// Parse
 		var parseError error
-		result, err, parseError = handleResponseBody(res, reqDef.ResultDef(), reqDef.ErrorDef())
+		result, err, parseError = handleResponseBody(res, reqDef.ResultDef(), reqDef.ErrorDef(), c.maxResponseBytes)
 
 		// Trace BodyParseDone
 		if tc != nil && tc.BodyParseDone != nil {
@@ -300,7 +342,31 @@ func requestBody(r request.HTTPRequest) (io.ReadCloser, error) {
 	return nil, fmt.Errorf(`unsupported request body type "%T", to encode body as JSON please specify content-type header`, body)
 }
 
-func handleResponseBody(r *http.Response, resultDef any, errDef error) (result any, err error, parseError error) {
+// cappedBody remembers that the cap of Client.WithMaxResponseBytes was hit while the body was read.
+type cappedBody struct {
+	io.ReadCloser
+	exceeded error
+}
+
+func (c *cappedBody) Read(p []byte) (int, error) {
+	n, err := c.ReadCloser.Read(p)
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		c.exceeded = err
+	}
+	return n, err
+}
+
+// tooLarge returns the cap error when the cap was hit while the body was read, whatever the decoder made of it. It is
+// safe on a nil receiver (no cap set).
+func (c *cappedBody) tooLarge() error {
+	if c == nil {
+		return nil
+	}
+	return c.exceeded
+}
+
+func handleResponseBody(r *http.Response, resultDef any, errDef error, maxBytes int64) (result any, err error, parseError error) {
 	defer r.Body.Close()
 
 	if r.StatusCode == http.StatusNoContent {
@@ -311,6 +377,13 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 	decodedBody, err := decode.Decode(r.Body, r.Header.Get("Content-Encoding"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("cannot decode response body: %w", err)
+	}
+
+	// The JSON decoder reports a failed read as text, or not at all, so the cap is remembered here and reported as it is.
+	var capped *cappedBody
+	if maxBytes > 0 {
+		capped = &cappedBody{ReadCloser: http.MaxBytesReader(nil, decodedBody, maxBytes)}
+		decodedBody = capped
 	}
 
 	// Process content type, for example "application/json; charset=utf-8"
@@ -349,8 +422,12 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 		// Map JSON response
 		if r.StatusCode > 199 && r.StatusCode < 300 && resultDef != nil {
 			// Map JSON response to defined result
-			if err := json.NewDecoder(decodedBody).Decode(resultDef); err != nil {
-				return nil, nil, fmt.Errorf(`cannot decode JSON result: %w`, err)
+			decodeErr := json.NewDecoder(decodedBody).Decode(resultDef)
+			if err := capped.tooLarge(); err != nil {
+				return nil, nil, err
+			}
+			if decodeErr != nil {
+				return nil, nil, fmt.Errorf(`cannot decode JSON result: %w`, decodeErr)
 			}
 			return resultDef, nil, nil
 		} else if r.StatusCode > 399 && errDef != nil {
@@ -362,8 +439,12 @@ func handleResponseBody(r *http.Response, resultDef any, errDef error) (result a
 			// branch on the HTTP status code (e.g. StatusCode()==409) instead of
 			// receiving a generic "cannot decode JSON error: EOF" string that masks
 			// the underlying status.
-			if err := json.NewDecoder(decodedBody).Decode(errDef); err != nil && !errors.Is(err, io.EOF) {
-				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, err)
+			decodeErr := json.NewDecoder(decodedBody).Decode(errDef)
+			if err := capped.tooLarge(); err != nil {
+				return nil, nil, err
+			}
+			if decodeErr != nil && !errors.Is(decodeErr, io.EOF) {
+				return nil, nil, fmt.Errorf(`cannot decode JSON error: %w`, decodeErr)
 			}
 			// Set HTTP request
 			var errWithReq errorWithRequest
