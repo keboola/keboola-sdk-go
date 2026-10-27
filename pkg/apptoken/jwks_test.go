@@ -60,7 +60,7 @@ func document(t *testing.T, keys ...map[string]string) []byte {
 	return raw
 }
 
-func TestParseJWKS_WhatApsProxyPublishes(t *testing.T) {
+func TestParseJWKS_WhatAppsProxyPublishes(t *testing.T) {
 	t.Parallel()
 
 	active, previous := newKey(t), newKey(t)
