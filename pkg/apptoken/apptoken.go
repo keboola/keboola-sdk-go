@@ -4,6 +4,11 @@
 //
 // The package holds the contract only. Signing (the private keys) belongs to apps-proxy, and fetching and caching the keys, and
 // deciding which identity provider, email or group to trust, belong to the verifying service.
+//
+// A verifier takes the keys from ParseJWKS (of an address from its configuration, never from the token), pins Algorithm, checks
+// the TokenType header, the Issuer, the Audience, requires `exp` and `iat`, and checks that kbc.project_id is the project of the
+// request. The golang-jwt parser options that do it are the verifier's: a token without `exp` never expires and a token without
+// `aud` passes unless the parser is told to check them.
 package apptoken
 
 import (

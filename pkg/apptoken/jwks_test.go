@@ -73,26 +73,29 @@ func TestParseJWKS_WhatAppsProxyPublishes(t *testing.T) {
 	assert.True(t, previous.PublicKey.Equal(keys["2026-09"]))
 }
 
-func TestParseJWKS_EmptySet(t *testing.T) {
+// A JWKS that cannot give a single key is an error, never an empty set: a verifier that replaces its keys with the result of
+// a bad fetch would reject every token.
+func TestParseJWKS_NotAJWKSOrWithoutAUsableKey(t *testing.T) {
 	t.Parallel()
 
-	keys, err := apptoken.ParseJWKS([]byte(`{"keys":[]}`))
-
-	require.NoError(t, err)
-	assert.Empty(t, keys)
-}
-
-func TestParseJWKS_NotAJWKS(t *testing.T) {
-	t.Parallel()
-
+	other := newKey(t)
+	rsa := ecJWK("rsa", &other.PublicKey)
+	rsa["kty"] = "RSA"
 	for name, body := range map[string]string{
-		"html":         `<html>`,
-		"keys is text": `{"keys":"none"}`,
-		"empty":        ``,
+		"html":                 `<html>`,
+		"keys is text":         `{"keys":"none"}`,
+		"empty":                ``,
+		"null":                 `null`,
+		"no keys member":       `{}`,
+		"keys is null":         `{"keys":null}`,
+		"an error document":    `{"error":"unavailable"}`,
+		"an empty set":         `{"keys":[]}`,
+		"only an unusable key": string(document(t, rsa)),
 	} {
-		_, err := apptoken.ParseJWKS([]byte(body))
+		keys, err := apptoken.ParseJWKS([]byte(body))
 
 		require.Error(t, err, name)
+		assert.Nil(t, keys, name)
 	}
 }
 
@@ -100,8 +103,6 @@ func TestParseJWKS_UnusableKeysAreSkippedAndTheOthersStay(t *testing.T) {
 	t.Parallel()
 
 	good, other := newKey(t), newKey(t)
-	p384, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	require.NoError(t, err)
 
 	with := func(name, value string) map[string]string {
 		k := ecJWK("bad", &other.PublicKey)
@@ -110,16 +111,10 @@ func TestParseJWKS_UnusableKeysAreSkippedAndTheOthersStay(t *testing.T) {
 	}
 	offCurve := ecJWK("bad", &other.PublicKey)
 	offCurve["y"] = offCurve["x"]
-	p384Point, err := p384.PublicKey.Bytes()
-	require.NoError(t, err)
-	p384JWK := map[string]string{
-		"kty": "EC", "crv": "P-384", "use": "sig", "alg": "ES256", "kid": "bad",
-		"x": base64.RawURLEncoding.EncodeToString(p384Point[1:49]), "y": base64.RawURLEncoding.EncodeToString(p384Point[49:]),
-	}
 
 	for name, bad := range map[string]map[string]string{
 		"another key type":       with("kty", "RSA"),
-		"another curve":          p384JWK,
+		"another curve":          with("crv", "P-384"),
 		"an encryption key":      with("use", "enc"),
 		"another algorithm":      with("alg", "ES384"),
 		"no key id":              with("kid", ""),
@@ -129,6 +124,27 @@ func TestParseJWKS_UnusableKeysAreSkippedAndTheOthersStay(t *testing.T) {
 		"a point off the curve":  offCurve,
 	} {
 		keys, err := apptoken.ParseJWKS(document(t, bad, ecJWK("good", &good.PublicKey)))
+
+		require.NoError(t, err, name)
+		require.Len(t, keys, 1, name)
+		assert.True(t, good.PublicKey.Equal(keys["good"]), name)
+	}
+}
+
+func TestParseJWKS_AnEntryThatIsNotAKeyObjectIsSkipped(t *testing.T) {
+	t.Parallel()
+
+	good := newKey(t)
+	goodJWK, err := json.Marshal(ecJWK("good", &good.PublicKey))
+	require.NoError(t, err)
+
+	for name, bad := range map[string]string{
+		"a number":                 `1`,
+		"an array":                 `[1]`,
+		"null":                     `null`,
+		"a member of another type": `{"kty":"EC","crv":"P-256","use":"sig","alg":"ES256","kid":"bad","x":5,"y":5}`,
+	} {
+		keys, err := apptoken.ParseJWKS([]byte(`{"keys":[` + bad + `,` + string(goodJWK) + `]}`))
 
 		require.NoError(t, err, name)
 		require.Len(t, keys, 1, name)

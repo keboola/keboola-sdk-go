@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -24,18 +25,30 @@ type jwk struct {
 
 // ParseJWKS returns the public keys of a JWKS by their key id. Only the keys of apps-proxy are accepted: EC keys on P-256, for
 // signatures, with ES256. Anything else in the set is ignored, so that one unusable key (another type, curve or use, a key id that
-// is not valid, a repeated key id, a point that is not on the curve) does not make the others unusable. The error is a document
-// that is not a JWKS.
+// is not valid, a repeated key id, a point that is not on the curve, an entry that is not a key object) does not make the others
+// unusable.
+//
+// The error is a document that is not a JWKS (no `keys` array, also `null` and an error document) and a JWKS without a single
+// usable key. Both are a failed fetch: a verifier keeps the keys it already has instead of replacing them with none. A key id
+// that is not in the map is looked up as nil, so check the second result before returning the key to a JWT parser, which
+// panics on a nil key.
 func ParseJWKS(body []byte) (map[string]*ecdsa.PublicKey, error) {
 	var doc struct {
-		Keys []jwk `json:"keys"`
+		Keys []json.RawMessage `json:"keys"`
 	}
 	if err := json.Unmarshal(body, &doc); err != nil {
 		return nil, fmt.Errorf("app user token JWKS: decode: %w", err)
 	}
+	if doc.Keys == nil {
+		return nil, errors.New("app user token JWKS: no keys array")
+	}
 
 	keys := make(map[string]*ecdsa.PublicKey, len(doc.Keys))
-	for _, k := range doc.Keys {
+	for _, raw := range doc.Keys {
+		var k jwk
+		if json.Unmarshal(raw, &k) != nil {
+			continue
+		}
 		if k.Kty != KeyType || k.Crv != Curve || k.Use != KeyUse || k.Alg != Algorithm || !ValidKID(k.Kid) {
 			continue
 		}
@@ -45,6 +58,9 @@ func ParseJWKS(body []byte) (map[string]*ecdsa.PublicKey, error) {
 		if key := k.publicKey(); key != nil {
 			keys[k.Kid] = key
 		}
+	}
+	if len(keys) == 0 {
+		return nil, errors.New("app user token JWKS: no usable key")
 	}
 
 	return keys, nil

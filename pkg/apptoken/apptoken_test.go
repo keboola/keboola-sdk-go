@@ -14,6 +14,26 @@ import (
 
 var _ jwt.Claims = apptoken.Claims{}
 
+// The signer (apps-proxy) and the verifiers are released separately, so a change of any of these is a change of the token: it
+// has to be a decision, not a side effect of a refactoring.
+func TestContract_Literals(t *testing.T) {
+	t.Parallel()
+
+	for got, want := range map[string]string{
+		apptoken.HeaderName: "X-Kbc-App-User-Token",
+		apptoken.TokenType:  "kbc-app-user+jwt",
+		apptoken.Audience:   "keboola",
+		apptoken.Algorithm:  "ES256",
+		apptoken.JWKSPath:   "/.well-known/jwks.json",
+		apptoken.KeyType:    "EC",
+		apptoken.Curve:      "P-256",
+		apptoken.KeyUse:     "sig",
+		apptoken.KIDPattern: `^[A-Za-z0-9._-]{1,64}$`,
+	} {
+		assert.Equal(t, want, got)
+	}
+}
+
 func TestValidKID(t *testing.T) {
 	t.Parallel()
 
