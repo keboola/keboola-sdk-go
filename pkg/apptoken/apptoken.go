@@ -24,14 +24,16 @@ const (
 	// JWKSPath is the path, on the public URL of apps-proxy, where the public keys are published.
 	JWKSPath = "/.well-known/jwks.json"
 
+	// KIDPattern is the shape of a key id that apps-proxy accepts at startup, as a regular expression.
+	KIDPattern = `^[A-Za-z0-9._-]{1,64}$`
+
 	// KeyType, Curve and KeyUse are the `kty`, `crv` and `use` of every key in the JWKS.
 	KeyType = "EC"
 	Curve   = "P-256"
 	KeyUse  = "sig"
 )
 
-// kidPattern is the shape of a key id that apps-proxy accepts at startup.
-var kidPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+var kidPattern = regexp.MustCompile(KIDPattern)
 
 // Claims are the claims of the token as they are on the wire. It is written by hand, not built on jwt.RegisteredClaims: that type
 // accepts `aud` as an array, and verifiers expect the plain string "keboola". A token whose `aud` is an array does not decode.
