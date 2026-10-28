@@ -6,6 +6,8 @@ require (
 	github.com/andybalholm/brotli v1.2.7
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+	github.com/go-jose/go-jose/v4 v4.1.6
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jarcoal/httpmock v1.4.2
 	github.com/json-iterator/go v1.1.12
