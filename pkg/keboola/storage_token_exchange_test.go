@@ -6,13 +6,22 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 )
+
+// resolverReset is a scripted resolver reply that closes the connection without
+// an HTTP response, which the client sees as a transport error.
+const resolverReset = -1
+
+// resolverOK is the body of a successful resolver reply.
+const resolverOK = `{"storageToken": "legacy-token", "projectId": 123, "tokenDetail": {"id": "456"}}`
 
 func newTestExchanger(t *testing.T, server *httptest.Server) *StorageTokenExchanger {
 	t.Helper()
@@ -26,8 +35,39 @@ func newTestExchanger(t *testing.T, server *httptest.Server) *StorageTokenExchan
 		WithExchangerHTTPClient(server.Client()),
 	)
 	require.NoError(t, err)
+	exchanger.retryBaseDelay = time.Millisecond
 
 	return exchanger
+}
+
+// newScriptedResolver answers the n-th call with replies[n] (the last reply
+// repeats), either a status or resolverReset, and counts the calls. A status of
+// 200 carries resolverOK.
+func newScriptedResolver(t *testing.T, replies []int, calls *atomic.Int32) *httptest.Server {
+	t.Helper()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := int(calls.Add(1)) - 1
+		reply := replies[min(n, len(replies)-1)]
+
+		if reply == resolverReset {
+			conn, _, err := w.(http.Hijacker).Hijack()
+			require.NoError(t, err)
+			require.NoError(t, conn.Close())
+
+			return
+		}
+		if reply == http.StatusOK {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(resolverOK))
+
+			return
+		}
+		w.WriteHeader(reply)
+	}))
+	t.Cleanup(server.Close)
+
+	return server
 }
 
 func TestStorageTokenExchanger_Exchange(t *testing.T) {
@@ -133,7 +173,7 @@ func TestStorageTokenExchanger_NetworkErrorMapsToBadGateway(t *testing.T) {
 
 // A 200 response missing the storage token or its detail (e.g. a Connection
 // deploy predating keboola/connection#7604) is an our-side incident mapped to
-// 502, and never echoes the response body.
+// 502, never echoes the response body, and is not retried.
 func TestStorageTokenExchanger_MissingFieldsMapToBadGateway(t *testing.T) {
 	t.Parallel()
 
@@ -147,7 +187,9 @@ func TestStorageTokenExchanger_MissingFieldsMapToBadGateway(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
+			calls := &atomic.Int32{}
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls.Add(1)
 				w.Header().Set("Content-Type", "application/json")
 				_, _ = w.Write([]byte(responseBody))
 			}))
@@ -155,6 +197,7 @@ func TestStorageTokenExchanger_MissingFieldsMapToBadGateway(t *testing.T) {
 
 			result, err := newTestExchanger(t, server).Exchange(context.Background(), "kbc_at_secret", 123)
 
+			assert.Equal(t, int32(1), calls.Load())
 			assert.Nil(t, result)
 			exchangeErr := &StorageTokenExchangeError{}
 			require.ErrorAs(t, err, &exchangeErr)
@@ -216,4 +259,108 @@ func TestNewStorageTokenExchanger_Validation(t *testing.T) {
 
 	_, err = NewStorageTokenExchanger("https://connection.keboola.com", nil)
 	require.ErrorContains(t, err, "auth must not be nil")
+}
+
+// A transient resolver failure (502, 503, 504, a dropped connection) is retried
+// up to exchangeMaxTries calls; any other failure is answered by the first call.
+func TestStorageTokenExchanger_Retry(t *testing.T) {
+	t.Parallel()
+
+	ok := http.StatusOK
+	cases := map[string]struct {
+		replies        []int
+		expectedCalls  int32
+		expectedStatus int // resolver status of the error, 0 for a success or a transport error
+		expectedOK     bool
+	}{
+		"503 then ok":              {replies: []int{503, ok}, expectedCalls: 2, expectedOK: true},
+		"502 then ok":              {replies: []int{502, ok}, expectedCalls: 2, expectedOK: true},
+		"504 then ok":              {replies: []int{504, ok}, expectedCalls: 2, expectedOK: true},
+		"connection reset then ok": {replies: []int{resolverReset, ok}, expectedCalls: 2, expectedOK: true},
+		"two failures then ok":     {replies: []int{503, 502, ok}, expectedCalls: 3, expectedOK: true},
+		"503 forever":              {replies: []int{503}, expectedCalls: exchangeMaxTries, expectedStatus: 503},
+		"connection reset forever": {replies: []int{resolverReset}, expectedCalls: exchangeMaxTries},
+		"400 is not retried":       {replies: []int{400, ok}, expectedCalls: 1, expectedStatus: 400},
+		"401 is not retried":       {replies: []int{401, ok}, expectedCalls: 1, expectedStatus: 401},
+		"403 is not retried":       {replies: []int{403, ok}, expectedCalls: 1, expectedStatus: 403},
+		"404 is not retried":       {replies: []int{404, ok}, expectedCalls: 1, expectedStatus: 404},
+		"500 is not retried":       {replies: []int{500, ok}, expectedCalls: 1, expectedStatus: 500},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			calls := &atomic.Int32{}
+			server := newScriptedResolver(t, tc.replies, calls)
+
+			result, err := newTestExchanger(t, server).Exchange(context.Background(), "kbc_at_secret", 123)
+
+			assert.Equal(t, tc.expectedCalls, calls.Load())
+			if tc.expectedOK {
+				require.NoError(t, err)
+				assert.Equal(t, "legacy-token", result.StorageToken)
+
+				return
+			}
+			assert.Nil(t, result)
+			exchangeErr := &StorageTokenExchangeError{}
+			require.ErrorAs(t, err, &exchangeErr)
+			assert.Equal(t, tc.expectedStatus, exchangeErr.StatusCode)
+		})
+	}
+}
+
+// A context that ends before or while the exchange waits for the next attempt
+// stops the retry at once and still comes back as a StorageTokenExchangeError.
+func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
+	t.Parallel()
+
+	cases := map[string]struct {
+		cancelBeforeCall bool
+		expectedCalls    int32
+	}{
+		"cancelled before the call":        {cancelBeforeCall: true, expectedCalls: 0},
+		"cancelled while waiting to retry": {expectedCalls: 1},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			calls := &atomic.Int32{}
+			server := newScriptedResolver(t, []int{503}, calls)
+			exchanger := newTestExchanger(t, server)
+			// A long wait between attempts: the exchange must not sit it out.
+			exchanger.retryBaseDelay = 10 * time.Second
+			if tc.cancelBeforeCall {
+				cancel()
+			} else {
+				time.AfterFunc(50*time.Millisecond, cancel)
+			}
+
+			start := time.Now()
+			result, err := exchanger.Exchange(ctx, "kbc_at_secret", 123)
+
+			assert.Nil(t, result)
+			assert.Equal(t, tc.expectedCalls, calls.Load())
+			assert.Less(t, time.Since(start), 5*time.Second)
+			exchangeErr := &StorageTokenExchangeError{}
+			require.ErrorAs(t, err, &exchangeErr)
+			require.ErrorIs(t, err, context.Canceled)
+		})
+	}
+}
+
+// The default delays between attempts are 100 ms, then 200 ms, without jitter.
+func TestStorageTokenExchanger_DefaultBackOff(t *testing.T) {
+	t.Parallel()
+
+	b := (&StorageTokenExchanger{}).newBackOff()
+
+	assert.Equal(t, 100*time.Millisecond, b.NextBackOff())
+	assert.Equal(t, 200*time.Millisecond, b.NextBackOff())
 }
