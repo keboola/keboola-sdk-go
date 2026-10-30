@@ -75,7 +75,8 @@ type Column struct {
 // object `{}`. The default decoder expects an object and fails on `[]` with
 // "expect { or n, but found [". A column definition is meaningful only when it is
 // a non-empty JSON object; any other shape (null, empty, array, or an all-empty
-// object) means "no definition", which we represent as a nil pointer.
+// object) means "no definition", which we represent as a nil pointer. A definition
+// that carries only a description (untyped column) is kept, with an empty Type.
 func (c *Column) UnmarshalJSON(data []byte) error {
 	// columnAlias drops Column's methods to avoid recursing into this UnmarshalJSON.
 	type columnAlias Column
@@ -93,8 +94,7 @@ func (c *Column) UnmarshalJSON(data []byte) error {
 		if err := jsonLib.Unmarshal(def, cd); err != nil {
 			return err
 		}
-		// Ignore empty definitions (`{}` or all-empty fields); a real definition
-		// always carries at least a type.
+		// Ignore empty definitions (`{}` or all-empty fields).
 		if *cd != (ColumnDefinition{}) {
 			c.Definition = cd
 		}
@@ -111,11 +111,14 @@ func (v Columns) Names() (out []string) {
 	return out
 }
 
+// ColumnDefinition is the native column definition. Description is the native column description;
+// an untyped column carries only this field.
 type ColumnDefinition struct {
-	Type     string `json:"type"`
-	Length   string `json:"length"`
-	Nullable bool   `json:"nullable"`
-	Default  string `json:"default"`
+	Type        string `json:"type"`
+	Length      string `json:"length"`
+	Nullable    bool   `json:"nullable"`
+	Default     string `json:"default"`
+	Description string `json:"description,omitempty"`
 }
 
 func (a *AuthorizedAPI) CreateTableDefinitionAsyncRequest(k TableKey, definition TableDefinition) request.APIRequest[*StorageJob] {
