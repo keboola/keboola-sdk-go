@@ -355,8 +355,7 @@ func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
 	}
 }
 
-// The default delays between attempts are 100 ms, then 200 ms, capped at 300 ms,
-// without jitter.
+// The default delays between attempts are 100 ms, then 200 ms, without jitter.
 func TestStorageTokenExchanger_DefaultBackOff(t *testing.T) {
 	t.Parallel()
 
@@ -364,6 +363,4 @@ func TestStorageTokenExchanger_DefaultBackOff(t *testing.T) {
 
 	assert.Equal(t, 100*time.Millisecond, b.NextBackOff())
 	assert.Equal(t, 200*time.Millisecond, b.NextBackOff())
-	assert.Equal(t, 300*time.Millisecond, b.NextBackOff())
-	assert.Equal(t, 300*time.Millisecond, b.NextBackOff())
 }
