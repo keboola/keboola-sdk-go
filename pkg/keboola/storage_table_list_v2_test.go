@@ -236,3 +236,18 @@ func TestTableListV2Links_After(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, after)
 }
+
+func TestListTablesV2_StartsAfterGivenCursorAndStopsOnRepeatedCursor(t *testing.T) {
+	t.Parallel()
+
+	api, transport := authorizedAPIWithMockedTransport(t)
+	transport.RegisterResponder(http.MethodGet, "/v2/storage/branch/1234/table-list", func(request *http.Request) (*http.Response, error) {
+		assert.Equal(t, "start", request.URL.Query().Get("page[after]"))
+		return jsonResponse(http.StatusOK, `{"data":[],"meta":{},"links":{"next":"https://connection.keboola.mock/v2/storage/branch/1234/table-list?page[after]=start"}}`), nil
+	})
+
+	_, err := api.ListTablesV2(t.Context(), 1234, keboola.WithTableListV2After("start"))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "again")
+	assert.Equal(t, 1, transport.GetCallCountInfo()["GET /v2/storage/branch/1234/table-list"])
+}
