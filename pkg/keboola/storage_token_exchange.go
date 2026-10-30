@@ -3,11 +3,25 @@ package keboola
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/cenkalti/backoff/v5"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+)
+
+// Bounds of the retry of a resolver call that fails transiently, see
+// StorageTokenExchanger.resolve. With the defaults a call is made at most three
+// times with 100 and 200 ms between them, so a persistent failure is reported
+// after 300 ms at the latest.
+const (
+	exchangeMaxTries       = 3
+	exchangeRetryBaseDelay = 100 * time.Millisecond
+	exchangeMaxRetryDelay  = 300 * time.Millisecond
 )
 
 // StorageTokenExchanger exchanges Connection programmatic bearer tokens
@@ -28,6 +42,9 @@ import (
 // internal:auth-bridge:resolve-storage-token scope.
 type StorageTokenExchanger struct {
 	api *management.APIClient
+	// retryBaseDelay is the first delay between resolver attempts, zero means
+	// exchangeRetryBaseDelay. Unexported: only tests tune it.
+	retryBaseDelay time.Duration
 }
 
 // StorageTokenExchangeResult is the outcome of a successful token exchange.
@@ -134,6 +151,9 @@ func NewStorageTokenExchanger(
 // token detail, so the result already carries a ready-to-use *Token — no
 // follow-up VerifyTokenRequest is needed.
 //
+// A transient resolver failure (502, 503, 504 or a transport error such as a
+// connection reset) is retried, see resolve.
+//
 // Failures are returned as *StorageTokenExchangeError — use its
 // ClientStatusCode to map the failure to an HTTP response.
 func (e *StorageTokenExchanger) Exchange(
@@ -148,21 +168,9 @@ func (e *StorageTokenExchanger) Exchange(
 		}
 	}
 
-	response, httpResponse, err := e.api.AuthBridgeAPI().
-		ResolveStorageToken(ctx).
-		SubjectToken(subjectToken).
-		AuthBridgeStorageTokenResolveRequest(management.AuthBridgeStorageTokenResolveRequest{ProjectID: projectID}).
-		Execute()
-	if httpResponse != nil && httpResponse.Body != nil {
-		_ = httpResponse.Body.Close()
-	}
+	response, err := e.resolve(ctx, subjectToken, projectID)
 	if err != nil {
-		statusCode := 0
-		if httpResponse != nil {
-			statusCode = httpResponse.StatusCode
-		}
-
-		return nil, &StorageTokenExchangeError{StatusCode: statusCode, err: err}
+		return nil, err
 	}
 
 	// A 200 that lacks either the legacy token or a non-empty token detail (e.g.
@@ -194,4 +202,93 @@ func (e *StorageTokenExchanger) Exchange(
 		ExpiresAt:    response.ExpiresAt,
 		Token:        token,
 	}, nil
+}
+
+// resolve calls the resolver, retrying a transient failure: 502, 503, 504 or a
+// transport error (connection reset, ...). The call is read-only, so a retry is
+// safe. A load balancer in front of Connection can answer 503 for a request it
+// never forwarded (the backend closed an idle keep-alive connection first), and
+// a second attempt then succeeds.
+//
+// Everything else - 400, 401, 403, 404, 500 - is an answer the resolver gave on
+// purpose, and a cancelled context means the caller gave up, so those fail
+// without spending the backoff.
+func (e *StorageTokenExchanger) resolve(
+	ctx context.Context,
+	subjectToken string,
+	projectID int,
+) (*management.AuthBridgeStorageTokenResolveResponse, error) {
+	response, err := backoff.Retry(
+		ctx,
+		func() (*management.AuthBridgeStorageTokenResolveResponse, error) {
+			response, httpResponse, err := e.api.AuthBridgeAPI().
+				ResolveStorageToken(ctx).
+				SubjectToken(subjectToken).
+				AuthBridgeStorageTokenResolveRequest(management.AuthBridgeStorageTokenResolveRequest{ProjectID: projectID}).
+				Execute()
+			if httpResponse != nil && httpResponse.Body != nil {
+				_ = httpResponse.Body.Close()
+			}
+			if err == nil {
+				return response, nil
+			}
+
+			statusCode := 0
+			if httpResponse != nil {
+				statusCode = httpResponse.StatusCode
+			}
+
+			exchangeErr := &StorageTokenExchangeError{StatusCode: statusCode, err: err}
+			if !isTransientResolverStatus(statusCode) {
+				return nil, backoff.Permanent(exchangeErr)
+			}
+
+			return nil, exchangeErr
+		},
+		backoff.WithBackOff(e.newBackOff()),
+		backoff.WithMaxTries(exchangeMaxTries),
+	)
+	if err == nil {
+		return response, nil
+	}
+
+	// backoff returns the bare context error when the context ends after an
+	// attempt or while it waits for the next one, and wraps a permanent error
+	// that fails the last attempt.
+	exchangeErr := &StorageTokenExchangeError{}
+	if errors.As(err, &exchangeErr) {
+		return nil, exchangeErr
+	}
+
+	return nil, &StorageTokenExchangeError{err: err}
+}
+
+// isTransientResolverStatus reports whether a failed resolver call is worth a
+// retry: 0 is a transport error, the rest are the gateway statuses.
+func isTransientResolverStatus(statusCode int) bool {
+	switch statusCode {
+	case 0, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+// newBackOff returns the delays between the resolver attempts: doubling from
+// retryBaseDelay, capped at exchangeMaxRetryDelay, without jitter - the same
+// shape as KeboolaServiceAccountAuth.newBackOff in the management package.
+func (e *StorageTokenExchanger) newBackOff() backoff.BackOff {
+	base := e.retryBaseDelay
+	if base <= 0 {
+		base = exchangeRetryBaseDelay
+	}
+
+	b := backoff.NewExponentialBackOff()
+	b.InitialInterval = base
+	b.MaxInterval = exchangeMaxRetryDelay
+	b.Multiplier = 2
+	b.RandomizationFactor = 0
+	b.Reset()
+
+	return b
 }
