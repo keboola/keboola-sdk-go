@@ -52,8 +52,10 @@ type SourceProject struct {
 	Name string    `json:"name"`
 }
 
+// TableDefinition is the native table definition. Description is the native table description.
 type TableDefinition struct {
 	PrimaryKeyNames   []string           `json:"primaryKeysNames"`
+	Description       string             `json:"description,omitempty"`
 	Columns           Columns            `json:"columns"`
 	TimePartitioning  *TimePartitioning  `json:"timePartitioning,omitempty"`
 	RangePartitioning *RangePartitioning `json:"rangePartitioning,omitempty"`
