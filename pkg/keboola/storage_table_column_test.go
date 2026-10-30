@@ -54,6 +54,12 @@ func TestColumn_UnmarshalJSON(t *testing.T) {
 			wantDef:  nil,
 		},
 		{
+			name:     "untyped column with description-only definition",
+			input:    `{"name":"col","definition":{"description":"Some text"}}`,
+			wantName: "col",
+			wantDef:  &ColumnDefinition{Description: "Some text"},
+		},
+		{
 			name:     "typed column with object definition",
 			input:    `{"name":"id","definition":{"type":"INTEGER","length":"","nullable":false,"default":""}}`,
 			wantName: "id",

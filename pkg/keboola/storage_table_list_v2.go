@@ -2,6 +2,7 @@ package keboola
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"sort"
 	"strconv"
@@ -144,7 +145,7 @@ func WithTableListV2Limit(limit int) ListTablesV2Option {
 }
 
 // WithTableListV2After starts the page after the given cursor (see TableListV2Links.After).
-// ListTablesV2 sets it itself.
+// ListTablesV2 starts after this cursor and then follows the cursor of each page.
 func WithTableListV2After(cursor string) ListTablesV2Option {
 	return func(c *listTablesV2Config) {
 		c.after = cursor
@@ -194,8 +195,8 @@ func (a *AuthorizedAPI) ListTablesV2Request(branchID BranchID, opts ...ListTable
 
 // ListTablesV2 lists all tables of the branch, following the cursor of each page.
 func (a *AuthorizedAPI) ListTablesV2(ctx context.Context, branchID BranchID, opts ...ListTablesV2Option) ([]*TableListV2Item, error) {
+	after := newListTablesV2Config(opts).after
 	var tables []*TableListV2Item
-	after := ""
 	for {
 		pageOpts := append(append([]ListTablesV2Option{}, opts...), WithTableListV2After(after))
 		page, err := a.ListTablesV2Request(branchID, pageOpts...).Send(ctx)
@@ -204,12 +205,16 @@ func (a *AuthorizedAPI) ListTablesV2(ctx context.Context, branchID BranchID, opt
 		}
 		tables = append(tables, page.Data...)
 
-		after, err = page.Links.After()
+		next, err := page.Links.After()
 		if err != nil {
 			return nil, err
 		}
-		if after == "" {
+		if next == "" {
 			return tables, nil
 		}
+		if next == after {
+			return nil, fmt.Errorf(`table list V2 returned the cursor %q again`, next)
+		}
+		after = next
 	}
 }
