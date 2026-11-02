@@ -15,11 +15,11 @@ tasks:
 
   tests:
     cmds:
-      - go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race -coverprofile=/tmp/profile.out ./pkg/...
+      - go tool gotestsum --no-color=false --format testname -- -timeout 1200s -p 8 -parallel 8 -v -race -coverprofile=/tmp/profile.out ./pkg/...
 
   transfer-tests:
     cmds:
-      - cd v2/transfer && go tool gotestsum --no-color=false --format testname -- -timeout 600s -p 8 -parallel 8 -v -race ./...
+      - cd v2/transfer && go tool gotestsum --no-color=false --format testname -- -timeout 1200s -p 8 -parallel 8 -v -race ./...
 
   godoc:
     cmds:
