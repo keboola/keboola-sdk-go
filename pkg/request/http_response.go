@@ -11,9 +11,9 @@ type HTTPResponse interface {
 }
 
 type httpResponseCommon interface {
-	// ResponseHeader method returns HTTP response headers.
+	// ResponseHeader method returns HTTP response headers, nil if no response arrived.
 	ResponseHeader() http.Header
-	// StatusCode method returns HTTP status code.
+	// StatusCode method returns HTTP status code, 0 if no response arrived.
 	StatusCode() int
 	// RawRequest method returns the standard HTTP request, from the last retry attempt.
 	RawRequest() *http.Request
@@ -37,10 +37,16 @@ type httpResponse struct {
 }
 
 func (r httpResponse) ResponseHeader() http.Header {
+	if r.rawResponse == nil {
+		return nil
+	}
 	return r.rawResponse.Header
 }
 
 func (r httpResponse) StatusCode() int {
+	if r.rawResponse == nil {
+		return 0
+	}
 	return r.rawResponse.StatusCode
 }
 

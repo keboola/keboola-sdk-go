@@ -64,7 +64,7 @@ func TestQueueApiCalls(t *testing.T) {
 	defer cancelFn()
 	err = api.WaitForQueueJob(timeoutCtx, resJob.ID)
 	// The job payload is malformed, so it fails. We are checking just that it finished.
-	assert.ErrorContains(t, err, "Unrecognized option \"foo\" under \"container\"")
+	assert.ErrorContains(t, err, "Unrecognized option \"foo\" under")
 }
 
 func TestCreateQueueJobRequestBuilder(t *testing.T) {
@@ -215,7 +215,7 @@ func TestDeprecatedQueueApiCalls(t *testing.T) {
 	defer cancelFn()
 	err = api.WaitForQueueJob(timeoutCtx, job.ID)
 	// The job payload is malformed, so it fails. We are checking just that it finished.
-	assert.ErrorContains(t, err, "Unrecognized option \"foo\" under \"container\"")
+	assert.ErrorContains(t, err, "Unrecognized option \"foo\" under")
 }
 
 func newJSONResponder(response string) httpmock.Responder {

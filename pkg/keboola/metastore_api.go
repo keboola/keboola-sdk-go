@@ -155,10 +155,8 @@ func (a *AuthorizedAPI) GetMetastoreObjectRequest(objectType, objectID string) r
 // failed after an answer arrived. The error is passed on untouched.
 func keepMetastoreAnswer(status *int, header *http.Header) func(context.Context, request.HTTPResponse, error) error {
 	return func(_ context.Context, response request.HTTPResponse, err error) error {
-		if raw := response.RawResponse(); raw != nil {
-			*status = raw.StatusCode
-			*header = raw.Header
-		}
+		*status = response.StatusCode()
+		*header = response.ResponseHeader()
 		return err
 	}
 }
