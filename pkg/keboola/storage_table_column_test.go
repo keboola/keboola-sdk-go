@@ -100,3 +100,32 @@ func TestColumns_UnmarshalJSON(t *testing.T) {
 		assert.Nil(t, c.Definition)
 	}
 }
+
+func TestColumnDefinition_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		def  ColumnDefinition
+		want string
+	}{
+		{
+			name: "typed",
+			def:  ColumnDefinition{Type: "VARCHAR", Length: "10", Nullable: true, Default: "x", Description: "d"},
+			want: `{"type":"VARCHAR","length":"10","nullable":true,"default":"x","description":"d"}`,
+		},
+		{
+			name: "description only",
+			def:  ColumnDefinition{Description: "d"},
+			want: `{"description":"d"}`,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			out, err := clientJSON.Marshal(Column{Name: "a", Definition: &tc.def})
+			require.NoError(t, err)
+			assert.JSONEq(t, `{"name":"a","definition":`+tc.want+`}`, string(out))
+		})
+	}
+}
