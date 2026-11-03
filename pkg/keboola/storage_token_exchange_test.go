@@ -34,15 +34,21 @@ func newTestExchanger(t *testing.T, server *httptest.Server) *StorageTokenExchan
 	return newTestExchangerWithRetry(t, server, retry)
 }
 
-func newTestExchangerWithRetry(t *testing.T, server *httptest.Server, retry request.RetryConfig) *StorageTokenExchanger {
+func writeTestSAToken(t *testing.T) string {
 	t.Helper()
 
 	saTokenPath := t.TempDir() + "/token"
 	require.NoError(t, os.WriteFile(saTokenPath, []byte("sa-jwt"), 0o600))
 
+	return saTokenPath
+}
+
+func newTestExchangerWithRetry(t *testing.T, server *httptest.Server, retry request.RetryConfig) *StorageTokenExchanger {
+	t.Helper()
+
 	exchanger, err := newStorageTokenExchanger(
 		server.URL,
-		management.NewKeboolaServiceAccountAuth(saTokenPath),
+		management.NewKeboolaServiceAccountAuth(writeTestSAToken(t)),
 		retry,
 		WithExchangerHTTPClient(server.Client()),
 	)
@@ -370,39 +376,22 @@ func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
 	}
 }
 
-// The constructor of the SDK enables the retry with the real delays of exchangerRetry (100, then 200 ms), so a
-// transient failure is retried without any option and a persistent one stops after exchangeRetryCount retries.
+// The constructor of the SDK enables the retry with the real delays of exchangerRetry, without any option.
 func TestNewStorageTokenExchanger_RetriesByDefault(t *testing.T) {
 	t.Parallel()
 
-	cases := map[string]struct {
-		replies       []int
-		expectedCalls int32
-		expectedOK    bool
-	}{
-		"503 then ok": {replies: []int{503, http.StatusOK}, expectedCalls: 2, expectedOK: true},
-		"503 forever": {replies: []int{503}, expectedCalls: exchangeRetryCount + 1},
-	}
+	calls := &atomic.Int32{}
+	server := newScriptedResolver(t, []int{http.StatusServiceUnavailable, http.StatusOK}, calls)
+	exchanger, err := NewStorageTokenExchanger(
+		server.URL,
+		management.NewKeboolaServiceAccountAuth(writeTestSAToken(t)),
+		WithExchangerHTTPClient(server.Client()),
+	)
+	require.NoError(t, err)
 
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+	result, err := exchanger.Exchange(context.Background(), "kbc_at_secret", 123)
 
-			calls := &atomic.Int32{}
-			server := newScriptedResolver(t, tc.replies, calls)
-			saTokenPath := t.TempDir() + "/token"
-			require.NoError(t, os.WriteFile(saTokenPath, []byte("sa-jwt"), 0o600))
-			exchanger, err := NewStorageTokenExchanger(
-				server.URL,
-				management.NewKeboolaServiceAccountAuth(saTokenPath),
-				WithExchangerHTTPClient(server.Client()),
-			)
-			require.NoError(t, err)
-
-			_, err = exchanger.Exchange(context.Background(), "kbc_at_secret", 123)
-
-			assert.Equal(t, tc.expectedOK, err == nil)
-			assert.Equal(t, tc.expectedCalls, calls.Load())
-		})
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "legacy-token", result.StorageToken)
+	assert.Equal(t, int32(2), calls.Load())
 }

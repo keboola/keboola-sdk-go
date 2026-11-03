@@ -1,12 +1,14 @@
 package management
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,66 +22,95 @@ type rotatingAuth struct {
 }
 
 func (a *rotatingAuth) AuthHeaders() (map[string]string, error) {
-	return map[string]string{HeaderManageAPIToken: "token-" + string(rune('0'+a.calls.Add(1)))}, nil
+	return map[string]string{HeaderManageAPIToken: fmt.Sprintf("token-%d", a.calls.Add(1))}, nil
 }
 
-// With WithRetry the client sends a failed request again with the same body and with the Auth headers resolved again.
-func TestNewAPIClientWithAuth_WithRetry(t *testing.T) {
+func resolveStorageToken(t *testing.T, api *APIClient) error {
+	t.Helper()
+
+	_, resp, err := api.AuthBridgeAPI().
+		ResolveStorageToken(t.Context()).
+		SubjectToken("kbc_at_secret").
+		AuthBridgeStorageTokenResolveRequest(AuthBridgeStorageTokenResolveRequest{ProjectID: 123}).
+		Execute()
+	if resp != nil {
+		_ = resp.Body.Close()
+	}
+
+	return err
+}
+
+// With WithRetry the client sends a failed request again, with the same body and with the Auth headers resolved again;
+// without it the Manage API client sends a request once, as it has operations that change data.
+func TestNewAPIClientWithAuth_Retry(t *testing.T) {
 	t.Parallel()
 
-	var bodies, tokens []string
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := io.ReadAll(r.Body)
-		assert.NoError(t, err)
-		bodies = append(bodies, string(body))
-		tokens = append(tokens, r.Header.Get(HeaderManageAPIToken))
-		if len(bodies) == 1 {
-			w.WriteHeader(http.StatusServiceUnavailable)
+	cases := map[string]struct {
+		opts           []ClientOption
+		expectedBodies int
+		expectedTokens []string
+	}{
+		"with retry":       {opts: []ClientOption{WithRetry(request.TestingRetry())}, expectedBodies: 2, expectedTokens: []string{"token-1", "token-2"}},
+		"no retry default": {expectedBodies: 1, expectedTokens: []string{"token-1"}},
+	}
 
-			return
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var lock sync.Mutex
+			var bodies, tokens []string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				body, err := io.ReadAll(r.Body)
+				assert.NoError(t, err)
+				lock.Lock()
+				defer lock.Unlock()
+				bodies = append(bodies, string(body))
+				tokens = append(tokens, r.Header.Get(HeaderManageAPIToken))
+				if len(bodies) == 1 {
+					w.WriteHeader(http.StatusServiceUnavailable)
+
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"storageToken": "legacy-token", "tokenDetail": {"id": "456"}}`))
+			}))
+			defer server.Close()
+
+			api := newAuthBridgeTestClient(t, server, &rotatingAuth{}, tc.opts...)
+			err := resolveStorageToken(t, api)
+
+			assert.Equal(t, tc.expectedBodies == 2, err == nil)
+			require.Len(t, bodies, tc.expectedBodies)
+			assert.Equal(t, tc.expectedTokens, tokens, "the Auth headers are resolved for every attempt")
+			for _, body := range bodies {
+				assert.JSONEq(t, `{"projectId": 123}`, body, "the body is sent again")
+			}
+		})
+	}
+}
+
+// The TotalRequestTimeout of the retry config bounds a request whose attempt hangs.
+func TestNewAPIClientWithAuth_RetryTimeout(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Read the body so the server notices that the client closed the connection.
+		_, _ = io.Copy(io.Discard, r.Body)
+		select {
+		case <-r.Context().Done():
+		case <-time.After(3 * time.Second):
 		}
-		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
 
-	cfg := NewConfiguration()
-	cfg.HTTPClient = server.Client()
-	api, err := NewAPIClientWithAuth(cfg, &rotatingAuth{}, WithRetry(request.TestingRetry()))
-	require.NoError(t, err)
+	retry := request.TestingRetry()
+	retry.TotalRequestTimeout = 100 * time.Millisecond
+	api := newAuthBridgeTestClient(t, server, &rotatingAuth{}, WithRetry(retry))
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, server.URL, strings.NewReader(`{"foo":"bar"}`))
-	require.NoError(t, err)
-	resp, err := api.GetConfig().HTTPClient.Do(req)
-	require.NoError(t, err)
-	_ = resp.Body.Close()
+	start := time.Now()
+	err := resolveStorageToken(t, api)
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, []string{`{"foo":"bar"}`, `{"foo":"bar"}`}, bodies, "the body is sent again")
-	assert.Equal(t, []string{"token-1", "token-2"}, tokens, "the Auth headers are resolved for every attempt")
-}
-
-// A client built without WithRetry sends a request once: the Manage API has operations that change data.
-func TestNewAPIClientWithAuth_NoRetryByDefault(t *testing.T) {
-	t.Parallel()
-
-	var calls atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls.Add(1)
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}))
-	defer server.Close()
-
-	cfg := NewConfiguration()
-	cfg.HTTPClient = server.Client()
-	api, err := NewAPIClientWithAuth(cfg, &rotatingAuth{})
-	require.NoError(t, err)
-
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, server.URL, nil)
-	require.NoError(t, err)
-	resp, err := api.GetConfig().HTTPClient.Do(req)
-	require.NoError(t, err)
-	_ = resp.Body.Close()
-
-	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
-	assert.Equal(t, int32(1), calls.Load())
+	require.Error(t, err)
+	assert.Less(t, time.Since(start), 2*time.Second)
 }

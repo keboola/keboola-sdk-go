@@ -14,7 +14,8 @@ import (
 
 // Tuning of the retry of the resolver call on top of the default retry of the SDK API clients, see
 // exchangerRetry. A call is sent at most three times, 100 and 200 ms apart, so a persistent failure is reported
-// after 300 ms at the latest, not after the several seconds of the default retry.
+// after 300 ms of waiting at the latest, not after the several seconds of the default retry. A hung attempt is
+// bounded by the TotalRequestTimeout of the retry config.
 const (
 	exchangeRetryCount   = 2
 	exchangeRetryMaxWait = 300 * time.Millisecond

@@ -99,6 +99,10 @@ func NewAPIClientWithAuth(cfg *Configuration, auth Auth, opts ...ClientOption) (
 	if options.retry != nil {
 		// The retry is outside of the auth transport, so every attempt resolves the auth headers again.
 		transport = client.NewRetryRoundTripper(transport, *options.retry)
+		// Like client.Client, bound the whole request with its retries, so a hung attempt does not outlast the retry.
+		if httpClient.Timeout == 0 {
+			httpClient.Timeout = options.retry.TotalRequestTimeout
+		}
 	}
 	httpClient.Transport = transport
 	cfg.HTTPClient = httpClient

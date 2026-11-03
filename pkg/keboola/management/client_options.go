@@ -13,7 +13,8 @@ type clientOptions struct {
 
 // WithRetry makes the client retry a request according to the retry config, the same way the other API clients of
 // the SDK do (see client.NewRetryRoundTripper). The request body is sent again on every attempt and the Auth headers
-// are resolved again, so a rotated credential is used by the next attempt.
+// are resolved again, so a rotated credential is used by the next attempt. The TotalRequestTimeout of the config
+// bounds the whole request with its retries, unless the http client of the Configuration has its own Timeout.
 //
 // It is opt-in because the Manage API also has operations that change data, and a retry of such an operation is up to
 // the caller. Use it for a client that calls only read-only operations, or tune the Condition of the config.
