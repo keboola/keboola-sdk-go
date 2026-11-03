@@ -13,9 +13,13 @@ cd "$SCRIPT_DIR"
 GOLANGCI_LINT_VERSION="v2.15.0"
 
 # golangci-lint
+# Built from source by the Go toolchain of the project: the module is verified by the Go checksum database, and the
+# linter is never built with an older Go than the code it checks (it cannot load packages of a newer Go version).
+# The install.sh of golangci-lint does not work since v2.15.0: its checksum lookup matches also the .sbom.json asset
+# of the archive and the verification of a correct download fails.
 if ! command -v golangci-lint &> /dev/null
 then
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin $GOLANGCI_LINT_VERSION
+    go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}"
 fi
 
 # Verify installation
