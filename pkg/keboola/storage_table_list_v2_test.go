@@ -76,7 +76,7 @@ const tableListV2LastPage = `{
       "bucketId": "in.c-main",
       "name": "untyped",
       "displayName": "untyped",
-      "branchId": 1234,
+      "branchId": 1,
       "primaryKey": [],
       "isAlias": false,
       "isTyped": false,
@@ -207,6 +207,10 @@ func TestListTablesV2_FollowsPagesAndDecodesDefinitions(t *testing.T) {
 
 	// An untyped column keeps a description-only definition and drops an empty one.
 	untyped := tables[2]
+	// An inherited table of a development branch listing carries the branch that owns it, which is
+	// the branch its detail is read through.
+	assert.Equal(t, keboola.BranchID(1), untyped.BranchID)
+	assert.Equal(t, keboola.BranchID(1), untyped.TableBranchID)
 	require.NotNil(t, untyped.Definition)
 	assert.Equal(t, "Untyped column text", untyped.Definition.Columns[0].Definition.Description)
 	assert.Empty(t, untyped.Definition.Columns[0].Definition.Type)
