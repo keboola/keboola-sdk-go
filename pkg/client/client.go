@@ -497,6 +497,8 @@ type roundTripper struct {
 
 func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
+	// The RoundTripper contract forbids mutating the supplied request, and the body is replaced below.
+	req = req.Clone(ctx)
 	startedAt := time.Now()
 	state := rt.retry.NewBackoff()
 	attempt := 0
@@ -506,9 +508,9 @@ func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			rt.trace.HTTPRequestStart(req)
 		}
 
-		// Wrap request body to get content length
+		// Wrap request body to get content length, only a trace uses it
 		var counterReqBody *counter.ReadCloser
-		if req.Body != nil && req.Body != http.NoBody {
+		if rt.trace != nil && req.Body != nil && req.Body != http.NoBody {
 			counterReqBody = counter.NewReadCloser(req.Body, nil)
 			req.Body = counterReqBody
 		}

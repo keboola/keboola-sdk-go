@@ -395,3 +395,15 @@ func TestNewStorageTokenExchanger_RetriesByDefault(t *testing.T) {
 	assert.Equal(t, "legacy-token", result.StorageToken)
 	assert.Equal(t, int32(2), calls.Load())
 }
+
+// The retry of the resolver call waits 100 ms, then 200 ms, and retries twice.
+func TestExchangerRetry(t *testing.T) {
+	t.Parallel()
+
+	retry := exchangerRetry()
+	b := retry.NewBackoff()
+
+	assert.Equal(t, 2, retry.Count)
+	assert.Equal(t, 100*time.Millisecond, b.NextBackOff())
+	assert.Equal(t, 200*time.Millisecond, b.NextBackOff())
+}

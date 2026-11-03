@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -288,30 +289,71 @@ func TestPerRequestRetryOverride(t *testing.T) {
 	assert.Equal(t, 8, len(retryAttempts), "should have retried 8 times")
 }
 
-// NewRetryRoundTripper retries a request of a http.Client built outside of Client with the same rules as Client, and
-// sends the same body on every attempt.
+// NewRetryRoundTripper retries a request of a http.Client built outside of Client with the same rules as Client, sends
+// the same body on every attempt and does not touch the request of the caller.
 func TestNewRetryRoundTripper(t *testing.T) {
 	t.Parallel()
 
-	var bodies []string
-	transport := httpmock.NewMockTransport()
-	transport.RegisterResponder("POST", `https://example.com`, func(req *http.Request) (*http.Response, error) {
-		requestBody, err := io.ReadAll(req.Body)
-		assert.NoError(t, err)
-		bodies = append(bodies, string(requestBody))
-		if len(bodies) < 3 {
-			return httpmock.NewStringResponse(503, "retry!"), nil
-		}
-		return httpmock.NewStringResponse(200, "ok"), nil
-	})
+	noCondition := request.TestingRetry()
+	noCondition.Condition = nil
 
-	httpClient := &http.Client{Transport: NewRetryRoundTripper(transport, request.TestingRetry())}
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com", strings.NewReader(`{"foo":"bar"}`))
+	cases := map[string]struct {
+		retry          request.RetryConfig
+		replies        []int
+		expectedCalls  int
+		expectedStatus int
+	}{
+		"success after two failures": {retry: request.TestingRetry(), replies: []int{503, 503, 200}, expectedCalls: 3, expectedStatus: 200},
+		"retries exhausted":          {retry: request.TestingRetry(), replies: []int{503}, expectedCalls: 1 + request.TestingRetry().Count, expectedStatus: 503},
+		"not retried status":         {retry: request.TestingRetry(), replies: []int{404, 200}, expectedCalls: 1, expectedStatus: 404},
+		"no condition, no retry":     {retry: noCondition, replies: []int{503, 200}, expectedCalls: 1, expectedStatus: 503},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var bodies []string
+			transport := httpmock.NewMockTransport()
+			transport.RegisterResponder("POST", `https://example.com`, func(req *http.Request) (*http.Response, error) {
+				requestBody, err := io.ReadAll(req.Body)
+				assert.NoError(t, err)
+				bodies = append(bodies, string(requestBody))
+				return httpmock.NewStringResponse(tc.replies[min(len(bodies), len(tc.replies))-1], "body"), nil
+			})
+
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com", strings.NewReader(`{"foo":"bar"}`))
+			assert.NoError(t, err)
+			bodyBefore := req.Body
+
+			resp, err := NewRetryRoundTripper(transport, tc.retry).RoundTrip(req)
+			assert.NoError(t, err)
+			_ = resp.Body.Close()
+
+			assert.Equal(t, tc.expectedStatus, resp.StatusCode)
+			assert.Len(t, bodies, tc.expectedCalls)
+			for _, body := range bodies {
+				assert.Equal(t, `{"foo":"bar"}`, body, "the body is sent again on every attempt")
+			}
+			assert.True(t, req.Body == bodyBefore, "the request of the caller is not changed")
+		})
+	}
+}
+
+// A nil transport falls back to http.DefaultTransport.
+func TestNewRetryRoundTripper_NilTransport(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, server.URL, nil)
 	assert.NoError(t, err)
-	resp, err := httpClient.Do(req)
+	resp, err := NewRetryRoundTripper(nil, request.TestingRetry()).RoundTrip(req)
 	assert.NoError(t, err)
 	_ = resp.Body.Close()
 
-	assert.Equal(t, 200, resp.StatusCode)
-	assert.Equal(t, []string{`{"foo":"bar"}`, `{"foo":"bar"}`, `{"foo":"bar"}`}, bodies)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 }

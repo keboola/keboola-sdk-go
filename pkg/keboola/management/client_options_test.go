@@ -49,8 +49,9 @@ func TestNewAPIClientWithAuth_Retry(t *testing.T) {
 		opts           []ClientOption
 		expectedBodies int
 		expectedTokens []string
+		expectedOK     bool
 	}{
-		"with retry":       {opts: []ClientOption{WithRetry(request.TestingRetry())}, expectedBodies: 2, expectedTokens: []string{"token-1", "token-2"}},
+		"with retry":       {opts: []ClientOption{WithRetry(request.TestingRetry())}, expectedBodies: 2, expectedTokens: []string{"token-1", "token-2"}, expectedOK: true},
 		"no retry default": {expectedBodies: 1, expectedTokens: []string{"token-1"}},
 	}
 
@@ -80,7 +81,7 @@ func TestNewAPIClientWithAuth_Retry(t *testing.T) {
 			api := newAuthBridgeTestClient(t, server, &rotatingAuth{}, tc.opts...)
 			err := resolveStorageToken(t, api)
 
-			assert.Equal(t, tc.expectedBodies == 2, err == nil)
+			assert.Equal(t, tc.expectedOK, err == nil)
 			require.Len(t, bodies, tc.expectedBodies)
 			assert.Equal(t, tc.expectedTokens, tokens, "the Auth headers are resolved for every attempt")
 			for _, body := range bodies {
@@ -90,27 +91,46 @@ func TestNewAPIClientWithAuth_Retry(t *testing.T) {
 	}
 }
 
-// The TotalRequestTimeout of the retry config bounds a request whose attempt hangs.
+// The TotalRequestTimeout of the retry config bounds a request whose attempt hangs, unless the http client of the
+// Configuration has its own Timeout, which is kept.
 func TestNewAPIClientWithAuth_RetryTimeout(t *testing.T) {
 	t.Parallel()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Read the body so the server notices that the client closed the connection.
-		_, _ = io.Copy(io.Discard, r.Body)
-		select {
-		case <-r.Context().Done():
-		case <-time.After(3 * time.Second):
-		}
-	}))
-	defer server.Close()
+	cases := map[string]struct {
+		clientTimeout       time.Duration
+		totalRequestTimeout time.Duration
+	}{
+		"from the retry config":      {totalRequestTimeout: 100 * time.Millisecond},
+		"timeout of the http client": {clientTimeout: 100 * time.Millisecond, totalRequestTimeout: time.Hour},
+	}
 
-	retry := request.TestingRetry()
-	retry.TotalRequestTimeout = 100 * time.Millisecond
-	api := newAuthBridgeTestClient(t, server, &rotatingAuth{}, WithRetry(retry))
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	start := time.Now()
-	err := resolveStorageToken(t, api)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				// Read the body so the server notices that the client closed the connection.
+				_, _ = io.Copy(io.Discard, r.Body)
+				select {
+				case <-r.Context().Done():
+				case <-time.After(3 * time.Second):
+				}
+			}))
+			defer server.Close()
 
-	require.Error(t, err)
-	assert.Less(t, time.Since(start), 2*time.Second)
+			retry := request.TestingRetry()
+			retry.TotalRequestTimeout = tc.totalRequestTimeout
+			cfg := NewConfiguration()
+			cfg.Servers = ServerConfigurations{{URL: server.URL}}
+			cfg.HTTPClient = &http.Client{Timeout: tc.clientTimeout}
+			api, err := NewAPIClientWithAuth(cfg, &rotatingAuth{}, WithRetry(retry))
+			require.NoError(t, err)
+
+			start := time.Now()
+			err = resolveStorageToken(t, api)
+
+			require.Error(t, err)
+			assert.Less(t, time.Since(start), 2*time.Second)
+		})
+	}
 }

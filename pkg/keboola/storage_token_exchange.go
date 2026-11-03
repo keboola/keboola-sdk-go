@@ -17,8 +17,9 @@ import (
 // after 300 ms of waiting at the latest, not after the several seconds of the default retry. A hung attempt is
 // bounded by the TotalRequestTimeout of the retry config.
 const (
-	exchangeRetryCount   = 2
-	exchangeRetryMaxWait = 300 * time.Millisecond
+	exchangeRetryCount     = 2
+	exchangeRetryWaitStart = 100 * time.Millisecond
+	exchangeRetryWaitMax   = 200 * time.Millisecond
 )
 
 // StorageTokenExchanger exchanges Connection programmatic bearer tokens
@@ -123,7 +124,8 @@ func NewStorageTokenExchanger(
 func exchangerRetry() request.RetryConfig {
 	retry := request.DefaultRetry()
 	retry.Count = exchangeRetryCount
-	retry.WaitTimeMax = exchangeRetryMaxWait
+	retry.WaitTimeStart = exchangeRetryWaitStart
+	retry.WaitTimeMax = exchangeRetryWaitMax
 
 	return retry
 }
