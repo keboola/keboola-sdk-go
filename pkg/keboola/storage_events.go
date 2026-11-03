@@ -29,24 +29,48 @@ type Event struct {
 
 // CreateEventRequest https://keboola.docs.apiary.io/#reference/events/events/create-event
 func (a *AuthorizedAPI) CreateEventRequest(event *Event) request.APIRequest[*Event] {
-	// Params and results must be a JSON value encoded as string
-	body := request.StructToMap(event, nil)
-	pValue, err := jsonLib.Marshal(event.Params)
+	body, err := eventBody(event)
 	if err != nil {
 		return request.NewAPIRequest(event, request.NewReqDefinitionError(err))
 	}
-	rValue, err := jsonLib.Marshal(event.Results)
-	if err != nil {
-		return request.NewAPIRequest(event, request.NewReqDefinitionError(err))
-	}
-	body["params"] = string(pValue)
-	body["results"] = string(rValue)
 	req := a.
 		newRequest(StorageAPI).
 		WithResult(event).
 		WithPost("events").
 		WithJSONBody(body)
 	return request.NewAPIRequest(event, req)
+}
+
+// CreateEventInBranchRequest creates the event in the given branch, see CreateEventRequest.
+// https://api.keboola.com/?service=storage#tag/Events
+func (a *AuthorizedAPI) CreateEventInBranchRequest(branchID BranchID, event *Event) request.APIRequest[*Event] {
+	body, err := eventBody(event)
+	if err != nil {
+		return request.NewAPIRequest(event, request.NewReqDefinitionError(err))
+	}
+	req := a.
+		newRequest(StorageAPI).
+		WithResult(event).
+		WithPost("branch/{branchId}/events").
+		AndPathParam("branchId", branchID.String()).
+		WithJSONBody(body)
+	return request.NewAPIRequest(event, req)
+}
+
+func eventBody(event *Event) (map[string]any, error) {
+	// Params and results must be a JSON value encoded as string
+	body := request.StructToMap(event, nil)
+	pValue, err := jsonLib.Marshal(event.Params)
+	if err != nil {
+		return nil, err
+	}
+	rValue, err := jsonLib.Marshal(event.Results)
+	if err != nil {
+		return nil, err
+	}
+	body["params"] = string(pValue)
+	body["results"] = string(rValue)
+	return body, nil
 }
 
 // JSONString is Json encoded as string, see CreateEventRequest.
