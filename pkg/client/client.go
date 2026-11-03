@@ -597,6 +597,18 @@ func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 }
 
+// NewRetryRoundTripper returns a http.RoundTripper that retries a request as Client does: according to the retry
+// config, with the body rewound before every attempt. It is for http clients that are built outside of Client, for
+// example a generated API client, so they share the retry of the other API clients. A nil wrapped falls back to
+// http.DefaultTransport.
+func NewRetryRoundTripper(wrapped http.RoundTripper, retry request.RetryConfig) http.RoundTripper {
+	if wrapped == nil {
+		wrapped = http.DefaultTransport
+	}
+
+	return roundTripper{retry: retry, wrapped: wrapped}
+}
+
 func ContextRetryAttempt(ctx context.Context) (int, bool) {
 	v := ctx.Value(RetryAttemptContextKey)
 	if v == nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -285,4 +286,32 @@ func TestPerRequestRetryOverride(t *testing.T) {
 
 	// Verify we retried 8 times
 	assert.Equal(t, 8, len(retryAttempts), "should have retried 8 times")
+}
+
+// NewRetryRoundTripper retries a request of a http.Client built outside of Client with the same rules as Client, and
+// sends the same body on every attempt.
+func TestNewRetryRoundTripper(t *testing.T) {
+	t.Parallel()
+
+	var bodies []string
+	transport := httpmock.NewMockTransport()
+	transport.RegisterResponder("POST", `https://example.com`, func(req *http.Request) (*http.Response, error) {
+		requestBody, err := io.ReadAll(req.Body)
+		assert.NoError(t, err)
+		bodies = append(bodies, string(requestBody))
+		if len(bodies) < 3 {
+			return httpmock.NewStringResponse(503, "retry!"), nil
+		}
+		return httpmock.NewStringResponse(200, "ok"), nil
+	})
+
+	httpClient := &http.Client{Transport: NewRetryRoundTripper(transport, request.TestingRetry())}
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "https://example.com", strings.NewReader(`{"foo":"bar"}`))
+	assert.NoError(t, err)
+	resp, err := httpClient.Do(req)
+	assert.NoError(t, err)
+	_ = resp.Body.Close()
+
+	assert.Equal(t, 200, resp.StatusCode)
+	assert.Equal(t, []string{`{"foo":"bar"}`, `{"foo":"bar"}`, `{"foo":"bar"}`}, bodies)
 }

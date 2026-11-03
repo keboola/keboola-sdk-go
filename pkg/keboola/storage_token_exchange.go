@@ -3,25 +3,21 @@ package keboola
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v5"
-
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
 	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
-// Bounds of the retry of a resolver call that fails transiently, see
-// StorageTokenExchanger.resolve. With the defaults a call is made at most three
-// times with 100 and 200 ms between them, so a persistent failure is reported
-// after 300 ms at the latest.
+// Tuning of the retry of the resolver call on top of the default retry of the SDK API clients, see
+// exchangerRetry. A call is sent at most three times, 100 and 200 ms apart, so a persistent failure is reported
+// after 300 ms at the latest, not after the several seconds of the default retry.
 const (
-	exchangeMaxTries       = 3
-	exchangeRetryBaseDelay = 100 * time.Millisecond
+	exchangeRetryCount   = 2
+	exchangeRetryMaxWait = 300 * time.Millisecond
 )
 
 // StorageTokenExchanger exchanges Connection programmatic bearer tokens
@@ -42,9 +38,6 @@ const (
 // internal:auth-bridge:resolve-storage-token scope.
 type StorageTokenExchanger struct {
 	api *management.APIClient
-	// retryBaseDelay is the first delay between resolver attempts, zero means
-	// exchangeRetryBaseDelay. Unexported: only tests tune it.
-	retryBaseDelay time.Duration
 }
 
 // StorageTokenExchangeResult is the outcome of a successful token exchange.
@@ -112,9 +105,34 @@ func WithExchangerHTTPClient(client *http.Client) StorageTokenExchangerOption {
 
 // NewStorageTokenExchanger creates a StorageTokenExchanger calling the
 // resolver on the given Connection host (e.g. "https://connection.keboola.com").
+//
+// The resolver call is read-only, so the HTTP client retries it like the other API clients of the SDK do, with the
+// delays tuned by exchangerRetry. A load balancer in front of Connection can answer 503 for a request it never
+// forwarded (the backend closed an idle keep-alive connection first), and a second attempt then succeeds.
 func NewStorageTokenExchanger(
 	connectionURL string,
 	auth management.Auth,
+	opts ...StorageTokenExchangerOption,
+) (*StorageTokenExchanger, error) {
+	return newStorageTokenExchanger(connectionURL, auth, exchangerRetry(), opts...)
+}
+
+// exchangerRetry is the default retry of the SDK API clients with fewer and shorter retries, as the exchange is on the
+// path of a request of a service.
+func exchangerRetry() request.RetryConfig {
+	retry := request.DefaultRetry()
+	retry.Count = exchangeRetryCount
+	retry.WaitTimeMax = exchangeRetryMaxWait
+
+	return retry
+}
+
+// newStorageTokenExchanger is NewStorageTokenExchanger with the retry of the resolver call given, so tests can shorten
+// its delays.
+func newStorageTokenExchanger(
+	connectionURL string,
+	auth management.Auth,
+	retry request.RetryConfig,
 	opts ...StorageTokenExchangerOption,
 ) (*StorageTokenExchanger, error) {
 	if connectionURL == "" {
@@ -135,7 +153,7 @@ func NewStorageTokenExchanger(
 		opt(cfg)
 	}
 
-	api, err := management.NewAPIClientWithAuth(cfg, auth)
+	api, err := management.NewAPIClientWithAuth(cfg, auth, management.WithRetry(retry))
 	if err != nil {
 		return nil, err
 	}
@@ -151,8 +169,8 @@ func NewStorageTokenExchanger(
 // token detail, so the result already carries a ready-to-use *Token — no
 // follow-up VerifyTokenRequest is needed.
 //
-// A transient resolver failure (502, 503, 504 or a transport error such as a
-// connection reset) is retried, see resolve.
+// A transient resolver failure is retried by the HTTP client, see
+// NewStorageTokenExchanger.
 //
 // Failures are returned as *StorageTokenExchangeError — use its
 // ClientStatusCode to map the failure to an HTTP response.
@@ -168,9 +186,21 @@ func (e *StorageTokenExchanger) Exchange(
 		}
 	}
 
-	response, err := e.resolve(ctx, subjectToken, projectID)
+	response, httpResponse, err := e.api.AuthBridgeAPI().
+		ResolveStorageToken(ctx).
+		SubjectToken(subjectToken).
+		AuthBridgeStorageTokenResolveRequest(management.AuthBridgeStorageTokenResolveRequest{ProjectID: projectID}).
+		Execute()
+	if httpResponse != nil && httpResponse.Body != nil {
+		_ = httpResponse.Body.Close()
+	}
 	if err != nil {
-		return nil, err
+		statusCode := 0
+		if httpResponse != nil {
+			statusCode = httpResponse.StatusCode
+		}
+
+		return nil, &StorageTokenExchangeError{StatusCode: statusCode, err: err}
 	}
 
 	// A 200 that lacks either the legacy token or a non-empty token detail (e.g.
@@ -202,96 +232,4 @@ func (e *StorageTokenExchanger) Exchange(
 		ExpiresAt:    response.ExpiresAt,
 		Token:        token,
 	}, nil
-}
-
-// resolve calls the resolver, retrying a transient failure: 502, 503, 504 or a
-// transport error (connection reset, ...). The call is read-only, so a retry is
-// safe. A load balancer in front of Connection can answer 503 for a request it
-// never forwarded (the backend closed an idle keep-alive connection first), and
-// a second attempt then succeeds.
-//
-// Everything else - 400, 401, 403, 404, 500 - is an answer the resolver gave on
-// purpose, and a cancelled context means the caller gave up, so those fail
-// without spending the backoff.
-func (e *StorageTokenExchanger) resolve(
-	ctx context.Context,
-	subjectToken string,
-	projectID int,
-) (*management.AuthBridgeStorageTokenResolveResponse, error) {
-	response, err := backoff.Retry(
-		ctx,
-		func() (*management.AuthBridgeStorageTokenResolveResponse, error) {
-			return e.resolveOnce(ctx, subjectToken, projectID)
-		},
-		backoff.WithBackOff(e.newBackOff()),
-		backoff.WithMaxTries(exchangeMaxTries),
-	)
-	if err == nil {
-		return response, nil
-	}
-
-	// backoff returns the bare context error when the context ends after an
-	// attempt or while it waits for the next one, and wraps a permanent error
-	// that fails the last attempt.
-	exchangeErr := &StorageTokenExchangeError{}
-	if !errors.As(err, &exchangeErr) {
-		exchangeErr = &StorageTokenExchangeError{err: err}
-	}
-
-	return nil, exchangeErr
-}
-
-// resolveOnce is a single attempt of resolve. A failure that is not transient
-// is marked backoff.Permanent.
-func (e *StorageTokenExchanger) resolveOnce(
-	ctx context.Context,
-	subjectToken string,
-	projectID int,
-) (*management.AuthBridgeStorageTokenResolveResponse, error) {
-	response, httpResponse, err := e.api.AuthBridgeAPI().
-		ResolveStorageToken(ctx).
-		SubjectToken(subjectToken).
-		AuthBridgeStorageTokenResolveRequest(management.AuthBridgeStorageTokenResolveRequest{ProjectID: projectID}).
-		Execute()
-	if httpResponse != nil && httpResponse.Body != nil {
-		_ = httpResponse.Body.Close()
-	}
-	if err == nil {
-		return response, nil
-	}
-
-	statusCode := 0
-	if httpResponse != nil {
-		statusCode = httpResponse.StatusCode
-	}
-
-	exchangeErr := &StorageTokenExchangeError{StatusCode: statusCode, err: err}
-	if !isTransientResolverStatus(statusCode) {
-		return nil, backoff.Permanent(exchangeErr)
-	}
-
-	return nil, exchangeErr
-}
-
-// isTransientResolverStatus reports whether a failed resolver call is worth a
-// retry: 0 is a transport error, the rest are the gateway statuses.
-func isTransientResolverStatus(statusCode int) bool {
-	switch statusCode {
-	case 0, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
-		return true
-	default:
-		return false
-	}
-}
-
-// newBackOff returns the delays between the resolver attempts: retryBaseDelay,
-// then twice that, without jitter. The cap is the second delay, the last one
-// exchangeMaxTries uses.
-func (e *StorageTokenExchanger) newBackOff() backoff.BackOff {
-	base := e.retryBaseDelay
-	if base <= 0 {
-		base = exchangeRetryBaseDelay
-	}
-
-	return request.RetryConfig{WaitTimeStart: base, WaitTimeMax: 2 * base}.NewBackoff()
 }
