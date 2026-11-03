@@ -119,6 +119,16 @@ func TestColumnDefinition_MarshalJSON(t *testing.T) {
 			def:  ColumnDefinition{Description: "d"},
 			want: `{"description":"d"}`,
 		},
+		{
+			name: "untyped with other fields keeps them for the server to reject",
+			def:  ColumnDefinition{Length: "10", Nullable: true, Default: "x"},
+			want: `{"length":"10","nullable":true,"default":"x"}`,
+		},
+		{
+			name: "empty",
+			def:  ColumnDefinition{},
+			want: `{}`,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

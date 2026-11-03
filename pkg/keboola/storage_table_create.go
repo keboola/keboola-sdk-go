@@ -121,16 +121,20 @@ type ColumnDefinition struct {
 	Description string `json:"description,omitempty"`
 }
 
-// MarshalJSON sends only the description for an untyped column: the create endpoint rejects
-// an empty `type` and accepts nothing but `description` when `type` is absent.
+// MarshalJSON omits `type` for an untyped column: the create endpoint rejects an empty `type`
+// and accepts only `description` when `type` is absent. Any other field set on an untyped
+// column is still sent, so the endpoint reports it instead of the client dropping it.
 func (d ColumnDefinition) MarshalJSON() ([]byte, error) {
-	if d.Type == "" {
-		return jsonLib.Marshal(struct {
-			Description string `json:"description,omitempty"`
-		}{Description: d.Description})
+	if d.Type != "" {
+		type columnDefinitionAlias ColumnDefinition
+		return jsonLib.Marshal(columnDefinitionAlias(d))
 	}
-	type columnDefinitionAlias ColumnDefinition
-	return jsonLib.Marshal(columnDefinitionAlias(d))
+	return jsonLib.Marshal(struct {
+		Length      string `json:"length,omitempty"`
+		Nullable    bool   `json:"nullable,omitempty"`
+		Default     string `json:"default,omitempty"`
+		Description string `json:"description,omitempty"`
+	}{Length: d.Length, Nullable: d.Nullable, Default: d.Default, Description: d.Description})
 }
 
 func (a *AuthorizedAPI) CreateTableDefinitionAsyncRequest(k TableKey, definition TableDefinition) request.APIRequest[*StorageJob] {
