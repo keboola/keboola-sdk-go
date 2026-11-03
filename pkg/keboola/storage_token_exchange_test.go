@@ -278,8 +278,9 @@ func TestNewStorageTokenExchanger_Validation(t *testing.T) {
 	require.ErrorContains(t, err, "auth must not be nil")
 }
 
-// A transient resolver failure is retried by the HTTP client with the default retry condition of the SDK, up to
-// exchangeRetryCount retries; an answer the resolver gave on purpose (400, 401, 403, 404) comes back from the first call.
+// A transient resolver failure (502, 503, 504, a dropped connection) is retried by the HTTP client up to
+// exchangeRetryCount times; an answer the resolver gave on purpose (400, 401, 403, 404, 429, 500) comes back from the
+// first call.
 func TestStorageTokenExchanger_Retry(t *testing.T) {
 	t.Parallel()
 
@@ -294,8 +295,6 @@ func TestStorageTokenExchanger_Retry(t *testing.T) {
 		"503 then ok":              {replies: []int{503, ok}, expectedCalls: 2, expectedOK: true},
 		"502 then ok":              {replies: []int{502, ok}, expectedCalls: 2, expectedOK: true},
 		"504 then ok":              {replies: []int{504, ok}, expectedCalls: 2, expectedOK: true},
-		"500 then ok":              {replies: []int{500, ok}, expectedCalls: 2, expectedOK: true},
-		"429 then ok":              {replies: []int{429, ok}, expectedCalls: 2, expectedOK: true},
 		"connection reset then ok": {replies: []int{resolverReset, ok}, expectedCalls: 2, expectedOK: true},
 		"two failures then ok":     {replies: []int{503, 502, ok}, expectedCalls: 3, expectedOK: true},
 		"503 forever":              {replies: []int{503}, expectedCalls: maxCalls, expectedStatus: 503},
@@ -304,6 +303,8 @@ func TestStorageTokenExchanger_Retry(t *testing.T) {
 		"401 is not retried":       {replies: []int{401, ok}, expectedCalls: 1, expectedStatus: 401},
 		"403 is not retried":       {replies: []int{403, ok}, expectedCalls: 1, expectedStatus: 403},
 		"404 is not retried":       {replies: []int{404, ok}, expectedCalls: 1, expectedStatus: 404},
+		"429 is not retried":       {replies: []int{429, ok}, expectedCalls: 1, expectedStatus: 429},
+		"500 is not retried":       {replies: []int{500, ok}, expectedCalls: 1, expectedStatus: 500},
 	}
 
 	for name, tc := range cases {
@@ -356,6 +357,7 @@ func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
 			retry := exchangerRetry()
 			retry.WaitTimeStart = 10 * time.Second
 			retry.WaitTimeMax = 10 * time.Second
+			retry.TotalRequestTimeout = time.Minute
 			exchanger := newTestExchangerWithRetry(t, server, retry)
 			if tc.cancelBeforeCall {
 				cancel()
@@ -404,6 +406,31 @@ func TestExchangerRetry(t *testing.T) {
 	b := retry.NewBackoff()
 
 	assert.Equal(t, 2, retry.Count)
+	assert.Equal(t, 5*time.Second, retry.TotalRequestTimeout)
 	assert.Equal(t, 100*time.Millisecond, b.NextBackOff())
 	assert.Equal(t, 200*time.Millisecond, b.NextBackOff())
+}
+
+// The exchanger does not follow a redirect, as it would send the subject token and the Auth headers to another place.
+func TestStorageTokenExchanger_DoesNotFollowRedirect(t *testing.T) {
+	t.Parallel()
+
+	var target atomic.Int32
+	targetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		target.Add(1)
+	}))
+	defer targetServer.Close()
+	redirectServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, targetServer.URL, http.StatusTemporaryRedirect)
+	}))
+	defer redirectServer.Close()
+
+	result, err := newTestExchanger(t, redirectServer).Exchange(context.Background(), "kbc_at_secret", 123)
+
+	assert.Nil(t, result)
+	exchangeErr := &StorageTokenExchangeError{}
+	require.ErrorAs(t, err, &exchangeErr)
+	assert.Equal(t, http.StatusTemporaryRedirect, exchangeErr.StatusCode)
+	assert.Equal(t, http.StatusBadGateway, exchangeErr.ClientStatusCode())
+	assert.Zero(t, target.Load(), "the redirect target is not called")
 }

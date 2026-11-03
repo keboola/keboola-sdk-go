@@ -14,12 +14,14 @@ import (
 
 // Tuning of the retry of the resolver call on top of the default retry of the SDK API clients, see
 // exchangerRetry. A call is sent at most three times, 100 and 200 ms apart, so a persistent failure is reported
-// after 300 ms of waiting at the latest, not after the several seconds of the default retry. A hung attempt is
-// bounded by the TotalRequestTimeout of the retry config.
+// after 300 ms of waiting at the latest, not after the several seconds of the default retry. The exchange is on the
+// path of a request of a service, so the whole call with its retries, a hung attempt included, is bounded by
+// exchangeTotalTimeout.
 const (
 	exchangeRetryCount     = 2
 	exchangeRetryWaitStart = 100 * time.Millisecond
 	exchangeRetryWaitMax   = 200 * time.Millisecond
+	exchangeTotalTimeout   = 5 * time.Second
 )
 
 // StorageTokenExchanger exchanges Connection programmatic bearer tokens
@@ -109,7 +111,7 @@ func WithExchangerHTTPClient(client *http.Client) StorageTokenExchangerOption {
 // resolver on the given Connection host (e.g. "https://connection.keboola.com").
 //
 // The resolver call is read-only, so the HTTP client retries it like the other API clients of the SDK do, with the
-// delays tuned by exchangerRetry. A load balancer in front of Connection can answer 503 for a request it never
+// delays, the total time and the condition tuned by exchangerRetry. A load balancer in front of Connection can answer 503 for a request it never
 // forwarded (the backend closed an idle keep-alive connection first), and a second attempt then succeeds.
 func NewStorageTokenExchanger(
 	connectionURL string,
@@ -119,15 +121,37 @@ func NewStorageTokenExchanger(
 	return newStorageTokenExchanger(connectionURL, auth, exchangerRetry(), opts...)
 }
 
-// exchangerRetry is the default retry of the SDK API clients with fewer and shorter retries, as the exchange is on the
-// path of a request of a service.
+// exchangerRetry is the default retry of the SDK API clients with fewer, shorter retries and a shorter total time,
+// as the exchange is on the path of a request of a service, and with the condition of exchangerRetryCondition.
 func exchangerRetry() request.RetryConfig {
 	retry := request.DefaultRetry()
 	retry.Count = exchangeRetryCount
 	retry.WaitTimeStart = exchangeRetryWaitStart
 	retry.WaitTimeMax = exchangeRetryWaitMax
+	retry.TotalRequestTimeout = exchangeTotalTimeout
+	retry.Condition = exchangerRetryCondition()
 
 	return retry
+}
+
+// exchangerRetryCondition retries what a load balancer or a restarting backend answers (502, 503, 504) and a network
+// error, which the default condition of the SDK decides. Any other answer, such as 500 or 429, is one the resolver gave
+// on purpose, and a retry would only add load to Connection.
+func exchangerRetryCondition() request.RetryCondition {
+	networkError := request.DefaultRetryCondition()
+
+	return func(response *http.Response, err error) bool {
+		if response == nil || response.StatusCode == 0 {
+			return networkError(response, err)
+		}
+
+		switch response.StatusCode {
+		case http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+			return true
+		default:
+			return false
+		}
+	}
 }
 
 // newStorageTokenExchanger is NewStorageTokenExchanger with the retry of the resolver call given, so tests can shorten
@@ -155,6 +179,16 @@ func newStorageTokenExchanger(
 	for _, opt := range opts {
 		opt(cfg)
 	}
+
+	// The Auth headers and the subject token are added to every request, so never follow a redirect with them to
+	// another place: the redirect answer comes back as the failure of the call.
+	httpClient := &http.Client{}
+	if cfg.HTTPClient != nil {
+		clientCopy := *cfg.HTTPClient
+		httpClient = &clientCopy
+	}
+	httpClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	cfg.HTTPClient = httpClient
 
 	api, err := management.NewAPIClientWithAuth(cfg, auth, management.WithRetry(retry))
 	if err != nil {
