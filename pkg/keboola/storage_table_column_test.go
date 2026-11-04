@@ -54,6 +54,12 @@ func TestColumn_UnmarshalJSON(t *testing.T) {
 			wantDef:  nil,
 		},
 		{
+			name:     "untyped column with description-only definition",
+			input:    `{"name":"col","definition":{"description":"Some text"}}`,
+			wantName: "col",
+			wantDef:  &ColumnDefinition{Description: "Some text"},
+		},
+		{
 			name:     "typed column with object definition",
 			input:    `{"name":"id","definition":{"type":"INTEGER","length":"","nullable":false,"default":""}}`,
 			wantName: "id",
@@ -92,5 +98,44 @@ func TestColumns_UnmarshalJSON(t *testing.T) {
 	assert.Equal(t, []string{"inward_issue_id", "inward_issue_key"}, cols.Names())
 	for _, c := range cols {
 		assert.Nil(t, c.Definition)
+	}
+}
+
+func TestColumnDefinition_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		def  ColumnDefinition
+		want string
+	}{
+		{
+			name: "typed",
+			def:  ColumnDefinition{Type: "VARCHAR", Length: "10", Nullable: true, Default: "x", Description: "d"},
+			want: `{"type":"VARCHAR","length":"10","nullable":true,"default":"x","description":"d"}`,
+		},
+		{
+			name: "description only",
+			def:  ColumnDefinition{Description: "d"},
+			want: `{"description":"d"}`,
+		},
+		{
+			name: "untyped with other fields keeps them for the server to reject",
+			def:  ColumnDefinition{Length: "10", Nullable: true, Default: "x"},
+			want: `{"length":"10","nullable":true,"default":"x"}`,
+		},
+		{
+			name: "empty",
+			def:  ColumnDefinition{},
+			want: `{}`,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			out, err := clientJSON.Marshal(Column{Name: "a", Definition: &tc.def})
+			require.NoError(t, err)
+			assert.JSONEq(t, `{"name":"a","definition":`+tc.want+`}`, string(out))
+		})
 	}
 }
