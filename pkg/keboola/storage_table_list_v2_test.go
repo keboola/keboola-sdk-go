@@ -217,6 +217,42 @@ func TestListTablesV2_FollowsPagesAndDecodesDefinitions(t *testing.T) {
 	assert.Nil(t, untyped.Definition.Columns[1].Definition)
 }
 
+func TestListTablesV2_DecodesAliasSourceTable(t *testing.T) {
+	t.Parallel()
+
+	const body = `{
+  "data": [
+    {"id": "out.c-linked.alias", "bucketId": "out.c-linked", "name": "alias", "displayName": "alias", "branchId": 1234,
+     "primaryKey": [], "isAlias": true, "isTyped": false, "tableType": "table", "rowsCount": null, "dataSizeBytes": null,
+     "created": null, "lastImportDate": null, "lastChangeDate": null, "description": null, "isDescriptionSystemManaged": false,
+     "sourceTable": {"id": "in.c-shared.users", "project": {"id": 77, "name": null}}},
+    {"id": "in.c-main.plain", "bucketId": "in.c-main", "name": "plain", "displayName": "plain", "branchId": 1234,
+     "primaryKey": [], "isAlias": false, "isTyped": false, "tableType": "table", "rowsCount": 0, "dataSizeBytes": 0,
+     "created": null, "lastImportDate": null, "lastChangeDate": null, "description": null, "isDescriptionSystemManaged": false}
+  ],
+  "meta": {"total": 2, "limit": 200},
+  "links": {"self": "", "first": "", "next": null}
+}`
+
+	api, transport := authorizedAPIWithMockedTransport(t)
+	transport.RegisterResponder(http.MethodGet, "/v2/storage/branch/1234/table-list", func(*http.Request) (*http.Response, error) {
+		return jsonResponse(http.StatusOK, body), nil
+	})
+
+	tables, err := api.ListTablesV2(t.Context(), 1234)
+	require.NoError(t, err)
+	require.Len(t, tables, 2)
+
+	alias := tables[0]
+	require.NotNil(t, alias.SourceTable)
+	assert.Equal(t, "in.c-shared.users", alias.SourceTable.ID.String())
+	assert.Equal(t, "in.c-shared", alias.SourceTable.ID.BucketID.String())
+	assert.Equal(t, keboola.ProjectID(77), alias.SourceTable.Project.ID)
+	assert.Empty(t, alias.SourceTable.Project.Name)
+
+	assert.Nil(t, tables[1].SourceTable)
+}
+
 func TestListTablesV2_Error(t *testing.T) {
 	t.Parallel()
 
