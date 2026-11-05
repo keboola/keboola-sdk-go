@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newAuthBridgeTestClient(t *testing.T, server *httptest.Server, auth Auth) *APIClient {
+func newAuthBridgeTestClient(t *testing.T, server *httptest.Server, auth Auth, opts ...ClientOption) *APIClient {
 	t.Helper()
 
 	cfg := NewConfiguration()
@@ -24,7 +24,7 @@ func newAuthBridgeTestClient(t *testing.T, server *httptest.Server, auth Auth) *
 		return NewAPIClient(cfg)
 	}
 
-	apiClient, err := NewAPIClientWithAuth(cfg, auth)
+	apiClient, err := NewAPIClientWithAuth(cfg, auth, opts...)
 	require.NoError(t, err)
 
 	return apiClient

@@ -497,6 +497,8 @@ type roundTripper struct {
 
 func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
+	// The RoundTripper contract forbids mutating the supplied request, and the body is replaced below.
+	req = req.Clone(ctx)
 	startedAt := time.Now()
 	state := rt.retry.NewBackoff()
 	attempt := 0
@@ -506,9 +508,9 @@ func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			rt.trace.HTTPRequestStart(req)
 		}
 
-		// Wrap request body to get content length
+		// Wrap request body to get content length, only a trace uses it
 		var counterReqBody *counter.ReadCloser
-		if req.Body != nil && req.Body != http.NoBody {
+		if rt.trace != nil && req.Body != nil && req.Body != http.NoBody {
 			counterReqBody = counter.NewReadCloser(req.Body, nil)
 			req.Body = counterReqBody
 		}
@@ -595,6 +597,18 @@ func (rt roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 			// time elapsed, retry
 		}
 	}
+}
+
+// NewRetryRoundTripper returns a http.RoundTripper that retries a request as Client does: according to the retry
+// config, with the body rewound before every attempt. It is for http clients that are built outside of Client, for
+// example a generated API client, so they share the retry of the other API clients. A nil wrapped falls back to
+// http.DefaultTransport.
+func NewRetryRoundTripper(wrapped http.RoundTripper, retry request.RetryConfig) http.RoundTripper {
+	if wrapped == nil {
+		wrapped = http.DefaultTransport
+	}
+
+	return roundTripper{retry: retry, wrapped: wrapped}
 }
 
 func ContextRetryAttempt(ctx context.Context) (int, bool) {

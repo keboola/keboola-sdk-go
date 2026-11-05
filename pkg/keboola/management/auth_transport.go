@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	"github.com/keboola/keboola-sdk-go/v2/pkg/client"
 )
 
 // authTransport injects Auth.AuthHeaders() into every outgoing request.
@@ -77,9 +79,14 @@ func hasHeaderFold(headers map[string]string, name string) bool {
 //
 // cfg.HTTPClient is shallow-copied before its transport is wrapped, so a
 // shared client (e.g. http.DefaultClient) is never mutated.
-func NewAPIClientWithAuth(cfg *Configuration, auth Auth) (*APIClient, error) {
+func NewAPIClientWithAuth(cfg *Configuration, auth Auth, opts ...ClientOption) (*APIClient, error) {
 	if auth == nil {
 		return nil, errors.New("auth must not be nil")
+	}
+
+	options := clientOptions{}
+	for _, opt := range opts {
+		opt(&options)
 	}
 
 	httpClient := &http.Client{}
@@ -87,7 +94,17 @@ func NewAPIClientWithAuth(cfg *Configuration, auth Auth) (*APIClient, error) {
 		clientCopy := *cfg.HTTPClient
 		httpClient = &clientCopy
 	}
-	httpClient.Transport = &authTransport{base: httpClient.Transport, auth: auth}
+
+	var transport http.RoundTripper = &authTransport{base: httpClient.Transport, auth: auth}
+	if options.retry != nil {
+		// The retry is outside of the auth transport, so every attempt resolves the auth headers again.
+		transport = client.NewRetryRoundTripper(transport, *options.retry)
+		// Like client.Client, bound the whole request with its retries, so a hung attempt does not outlast the retry.
+		if httpClient.Timeout == 0 {
+			httpClient.Timeout = options.retry.TotalRequestTimeout
+		}
+	}
+	httpClient.Transport = transport
 	cfg.HTTPClient = httpClient
 
 	return NewAPIClient(cfg), nil

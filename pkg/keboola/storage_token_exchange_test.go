@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/keboola/keboola-sdk-go/v2/pkg/keboola/management"
+	"github.com/keboola/keboola-sdk-go/v2/pkg/request"
 )
 
 // resolverReset is a scripted resolver reply that closes the connection without
@@ -26,16 +27,32 @@ const resolverOK = `{"storageToken": "legacy-token", "projectId": 123, "tokenDet
 func newTestExchanger(t *testing.T, server *httptest.Server) *StorageTokenExchanger {
 	t.Helper()
 
+	retry := exchangerRetry()
+	retry.WaitTimeStart = time.Millisecond
+	retry.WaitTimeMax = 2 * time.Millisecond
+
+	return newTestExchangerWithRetry(t, server, retry)
+}
+
+func writeTestSAToken(t *testing.T) string {
+	t.Helper()
+
 	saTokenPath := t.TempDir() + "/token"
 	require.NoError(t, os.WriteFile(saTokenPath, []byte("sa-jwt"), 0o600))
 
-	exchanger, err := NewStorageTokenExchanger(
+	return saTokenPath
+}
+
+func newTestExchangerWithRetry(t *testing.T, server *httptest.Server, retry request.RetryConfig) *StorageTokenExchanger {
+	t.Helper()
+
+	exchanger, err := newStorageTokenExchanger(
 		server.URL,
-		management.NewKeboolaServiceAccountAuth(saTokenPath),
+		management.NewKeboolaServiceAccountAuth(writeTestSAToken(t)),
+		retry,
 		WithExchangerHTTPClient(server.Client()),
 	)
 	require.NoError(t, err)
-	exchanger.retryBaseDelay = time.Millisecond
 
 	return exchanger
 }
@@ -261,12 +278,14 @@ func TestNewStorageTokenExchanger_Validation(t *testing.T) {
 	require.ErrorContains(t, err, "auth must not be nil")
 }
 
-// A transient resolver failure (502, 503, 504, a dropped connection) is retried
-// up to exchangeMaxTries calls; any other failure is answered by the first call.
+// A transient resolver failure (502, 503, 504, a dropped connection) is retried by the HTTP client up to
+// exchangeRetryCount times; an answer the resolver gave on purpose (400, 401, 403, 404, 429, 500) comes back from the
+// first call.
 func TestStorageTokenExchanger_Retry(t *testing.T) {
 	t.Parallel()
 
 	ok := http.StatusOK
+	maxCalls := int32(exchangeRetryCount + 1)
 	cases := map[string]struct {
 		replies        []int
 		expectedCalls  int32
@@ -278,12 +297,13 @@ func TestStorageTokenExchanger_Retry(t *testing.T) {
 		"504 then ok":              {replies: []int{504, ok}, expectedCalls: 2, expectedOK: true},
 		"connection reset then ok": {replies: []int{resolverReset, ok}, expectedCalls: 2, expectedOK: true},
 		"two failures then ok":     {replies: []int{503, 502, ok}, expectedCalls: 3, expectedOK: true},
-		"503 forever":              {replies: []int{503}, expectedCalls: exchangeMaxTries, expectedStatus: 503},
-		"connection reset forever": {replies: []int{resolverReset}, expectedCalls: exchangeMaxTries},
+		"503 forever":              {replies: []int{503}, expectedCalls: maxCalls, expectedStatus: 503},
+		"connection reset forever": {replies: []int{resolverReset}, expectedCalls: maxCalls},
 		"400 is not retried":       {replies: []int{400, ok}, expectedCalls: 1, expectedStatus: 400},
 		"401 is not retried":       {replies: []int{401, ok}, expectedCalls: 1, expectedStatus: 401},
 		"403 is not retried":       {replies: []int{403, ok}, expectedCalls: 1, expectedStatus: 403},
 		"404 is not retried":       {replies: []int{404, ok}, expectedCalls: 1, expectedStatus: 404},
+		"429 is not retried":       {replies: []int{429, ok}, expectedCalls: 1, expectedStatus: 429},
 		"500 is not retried":       {replies: []int{500, ok}, expectedCalls: 1, expectedStatus: 500},
 	}
 
@@ -333,9 +353,12 @@ func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
 
 			calls := &atomic.Int32{}
 			server := newScriptedResolver(t, []int{503}, calls)
-			exchanger := newTestExchanger(t, server)
 			// A long wait between attempts: the exchange must not sit it out.
-			exchanger.retryBaseDelay = 10 * time.Second
+			retry := exchangerRetry()
+			retry.WaitTimeStart = 10 * time.Second
+			retry.WaitTimeMax = 10 * time.Second
+			retry.TotalRequestTimeout = time.Minute
+			exchanger := newTestExchangerWithRetry(t, server, retry)
 			if tc.cancelBeforeCall {
 				cancel()
 			} else {
@@ -355,12 +378,59 @@ func TestStorageTokenExchanger_RetryStopsOnCancelledContext(t *testing.T) {
 	}
 }
 
-// The default delays between attempts are 100 ms, then 200 ms, without jitter.
-func TestStorageTokenExchanger_DefaultBackOff(t *testing.T) {
+// The constructor of the SDK enables the retry with the real delays of exchangerRetry, without any option.
+func TestNewStorageTokenExchanger_RetriesByDefault(t *testing.T) {
 	t.Parallel()
 
-	b := (&StorageTokenExchanger{}).newBackOff()
+	calls := &atomic.Int32{}
+	server := newScriptedResolver(t, []int{http.StatusServiceUnavailable, http.StatusOK}, calls)
+	exchanger, err := NewStorageTokenExchanger(
+		server.URL,
+		management.NewKeboolaServiceAccountAuth(writeTestSAToken(t)),
+		WithExchangerHTTPClient(server.Client()),
+	)
+	require.NoError(t, err)
 
+	result, err := exchanger.Exchange(context.Background(), "kbc_at_secret", 123)
+
+	require.NoError(t, err)
+	assert.Equal(t, "legacy-token", result.StorageToken)
+	assert.Equal(t, int32(2), calls.Load())
+}
+
+// The retry of the resolver call waits 100 ms, then 200 ms, and retries twice.
+func TestExchangerRetry(t *testing.T) {
+	t.Parallel()
+
+	retry := exchangerRetry()
+	b := retry.NewBackoff()
+
+	assert.Equal(t, 2, retry.Count)
+	assert.Equal(t, 5*time.Second, retry.TotalRequestTimeout)
 	assert.Equal(t, 100*time.Millisecond, b.NextBackOff())
 	assert.Equal(t, 200*time.Millisecond, b.NextBackOff())
+}
+
+// The exchanger does not follow a redirect, as it would send the subject token and the Auth headers to another place.
+func TestStorageTokenExchanger_DoesNotFollowRedirect(t *testing.T) {
+	t.Parallel()
+
+	var target atomic.Int32
+	targetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		target.Add(1)
+	}))
+	defer targetServer.Close()
+	redirectServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, targetServer.URL, http.StatusTemporaryRedirect)
+	}))
+	defer redirectServer.Close()
+
+	result, err := newTestExchanger(t, redirectServer).Exchange(context.Background(), "kbc_at_secret", 123)
+
+	assert.Nil(t, result)
+	exchangeErr := &StorageTokenExchangeError{}
+	require.ErrorAs(t, err, &exchangeErr)
+	assert.Equal(t, http.StatusTemporaryRedirect, exchangeErr.StatusCode)
+	assert.Equal(t, http.StatusBadGateway, exchangeErr.ClientStatusCode())
+	assert.Zero(t, target.Load(), "the redirect target is not called")
 }
