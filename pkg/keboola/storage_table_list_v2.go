@@ -22,6 +22,14 @@ const (
 	tableListV2QueryBucketID     = "filter[bucketId]"
 )
 
+// TableListV2SourceTable is the source table of an alias in the table list V2.
+// Unlike SourceTable it carries neither the URI nor the name.
+type TableListV2SourceTable struct {
+	ID TableID `json:"id"`
+	// Project is the project of the source table; Name is empty when the API does not know it.
+	Project SourceProject `json:"project"`
+}
+
 // TableListV2Item is one table of the table list V2. It is lighter than Table: the optional fields are
 // filled only when requested with WithTableListV2Columns, WithTableListV2Metadata or WithTableListV2Definition.
 type TableListV2Item struct {
@@ -45,6 +53,8 @@ type TableListV2Item struct {
 	// falls back to the description of its source chain.
 	Description                string `json:"description"`
 	IsDescriptionSystemManaged bool   `json:"isDescriptionSystemManaged"`
+	// SourceTable is set for an alias only.
+	SourceTable *TableListV2SourceTable `json:"sourceTable,omitempty"`
 	// Columns is filled with WithTableListV2Columns.
 	Columns []string `json:"columns,omitempty"`
 	// Metadata is filled with WithTableListV2Metadata.
