@@ -7,15 +7,10 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-type SandboxWorkspaceID string
-
-func (v SandboxWorkspaceID) String() string {
-	return string(v)
-}
-
+// CleanSandboxWorkspaceInstances deletes all Python/R/Streamlit/PythonJS data-science sandboxes
+// in the project using the direct DELETE /sandboxes/{appId} endpoint.
+// Snowflake/BigQuery are managed by the editor service and cleaned by CleanEditorSessions.
 func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) error {
-	// Use the /apps endpoint for all non-editor app types. Snowflake/BigQuery are managed
-	// by the editor service and cleaned by CleanEditorSessions, so they are intentionally excluded.
 	apps, err := a.ListDataScienceAppsRequest(
 		WithDataScienceAppsType(
 			DataScienceAppTypePython,
@@ -34,7 +29,7 @@ func (a *AuthorizedAPI) CleanSandboxWorkspaceInstances(ctx context.Context) erro
 
 	for _, app := range *apps {
 		wg.Go(func() {
-			if e := a.DeleteSandboxWorkspaceJobRequest(SandboxWorkspaceID(app.ID)).SendOrErr(ctx); e != nil {
+			if e := a.DeleteDataScienceSandboxRequest(app.ID).SendOrErr(ctx); e != nil {
 				m.Lock()
 				defer m.Unlock()
 				err = multierror.Append(err, e)
