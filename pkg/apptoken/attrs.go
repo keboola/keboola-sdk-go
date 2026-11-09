@@ -27,21 +27,19 @@ const (
 
 var attrNameRegexp = regexp.MustCompile(AttrNamePattern)
 
-// reservedAttrNames are the claims that must never be an attribute. They are the claims of the token itself and of the OIDC ID
-// token that apps-proxy has already interpreted: an attribute of such a name would be read as the verified email, a group or the
-// subject of the user by a rule that selects by it, and so bypass the `email_verified` and the group-overage handling.
-var reservedAttrNames = []string{
-	"sub", "email", "email_verified", "groups", "roles", "iss", "aud", "exp", "iat", "nbf", "nonce", "jti", "sid", "idp", "kbc",
-	"azp", "acr", "amr", "auth_time", "at_hash", "c_hash", "attrs",
-}
-
 // ErrInvalidAttrs means an `attrs` claim does not meet the contract. The text names the rule that was broken and never a claim
 // name or a value, so it can be logged.
 var ErrInvalidAttrs = errors.New("invalid attrs")
 
-// ReservedAttrNames returns the names that cannot be attributes (compared without regard to case, see ValidAttrName).
+// ReservedAttrNames returns the names that cannot be attributes (compared without regard to case, see ValidAttrName). They are the
+// claims of the token itself and of the OIDC ID token that apps-proxy has already interpreted: an attribute of such a name would be
+// read as the verified email, a group or the subject of the user by a rule that selects by it, and so bypass the `email_verified`
+// and the group-overage handling.
 func ReservedAttrNames() []string {
-	return slices.Clone(reservedAttrNames)
+	return []string{
+		"sub", "email", "email_verified", "groups", "roles", "iss", "aud", "exp", "iat", "nbf", "nonce", "jti", "sid", "idp", "kbc",
+		"azp", "acr", "amr", "auth_time", "at_hash", "c_hash", "attrs",
+	}
 }
 
 // ValidAttrName reports whether name can be an attribute: it has the AttrNamePattern shape and is not reserved. The comparison with
@@ -51,7 +49,7 @@ func ValidAttrName(name string) bool {
 }
 
 func reservedAttrName(name string) bool {
-	return slices.Contains(reservedAttrNames, strings.ToLower(name))
+	return slices.Contains(ReservedAttrNames(), strings.ToLower(name))
 }
 
 // AttrsBytes returns the size of attrs as raw JSON, the unit of MaxAttrBytes. A nil or empty map has size 0.
