@@ -47,7 +47,11 @@ func ReservedAttrNames() []string {
 // ValidAttrName reports whether name can be an attribute: it has the AttrNamePattern shape and is not reserved. The comparison with
 // the reserved names ignores case, so `Email` is refused like `email`.
 func ValidAttrName(name string) bool {
-	return attrNameRegexp.MatchString(name) && !slices.Contains(reservedAttrNames, strings.ToLower(name))
+	return attrNameRegexp.MatchString(name) && !reservedAttrName(name)
+}
+
+func reservedAttrName(name string) bool {
+	return slices.Contains(reservedAttrNames, strings.ToLower(name))
 }
 
 // AttrsBytes returns the size of attrs as raw JSON, the unit of MaxAttrBytes. A nil or empty map has size 0.
@@ -75,7 +79,7 @@ func ValidateAttrs(attrs map[string][]string) error {
 		if !attrNameRegexp.MatchString(name) {
 			return invalidAttrs("bad name")
 		}
-		if !ValidAttrName(name) {
+		if reservedAttrName(name) {
 			return invalidAttrs("reserved name")
 		}
 		if len(values) == 0 {
