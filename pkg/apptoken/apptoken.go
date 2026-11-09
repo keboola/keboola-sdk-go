@@ -52,13 +52,16 @@ type Claims struct {
 	// IDP is the issuer of the identity provider that authenticated the user. `sub` is unique only per IDP.
 	IDP string `json:"idp"`
 	// Email is present only when the identity provider verified it.
-	Email     string           `json:"email,omitempty"`
-	Groups    []string         `json:"groups,omitempty"`
-	Kbc       KbcClaims        `json:"kbc"`
-	ID        string           `json:"jti"`
-	SID       string           `json:"sid,omitempty"`
-	IssuedAt  *jwt.NumericDate `json:"iat"`
-	ExpiresAt *jwt.NumericDate `json:"exp"`
+	Email  string   `json:"email,omitempty"`
+	Groups []string `json:"groups,omitempty"`
+	// Attrs are the claims of the identity provider that the app owner allowed (for example `department`), by name. An attribute
+	// that is not in the map is unknown; there is no "known and empty". The map and its limits are in attrs.go (ValidateAttrs).
+	Attrs     map[string][]string `json:"attrs,omitempty"`
+	Kbc       KbcClaims           `json:"kbc"`
+	ID        string              `json:"jti"`
+	SID       string              `json:"sid,omitempty"`
+	IssuedAt  *jwt.NumericDate    `json:"iat"`
+	ExpiresAt *jwt.NumericDate    `json:"exp"`
 }
 
 // KbcClaims say where the user is acting. The ids are decimal strings, not numbers.

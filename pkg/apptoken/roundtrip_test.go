@@ -64,7 +64,7 @@ func verify(t *testing.T, key *ecdsa.PrivateKey, raw string, options ...jwt.Pars
 func validClaims(now time.Time) apptoken.Claims {
 	return apptoken.Claims{
 		Issuer: issuer, Audience: apptoken.Audience, Subject: "user-1", IDP: "https://login.example.com",
-		Email: "user@example.com", Groups: []string{"sales", "finance"},
+		Email: "user@example.com", Groups: []string{"sales", "finance"}, Attrs: map[string][]string{"department": {"finance"}},
 		Kbc: apptoken.KbcClaims{ProjectID: "512", AppID: "9", WorkspaceID: "77"},
 		ID:  "jti-1", IssuedAt: jwt.NewNumericDate(now), ExpiresAt: jwt.NewNumericDate(now.Add(5 * time.Minute)),
 	}
