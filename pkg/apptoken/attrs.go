@@ -18,10 +18,11 @@ const (
 	MaxAttrValues = 32
 	// MaxAttrValueChars is the longest value of an attribute, in characters (Unicode code points, what JSON Schema `maxLength` counts),
 	// not bytes, so that every service that limits a value, whatever its language, counts it the same way.
-	MaxAttrValueChars = 256
-	// MaxAttrBytes is the largest `attrs` claim as raw JSON (what AttrsBytes returns). It keeps the whole signed token, with the
-	// groups, under the 8 KiB that a verifier parses and that many app servers allow for one header line.
-	MaxAttrBytes = 1024
+	MaxAttrValueChars = 1024
+	// MaxAttrBytes is the largest `attrs` claim as raw JSON (what AttrsBytes returns). The whole signed token, with the groups, must
+	// stay under the 8 KiB that a verifier parses and that many app servers allow for one header line, so the signer may drop an
+	// attribute that fits this limit but not the budget of the token (the limit is the contract, the budget is the signer's).
+	MaxAttrBytes = 4096
 	// AttrNamePattern is the shape of an attribute name: the name of a claim of the identity provider, namespaced ones included
 	// (`https://example.com/department`).
 	AttrNamePattern = `^[A-Za-z0-9_.:/-]{1,128}$`

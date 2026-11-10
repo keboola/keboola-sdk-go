@@ -19,8 +19,8 @@ func TestAttrs_ContractLiterals(t *testing.T) {
 
 	assert.Equal(t, 100, apptoken.MaxAttrNames)
 	assert.Equal(t, 32, apptoken.MaxAttrValues)
-	assert.Equal(t, 256, apptoken.MaxAttrValueChars)
-	assert.Equal(t, 1024, apptoken.MaxAttrBytes)
+	assert.Equal(t, 1024, apptoken.MaxAttrValueChars)
+	assert.Equal(t, 4096, apptoken.MaxAttrBytes)
 	assert.Equal(t, `^[A-Za-z0-9_.:/-]{1,128}$`, apptoken.AttrNamePattern)
 	assert.ElementsMatch(t, []string{
 		"sub", "email", "email_verified", "groups", "roles", "iss", "aud", "exp", "iat", "nbf", "nonce", "jti", "sid", "idp",
@@ -83,11 +83,11 @@ func TestValidateAttrs(t *testing.T) {
 		{name: "one name one value", attrs: map[string][]string{"department": {"finance"}}},
 		{name: "several values", attrs: map[string][]string{"department": {"finance", "hr"}}},
 		{name: "duplicate values are tolerated", attrs: map[string][]string{"department": {"hr", "hr"}}},
-		{name: "a value of exactly 256 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 256)}}},
-		{name: "a value of 256 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 256)}}},
-		{name: "a value of 256 three-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u20ac", 256)}}},
+		{name: "a value of exactly 1024 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 1024)}}},
+		{name: "a value of 1024 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 1024)}}},
+		{name: "a value of 1024 three-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u20ac", 1024)}}},
 		{name: "32 values", attrs: map[string][]string{"d": manyValues(32)}},
-		{name: "100 names", attrs: hundredNames, wantErr: "too large"}, // 100 names do not fit 1 KB with these values
+		{name: "100 names", attrs: hundredNames},
 		{name: "101 names", attrs: manyNames, wantErr: "too many names"},
 		{name: "a bad name", attrs: map[string][]string{"bad name": {"v"}}, wantErr: "bad name"},
 		{name: "a reserved name", attrs: map[string][]string{"email": {"a@b.c"}}, wantErr: "reserved name"},
@@ -95,14 +95,15 @@ func TestValidateAttrs(t *testing.T) {
 		{name: "a nil value list", attrs: map[string][]string{"department": nil}, wantErr: "no values"},
 		{name: "an empty value", attrs: map[string][]string{"department": {"finance", ""}}, wantErr: "empty value"},
 		{name: "33 values", attrs: map[string][]string{"d": manyValues(33)}, wantErr: "too many values"},
-		{name: "a value of 257 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 257)}}, wantErr: "value too long"},
-		{name: "a value of 257 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 257)}}, wantErr: "value too long"},
+		{name: "a value of 1025 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 1025)}}, wantErr: "value too long"},
+		{name: "a value of 1025 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 1025)}}, wantErr: "value too long"},
 		{name: "a value that is not valid UTF-8", attrs: map[string][]string{"d": {"a\xffb"}}, wantErr: "bad value"},
 		{name: "a value with a control character", attrs: map[string][]string{"d": {"a\nb"}}, wantErr: "bad value"},
-		{name: "more than 1 KB", attrs: map[string][]string{"a": {strings.Repeat("v", 128)}, "b": {strings.Repeat("v", 128)},
-			"c": {strings.Repeat("v", 128)}, "d": {strings.Repeat("v", 128)}, "e": {strings.Repeat("v", 128)},
-			"f": {strings.Repeat("v", 128)}, "g": {strings.Repeat("v", 128)}, "h": {strings.Repeat("v", 128)},
-			"i": {strings.Repeat("v", 128)}}, wantErr: "too large"},
+		{name: "exactly 4096 bytes", attrs: attrsOfSize(t, apptoken.MaxAttrBytes)},
+		{name: "4097 bytes", attrs: attrsOfSize(t, apptoken.MaxAttrBytes+1), wantErr: "too large"},
+		{name: "4 values of 1024 three-byte characters", attrs: map[string][]string{"d": {
+			strings.Repeat("\u20ac", 1024), strings.Repeat("\u20ac", 1024), strings.Repeat("\u20ac", 1024),
+			strings.Repeat("\u20ac", 1024)}}, wantErr: "too large"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -176,4 +177,25 @@ func manyValues(n int) []string {
 	}
 
 	return values
+}
+
+// attrsOfSize returns attrs whose raw JSON is exactly size bytes: names `n0`, `n1`, ... with one value each, the values as long as the
+// limit of a value allows, the last one as long as the remaining size needs.
+func attrsOfSize(t *testing.T, size int) map[string][]string {
+	t.Helper()
+
+	attrs := map[string][]string{}
+	for i := 0; ; i++ {
+		name := fmt.Sprintf("n%d", i)
+		attrs[name] = []string{"v"}
+		room := size - apptoken.AttrsBytes(attrs)
+		require.GreaterOrEqual(t, room, 0)
+		if room < apptoken.MaxAttrValueChars {
+			attrs[name] = []string{strings.Repeat("v", 1+room)}
+			require.Equal(t, size, apptoken.AttrsBytes(attrs))
+
+			return attrs
+		}
+		attrs[name] = []string{strings.Repeat("v", apptoken.MaxAttrValueChars)}
+	}
 }
