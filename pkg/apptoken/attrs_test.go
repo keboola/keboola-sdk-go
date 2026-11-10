@@ -19,7 +19,7 @@ func TestAttrs_ContractLiterals(t *testing.T) {
 
 	assert.Equal(t, 100, apptoken.MaxAttrNames)
 	assert.Equal(t, 32, apptoken.MaxAttrValues)
-	assert.Equal(t, 128, apptoken.MaxAttrValueBytes)
+	assert.Equal(t, 256, apptoken.MaxAttrValueChars)
 	assert.Equal(t, 1024, apptoken.MaxAttrBytes)
 	assert.Equal(t, `^[A-Za-z0-9_.:/-]{1,128}$`, apptoken.AttrNamePattern)
 	assert.ElementsMatch(t, []string{
@@ -83,7 +83,9 @@ func TestValidateAttrs(t *testing.T) {
 		{name: "one name one value", attrs: map[string][]string{"department": {"finance"}}},
 		{name: "several values", attrs: map[string][]string{"department": {"finance", "hr"}}},
 		{name: "duplicate values are tolerated", attrs: map[string][]string{"department": {"hr", "hr"}}},
-		{name: "a value of exactly 128 bytes", attrs: map[string][]string{"d": {strings.Repeat("v", 128)}}},
+		{name: "a value of exactly 256 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 256)}}},
+		{name: "a value of 256 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 256)}}},
+		{name: "a value of 256 three-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u20ac", 256)}}},
 		{name: "32 values", attrs: map[string][]string{"d": manyValues(32)}},
 		{name: "100 names", attrs: hundredNames, wantErr: "too large"}, // 100 names do not fit 1 KB with these values
 		{name: "101 names", attrs: manyNames, wantErr: "too many names"},
@@ -93,7 +95,9 @@ func TestValidateAttrs(t *testing.T) {
 		{name: "a nil value list", attrs: map[string][]string{"department": nil}, wantErr: "no values"},
 		{name: "an empty value", attrs: map[string][]string{"department": {"finance", ""}}, wantErr: "empty value"},
 		{name: "33 values", attrs: map[string][]string{"d": manyValues(33)}, wantErr: "too many values"},
-		{name: "a value of 129 bytes", attrs: map[string][]string{"d": {strings.Repeat("v", 129)}}, wantErr: "value too long"},
+		{name: "a value of 257 characters", attrs: map[string][]string{"d": {strings.Repeat("v", 257)}}, wantErr: "value too long"},
+		{name: "a value of 257 multi-byte characters", attrs: map[string][]string{"d": {strings.Repeat("\u00e9", 257)}}, wantErr: "value too long"},
+		{name: "a value that is not valid UTF-8", attrs: map[string][]string{"d": {"a\xffb"}}, wantErr: "bad value"},
 		{name: "a value with a control character", attrs: map[string][]string{"d": {"a\nb"}}, wantErr: "bad value"},
 		{name: "more than 1 KB", attrs: map[string][]string{"a": {strings.Repeat("v", 128)}, "b": {strings.Repeat("v", 128)},
 			"c": {strings.Repeat("v", 128)}, "d": {strings.Repeat("v", 128)}, "e": {strings.Repeat("v", 128)},
