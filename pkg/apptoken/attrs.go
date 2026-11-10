@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 const (
@@ -15,8 +16,9 @@ const (
 	MaxAttrNames = 100
 	// MaxAttrValues is the most values one attribute carries.
 	MaxAttrValues = 32
-	// MaxAttrValueBytes is the longest value of an attribute, in bytes.
-	MaxAttrValueBytes = 128
+	// MaxAttrValueChars is the longest value of an attribute, in characters (Unicode code points, what JSON Schema `maxLength` counts),
+	// not bytes, so that every service that limits a value, whatever its language, counts it the same way.
+	MaxAttrValueChars = 256
 	// MaxAttrBytes is the largest `attrs` claim as raw JSON (what AttrsBytes returns). It keeps the whole signed token, with the
 	// groups, under the 8 KiB that a verifier parses and that many app servers allow for one header line.
 	MaxAttrBytes = 1024
@@ -66,7 +68,7 @@ func AttrsBytes(attrs map[string][]string) int {
 }
 
 // ValidateAttrs checks an `attrs` claim: at most MaxAttrNames names that ValidAttrName accepts, each with 1 to MaxAttrValues values
-// of 1 to MaxAttrValueBytes bytes and no control character, and at most MaxAttrBytes of JSON altogether. A nil or empty map is not an
+// of 1 to MaxAttrValueChars characters, valid UTF-8 and no control character, and at most MaxAttrBytes of JSON altogether. A nil or empty map is not an
 // error: it is unknown. A value list may repeat a value; the signer removes duplicates, a verifier tolerates them. A verifier that
 // gets an error treats every attribute as unknown, it does not use part of the claim.
 func ValidateAttrs(attrs map[string][]string) error {
@@ -103,10 +105,10 @@ func validAttrValue(value string) error {
 	switch {
 	case value == "":
 		return invalidAttrs("empty value")
-	case len(value) > MaxAttrValueBytes:
-		return invalidAttrs("value too long")
-	case strings.ContainsFunc(value, unicode.IsControl):
+	case !utf8.ValidString(value) || strings.ContainsFunc(value, unicode.IsControl):
 		return invalidAttrs("bad value")
+	case utf8.RuneCountInString(value) > MaxAttrValueChars:
+		return invalidAttrs("value too long")
 	default:
 		return nil
 	}
